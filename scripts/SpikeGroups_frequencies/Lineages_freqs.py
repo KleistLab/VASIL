@@ -93,4 +93,4 @@ for x in range(len(unique_lineage)):
     freq_dic[unique_lineage[x]] = frequency_lineage[x, :]
 
 freq_df = pd.DataFrame(freq_dic, index = np.arange(0, frequency_lineage.shape[1]))
-freq_df.to_csv("Data/Daily_Lineage_Freq.csv") #<- Check filename
+freq_df.to_csv("Data/Daily_Lineage_Freq.csv") 
