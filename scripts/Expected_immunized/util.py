@@ -1,0 +1,188 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import numpy as np
+import pickle
+import pandas as pd
+
+def Antibody_ranges(thalf_vec, tmax_vec, t, Ab_classes):
+    N = len(Ab_classes) # number of antibody classes
+    is_log = False # if True, it returns the log of the antibody concentration
+    dataname = "Ab_%d"%N
+    solver = "lm" # root solver method for finding absorption rate ka (see scipy.optimize.root)
+    c_t_vec = np.zeros((len(thalf_vec), len(tmax_vec), len(Ab_classes), len(t)))
+    c_dframe_dic = {}
+    for m in range(len(thalf_vec)):
+        for n in range(len(tmax_vec)):
+            t_half = thalf_vec[m]*np.ones(N) # antibody half-life for all antibody classes, respecively
+            t_max = tmax_vec[n]*np.ones(N) # time to the peak of antibody concentration for each antibody class
+            params_dic = {"t_max":t_max, "t_half":t_half}
+            c_t, c_dframe, ka, ke, c_max_dic = Antibody(t = t, params_dic = params_dic, is_log = is_log, save = False, Ab_names = Ab_classes, save_to = "Data/"+dataname+".csv", ka_solver = solver)
+            c_t_vec[m, n, :, :] = c_t
+            c_dframe_dic["(%d, %d)"%(m, n)] = c_dframe
+            
+    return c_t_vec, c_dframe_dic, dataname
+
+def Antibody(t, params_dic, is_log = False, save = True, Ab_names = None, save_to = "test", ka_solver = "lm"):
+    """
+    @brief: Compute Antibody Concentration as a function of time for N antibody classes
+    
+    Parameters
+    ----------
+    t : T time points ndarray (T) 
+    params_dic : dictionary of parameters
+                params_dic["t_max"] = t_{max}, ndarray (N, )
+                params_dic["t_half"] = t_{1/2}, ndarray (N, ) 
+    is_log : bool, optional
+             True if return the log of concentration. The default is False.
+    save_to : string Path/filename (saved to csv), optional. The default is test
+    ka_solver : root solver method for finding absorption rate k_a (see scipy.optimize.root), optional. The default is lm
+
+    Returns
+    -------
+    Antibody concentration at time t.
+
+    """
+    t_max = params_dic["t_max"]
+    t_half = params_dic["t_half"]
+    
+    # Antibody elimination rate
+    ke = np.log(2)/t_half
+    
+    # Antibody absorption rate
+    guess = np.ones(len(t_max))
+    ka = root(ka_solve, guess, args = (ke, t_max), method = ka_solver).x
+    
+    if not np.all(np.isclose(ka_solve(ka, ke, t_max), np.zeros(len(t_max)))):
+        print("\n k_a was found correctly:", np.all(np.isclose(ka_solve(ka, ke, t_max), np.zeros(len(t_max)))), "\n", params_dic)
+
+    # Compute Normalized Concentration
+    c_max = (np.exp(- ke*t_max) - np.exp(- ka*t_max))
+    c_t = (np.exp(- ke[:, np.newaxis]*t) - np.exp(- ka[:, np.newaxis]*t))/c_max[:, np.newaxis]
+    
+    if is_log:
+        c_t = np.log(c_t)
+
+    # Build pandas dataframe‚
+    df = {}
+    c_max_dic = {}
+    df["Days"] = t
+    for i in range(len(t_max)):
+        if Ab_names is None:
+            df["Ab class %d"%(i+1)] = c_t[i, :]
+            c_max_dic["Ab class %d"%(i+1)] = c_max[i]
+        else:
+            df[Ab_names[i]] = c_t[i, :]
+            c_max_dic[Ab_names[i]] = c_max[i]
+        
+        
+    df = pd.DataFrame(df)
+    
+    # save data
+    if save:
+        df.to_csv(save_to)
+         
+    return c_t, df, ka, ke, c_max_dic
+
+def ka_solve(ka, ke, t_max):
+    if np.all(ka)>0:
+        res = np.divide(t_max*(ka - ke) - (np.log(ka) - np.log(ke)), (ka - ke), out = np.ones(len(ke)), where = (ka - ke)!=0)
+    else:
+        res = 1
+    return res
+        
+
+"""Fit IC50 parameter"""
+from scipy.optimize import root
+
+def vaccine_efficacy(x, ic50):
+    return(x/(x + ic50))
+
+def efficacy_n_antibodies(x, ic50):
+    res = 1
+    for i in range(len(x)):
+        ve = vaccine_efficacy(x[i], ic50[i])
+        res *= (1 - ve)
+    return(1 - res)
+
+def sqrt_diff_FR(ic50, days_list, FR, ve_data, n, c_dframe):
+    res = 0
+    for d in range(len(ve_data)):
+        data = ve_data[d]
+        days = days_list[d]
+        ve_estimate = np.zeros(len(days))
+        for i in range(len(data)):
+            antibody_level = c_dframe.loc[int(days[i]) - 1][1:n+1]
+            ve_estimate[i] = efficacy_n_antibodies(antibody_level, np.array(FR)*ic50)
+        res += np.linalg.norm(data-ve_estimate[0:len(data)])
+    return(res)
+
+"""Compute fold change deviation for mean IC50"""
+### Load DMS data
+Escape_Fraction = pd.read_csv("Data/dms_per_ab_per_site.csv")
+IC50_group = Escape_Fraction.groupby('condition', as_index=False).first()[['condition', 'IC50', 'group']]
+mean_IC50_per_group = IC50_group.groupby('group')['IC50'].mean().reset_index()
+total_mean = mean_IC50_per_group['IC50'].mean()
+mean_IC50_per_group['fold_change'] = mean_IC50_per_group['IC50']/total_mean
+ntd_row = {'group': 'NTD','IC50': 1, 'fold_change': 1}
+mean_IC50_per_group = mean_IC50_per_group.append(pd.DataFrame(ntd_row, index=[0]), ignore_index=True)
+
+file1 = open("Data/Cross_with_delta_validation.pck", "rb") # premade simulations
+Cross_with_delta_validation = pickle.load(file1)
+variant_x_names_show = Cross_with_delta_validation["variant_list"]
+Cross_with_delta_validation.pop("variant_list")
+file1.close()
+
+Ab_classes = list(Cross_with_delta_validation.keys())
+"""Load fold change IC50 in data"""
+FC_ic50_dic = {Ab_classes[i]:(mean_IC50_per_group["fold_change"].values[mean_IC50_per_group["group"] == Ab_classes[i]])[0] for i in range(len(Ab_classes))}
+
+"""Load data for fitting """
+VE_Delta_df = pd.read_csv('Data/Processed_Clinical_Delta_VE.csv')
+VE_Delta_df.drop(columns = "Unnamed: 0", inplace = True)
+ve_fitting = VE_Delta_df["Processed VE (used in IC50 fitting)"].values
+days_fitting = VE_Delta_df["Day since vacc (used in IC50 fitting)"].values
+
+def Fitting_IC50(thalf, tmax, t, Ab_classes, Cross_dic, quiet = False):  
+   
+    
+    N = len(Ab_classes)
+    t_max = tmax*np.ones(N) # time to the peak of antibody concentration for each antibody class
+    t_half = thalf*np.ones(N) # antibody half-life for all antibody classes, respecively
+    params_dic = {"t_max":t_max, "t_half":t_half}
+    ### Compute  PK 
+    is_log = False # if True, it returns the log of the antibody concentration
+    dataname = "Ab_%d"%N
+    solver = "lm" # root solver method for finding absorption rate ka (see scipy.optimize.root)
+    c_t, c_dframe, ka, ke, c_max_dic = Antibody(t = t, params_dic = params_dic, is_log = is_log, Ab_names = Ab_classes, save_to = "Data/"+dataname+".csv", ka_solver = solver)
+    
+    if not quiet:
+        print("t_max = %.3f, t_half = %.3f"%(t_max[0], t_half[0]),"\n k_a:", ka, "\n k_e:", ke, "\n c_max", c_max_dic)
+    
+    ### select FR data for delta computed in the cross_reac_dic_show
+    where_wt = list(variant_x_names_show).index("Wuhan-Hu-1")
+    where_delta = list(variant_x_names_show).index("Delta: B.1.617.2")
+    FR_delta = [Cross_dic[Ab_classes[i]][where_wt, where_delta] for i in range(len(Ab_classes))]
+    ### Estimate one IC50 for all ABs
+    guess = 0.3
+    FC_ic50_list = [FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))]
+    IC50_data = root(sqrt_diff_FR, guess, args = (days_fitting, np.array(FC_ic50_list)*np.array(FR_delta), ve_fitting, len(Ab_classes), c_dframe), method = "lm").x
+    #print("fitted", IC50_data)
+    
+    """Extract the IC50xx -- conserving the fold changes deviation from the mean of each epitope classes"""
+    IC50xx = {Ab_classes[i]:IC50_data[0]*FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))} 
+    #print("IC50xx", IC50xx)
+    
+    return IC50xx, IC50_data[0], FC_ic50_list, FR_delta, c_dframe
+
+def Find_IC50_ranges(thalf_vec, tmax_vec, t, Ab_classes, Cross_dic):
+    IC50xx_dic = {}
+    for m in range(len(thalf_vec)):
+        for n in range(len(tmax_vec)):
+            thalf = thalf_vec[m]
+            tmax = tmax_vec[n]
+            IC50xx, IC50_data, FC_ic50_list, FR_delta, c_dframe = Fitting_IC50(thalf, tmax, t, Ab_classes, Cross_dic, quiet = True)           
+            IC50xx_dic["(%d, %d)"%(m, n)] = IC50_data
+    
+    IC50xx = np.mean(list(IC50xx_dic.values()))
+    mean_IC50xx_dic = {Ab_classes[i]:IC50xx*FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))}
+    return IC50xx_dic, mean_IC50xx_dic
