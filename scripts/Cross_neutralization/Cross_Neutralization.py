@@ -8,7 +8,7 @@ import pickle
 
 from .util import cross_reactivity
 
-### Load SpikeGroups and Mutation profile 
+### Load SpikeGroups list
 file1 = open("Data/SpikeGroups.pck", "rb") 
 SpikeGroups_list = pickle.load(file1)["names"]
 file1.close()
