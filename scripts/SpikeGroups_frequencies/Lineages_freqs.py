@@ -4,7 +4,6 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
-import pdb
 import joblib as jb
 from functools import partial
 
@@ -62,17 +61,14 @@ total_days = len(days_incidence[where_first_day:])+extra
 frequency_lineage = np.zeros((len(unique_lineage), total_days)) # indexing of t correspondis to timeline of infection days_incidence
         
 def sub_func(s, x, days_prop, days_incidence, lineages_all, unique_lineage):
-    #print("s", s, len(days_incidence[where_first_day:]))
     res = np.sum((days_prop == days_incidence[where_first_day + s]) & (lineages_all == unique_lineage[x]))
     return res
 
 def sub_func2(k, x, days_prop, days_incidence, lineages_all, unique_lineage):
-    #print("k", k, extra)
     res = np.sum((days_prop == unique_days_prop[len(days_incidence[where_first_day:]) + k]) & (lineages_all == unique_lineage[x]))
     return res
     
 for x in range(len(unique_lineage)):
-    print(x, len(unique_lineage))
     pfunc = partial(sub_func, x = x, days_prop = days_prop, days_incidence = days_incidence, lineages_all = lineages_all, unique_lineage = unique_lineage)
     res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(days_incidence[where_first_day:])))) 
     for s in range(len(days_incidence[where_first_day:])):
@@ -97,6 +93,4 @@ for x in range(len(unique_lineage)):
     freq_dic[unique_lineage[x]] = frequency_lineage[x, :]
 
 freq_df = pd.DataFrame(freq_dic, index = np.arange(0, frequency_lineage.shape[1]))
-"""FileName HAS to follow timeline annotation for Variants Mutation data and Pseudogroups"""
-timeperiod = "Jul21May23_round10decimals"
-freq_df.to_csv("Data/Daily_Lineage_Freq-%s.csv"%timeperiod) #<- Check filename
+freq_df.to_csv("Data/Daily_Lineage_Freq.csv") #<- Check filename
