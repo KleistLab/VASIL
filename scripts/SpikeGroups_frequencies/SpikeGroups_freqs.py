@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import numpy as np
+import pickle
 import re
 
 """ Loads lineage frequency data aready matched with timeline of infection """
@@ -65,7 +66,7 @@ for x in range(len(unique_group)):
         where_x = list(Lineages_list).index(unique_group[x])
         variant_proportion[x, :] = variant_proportion_orig[where_x, :]
         SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
-        SpikeGroups_dic [unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
+        SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
         check_var.append(unique_group[x])
     else:
         splited_var = unique_group[x].split("/")
@@ -101,4 +102,18 @@ freq_df.to_csv("Data/Daily_SpikeGroup_Freq-%s.csv")
 if "Wuhan-Hu-1" not in SpikeGroups_list:
     variant_proportion = np.row_stack((variant_proportion, np.zeros(variant_proportion.shape[1])))
     SpikeGroups_list.append("Wuhan-Hu-1")
+
+### Save SpikeGroups_list and Mutation_Profiles
+spk_file = open("Data/SpikeGroups.pck", "wb")
+pickle.dump({"names":SpikeGroups_list}, spk_file)
+spk_file.close()
+mut_file = open("Data/Mutation_Profiles.pck", "wb")
+pickle.dump({"positions": mut_x_sites_dic}, mut_file)
+mut_file.close()
+
+
+
+
+
+
     
