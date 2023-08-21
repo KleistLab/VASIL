@@ -44,7 +44,7 @@ for ab in Ab_classes:
 
 Cross_react_dic["variant_list"] = variant_x_names_cross
 Cross_react_dic["func_type"]= func_type
-file0 = open("Data/Cross_react_dic_pseudogroups_%d_%d.pck"%(start, stop), "wb") # <--- check FILENAME
+file0 = open("Data/Cross_react_dic_pseudogroups_%d_%d.pck"%(start, stop), "wb") 
 pickle.dump(Cross_react_dic, file0)
 file0.close()
 
