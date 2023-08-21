@@ -6,7 +6,7 @@ import pickle
 import re
 
 """ Loads lineage frequency data aready matched with timeline of infection """
-frequency_lineage_df = pd.read_csv('Data/Daily_Lineage_Freq.csv')
+frequency_lineage_df = pd.read_csv('Data/Daily_Lineages_Freq.csv')
 frequency_lineage_df.drop(columns = "Unnamed: 0", inplace = True)
 fq_cols = frequency_lineage_df.columns.astype(str)
 unique_lineage = fq_cols[fq_cols != "date"]
@@ -97,7 +97,7 @@ for x in range(len(SpikeGroups_list)):
         freq_dic["Spike. "+SpikeGroups_list[x]] = variant_proportion[x, :]*100 
 
 freq_df = pd.DataFrame(freq_dic, index = np.arange(0, len(days_prop)))
-freq_df.to_csv("Data/Daily_SpikeGroup_Freq-%s.csv")
+freq_df.to_csv("Data/Daily_SpikeGroups_Freq.csv")
 
 if "Wuhan-Hu-1" not in SpikeGroups_list:
     variant_proportion = np.row_stack((variant_proportion, np.zeros(variant_proportion.shape[1])))

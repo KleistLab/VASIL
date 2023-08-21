@@ -186,3 +186,42 @@ def Find_IC50_ranges(thalf_vec, tmax_vec, t, Ab_classes, Cross_dic):
     IC50xx = np.mean(list(IC50xx_dic.values()))
     mean_IC50xx_dic = {Ab_classes[i]:IC50xx*FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))}
     return IC50xx_dic, mean_IC50xx_dic
+
+
+
+"""Expected Immunity Efficacy as a function of COVI19 variant proportions -- vectorization 2"""
+def P_Neut(t, present_variant_index, PK_dframe, tested_variant_list, variant_name, Ab_classes, IC50xx, Cross_react_dic, escape_per_sites = None, mut_sites_per_variant = None):
+    
+    x0 = present_variant_index 
+    y = list(variant_name).index(tested_variant_list[0])# knowing that for now there is always one variant to be tested at the time
+    
+    P_neut_ab = [PK_dframe[ab].values[:, np.newaxis]/(PK_dframe[ab].values[:, np.newaxis] + Cross_react_dic[ab][x0, y][np.newaxis, :]*IC50xx[ab]) for ab in Ab_classes]        
+    
+    P_neut = 1 - np.prod(1 - np.array(P_neut_ab), axis = 0)
+        
+    return P_neut.T
+
+"""Immunity dynamics using Fast Frourier Transform: scipy.signal.fftconvolve"""
+from scipy import signal
+def Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data, present_variant_list, tested_variant_list, variant_name, variant_proportion, Ab_classes, 
+                                  IC50xx, Cross_react_dic, escape_per_sites = None, mut_sites_per_variant = None, parallel = False, mode_func = None):
+    
+    Infected_l_vect = infection_data[np.newaxis, :]*variant_proportion[:, :len(infection_data)]
+    present_variant_index = np.array([list(variant_name).index(present_variant_list[j]) for j in range(len(present_variant_list))])
+
+    Prob_Neut = P_Neut(t, present_variant_index, PK_dframe, tested_variant_list, variant_name, Ab_classes, IC50xx, Cross_react_dic)
+    
+    """
+    Conv_Mat = np.zeros(Prob_Neut.shape)
+    for i in range(Conv_Mat.shape[0]):
+        Conv_Mat[i, :] = signal.fftconvolve(Infected_l_vect[i, :], Prob_Neut[i])[:len(t)]
+    """   
+    
+    Conv_Mat = signal.fftconvolve(Infected_l_vect, Prob_Neut, axes = 1)[:, :len(t)]
+    
+    # No normalization
+    Expected_Immuned = np.sum(Conv_Mat, axis = 0)
+    """
+    tested that this gives the as Immunity_dynamics and is 200x faster
+    """
+    return Expected_Immuned

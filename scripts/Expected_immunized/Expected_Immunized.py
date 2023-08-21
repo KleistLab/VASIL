@@ -6,7 +6,7 @@ import pickle
 import re
 import joblib as jb
 
-from .util import Immunity_dynamics_fftconvolve, Antibody_ranges, Find_IC50_ranges, spikegroups_proportion
+from .util import Immunity_dynamics_fftconvolve, Antibody_ranges, Find_IC50_ranges
 
 """Load Infection Data"""
 Population_Data_v0 = pd.read_csv('Data/caseAscertainmentTable.csv')
@@ -21,15 +21,17 @@ t_dates = Population_Data['date'].values
 days_incidence = list(Population_Data['date']) 
 Population_Data["pop"] = (Population_Data_v0["pop"].values[0])*np.ones(len(days_incidence))
 
+
+"""Load relevant cross_neutralization files"""
 file1 = open("Data/Cross_with_delta_validation.pck", "rb") # premade simulations
 Cross_with_delta_validation = pickle.load(file1)
-variant_x_names_show = Cross_with_delta_validation["variant_list"]
+variants_x_names_show = Cross_with_delta_validation["variant_list"]
 Cross_with_delta_validation.pop("variant_list")
 file1.close()
 
 file1 = open("Data/Cross_react_dic_spikegroups.pck", "rb") # Check that this is the file you want to load
 Cross_react_dic = pickle.load(file1)
-variant_x_names_cross = Cross_react_dic["variant_list"]
+variants_in_cross = Cross_react_dic["variant_list"]
 file1.close()
 
 Ab_classes = list(Cross_react_dic.keys())
@@ -45,6 +47,19 @@ file1 = open("Data/SpikeGroups.pck", "rb")
 SpikeGroups_list = pickle.load(file1)["names"]
 file1.close()
 
+### Load SpikeGroup frequency #####
+frequency_spk_df = pd.read_csv('Data/Daily_SpikeGroups_Freq.csv')
+frequency_spk_df.drop(columns = "Unnamed: 0", inplace = True)
+
+### Make sure proportions axis 0 is aligned with Spikegroup_list
+spikegroups_freq= np.zeros((len(SpikeGroups_list), len(t)))
+for i in range(len(SpikeGroups_list)):
+    spikegroups_freq[i, :] = frequency_spk_df[SpikeGroups_list[i]]
+
+NormProp = np.sum(spikegroups_freq, axis = 0)
+prop_rounded = np.round(spikegroups_freq,decimals = 10)
+spikegroups_proportion = prop_rounded/NormProp
+
 def ei_util(i):
     variant_to_sim = [SpikeGroups_list[i]]
     EI = {}
@@ -55,10 +70,10 @@ def ei_util(i):
         key_num = np.array(re.findall(r"\d+", key)).astype(int)
 
         Res_sub_0 = Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data = infection_data_corrected, 
-                                                     present_variant_list = SpikeGroups_list, 
+                                                     present_variant_list = SpikeGroups_list, ### Aligned with rows-indexes of variant_proportion
                                                      tested_variant_list =  variant_to_sim, 
-                                                     variant_name = variant_x_names_cross, 
-                                                     variant_proportion =  spikegroups_proportion, 
+                                                     variant_name = variants_in_cross, ### Aligned with Cross_react_dic["variant_list"]
+                                                     variant_proportion =  spikegroups_proportion, ### rows are aligned with present_variant_list
                                                      Ab_classes = Ab_classes, 
                                                      IC50xx= mean_IC50xx_dic,
                                                      Cross_react_dic = Cross_react_dic, 
