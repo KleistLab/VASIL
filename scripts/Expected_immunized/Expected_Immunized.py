@@ -47,14 +47,14 @@ file1 = open("Data/SpikeGroups.pck", "rb")
 SpikeGroups_list = pickle.load(file1)["names"]
 file1.close()
 
-### Load SpikeGroup frequency #####
+### Load SpikeGroup frequency already starts at July 1st, 2021 #####
 frequency_spk_df = pd.read_csv('Data/Daily_SpikeGroups_Freq.csv')
 frequency_spk_df.drop(columns = "Unnamed: 0", inplace = True)
 
 ### Make sure proportions axis 0 is aligned with Spikegroup_list
 spikegroups_freq= np.zeros((len(SpikeGroups_list), len(t)))
 for i in range(len(SpikeGroups_list)):
-    spikegroups_freq[i, :] = frequency_spk_df[SpikeGroups_list[i]]
+    spikegroups_freq[i, :] = frequency_spk_df[SpikeGroups_list[i]][:len(t)]
 
 NormProp = np.sum(spikegroups_freq, axis = 0)
 prop_rounded = np.round(spikegroups_freq,decimals = 10)
