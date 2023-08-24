@@ -9,7 +9,7 @@ import joblib as jb
 from .util import Immunity_dynamics_fftconvolve, Antibody_ranges, Find_IC50_ranges
 
 """Load Infection Data"""
-Population_Data_v0 = pd.read_csv('Data/caseAscertainmentTable.csv')
+Population_Data_v0 = pd.read_csv('Data/population_data.csv')
 Population_Data = pd.read_csv("Data/caseAscertainmentTable_reportedCasesRatio.csv")
 
 """Load population data starting from July 1st, 2021"""
