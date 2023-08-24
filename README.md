@@ -7,7 +7,20 @@
 
 ### Prerequisites
 
-...
+#### R 
+version 4.2.3 (2023-03-15)
+
+Packages:
+
+stringr
+reshape2
+gplots
+RColorBrewer
+readr
+pheatmap
+
+
+
 
 
 ## SARS-CoV-2 genomic data 
@@ -19,3 +32,32 @@ The usage of covsonar after installing and building the database is the followin
 ```
 python3 sonar.py match --db database.db --date 2021-07-01:2023-04-16 --collection DESH_STICHPROBE RKI_STICHPROBE --tsv > covsonardata.tsv
 ```
+
+
+## Escape data
+Please download the escape data as provided from the Bloom lab:
+https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/main/processed_data/escape_data.csv
+
+
+## Mutation Profile
+To generate a mutation profile for set of variants from covsonar use the script scripts/mutationprofile/generate_mutation_profile.R
+
+```
+Rscript generate_mutation_profile.R <covsonar data file> <output directory> <prefix> <mutation threshold>
+```
+
+It takes input data as obtained by covsonar (each lineage one tsv file) , filters for mutations with a predefined threshold (e.g. 75%) of prevalence in all samples per lineage,
+greps for spike proteins and RBD sites. 
+
+
+## Epitope Landscape 
+To generate the epitope landscape use the script scripts/epitopelandscape/epitope_landscape.R
+
+```
+Rscript epitope_landscape.R <escape data file> <antibody mapping file> <fold resistance file> <output directory>
+```
+
+It uses escape values from escape_data.csv to compute epitope landscape for all antibodies in a class, as well as across all antibodies in a class. 
+For aggregating antibodies per class at each site, their mean values are being used. Classes E1, E2.1 and E2.2 are being merged into E12.
+
+
