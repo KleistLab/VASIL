@@ -6,6 +6,30 @@
 ### Operating systems
 
 ### Prerequisites
+#### Python
+
+version 3.11.3 
+
+#### Install Conda/Miniconda
+Conda will manage the dependencies of our pipeline. Instructions can be found here:
+[https://docs.conda.io/projects/conda/en/latest/user-guide/install](https://docs.conda.io/projects/conda/en/latest/user-guide/install)
+
+#### Create the working environment
+
+
+Create a new environment from the given environment config in [env.yml](https://github.com/KleistLab/VASIL/blob/main/env/env.yml)
+
+```
+conda env create -f env/env.yml
+```
+
+This step may take a few minutes.
+
+To activate the eviromnent
+
+```
+conda activate VASIL
+```
 
 #### R 
 version 4.2.3 (2023-03-15)
@@ -18,9 +42,6 @@ gplots
 RColorBrewer
 readr
 pheatmap
-
-
-
 
 
 ## SARS-CoV-2 genomic data 
