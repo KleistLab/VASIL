@@ -20,7 +20,7 @@ file1.close()
 
 ### Load DMS data 
 Escape_Fraction = pd.read_csv("Data/dms_per_ab_per_site.csv")
-Ab_classes = np.unique(Escape_Fraction["group"])
+Ab_classes = np.unique(Escape_Fraction["group"].values.astype(str))
 
 start = 0
 stop = len(SpikeGroups_list) - 1

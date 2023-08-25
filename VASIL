@@ -1,0 +1,28 @@
+# Main workflow of VASIL
+
+import os
+
+report:"report/workflow.rst"
+
+rule mutation_profiles:
+	input: 
+	
+		infile = config["covsonardata"]
+	
+	params:
+		
+		prefix = config["prefix"]
+		mutation_threshold = config["mutation_threshold"]
+		
+	output:
+		
+		result = "results/data/mutationprofile_RBD_NTD_mutations.csv"
+		
+	conda:
+		
+		"env/env.yml"
+	
+	shell:
+		
+		"Rscript {workflow.basedir}/scripts/mutationprofile/generate_mutation_profile.R {input.infile} \
+		          {output.result} {params.prefix} {params.mutation_threshold}"
