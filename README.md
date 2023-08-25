@@ -71,7 +71,7 @@ mamba install -c conda-forge -c bioconda snakemake
 ```
 
 Detailed Snakemake installation instruction using mamba can be found here:
-(https://snakemake.readthedocs.io/en/stable/getting_started/installation.html.)[https://snakemake.readthedocs.io/en/stable/getting_started/installation.html.]
+[https://snakemake.readthedocs.io/en/stable/getting_started/installation.html](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html)
 
 #### Install R
 version 4.2.3 (2023-03-15)
@@ -79,10 +79,15 @@ version 4.2.3 (2023-03-15)
 Packages:
 
 stringr
+
 reshape2
+
 gplots
+
 RColorBrewer
+
 readr
+
 pheatmap
 
 To run R routines, R including Rscript needs to be installed for the workflow. If it is not yet, you can install it together with the needed packages in your activated environment with conda or mamba
@@ -91,7 +96,13 @@ To run R routines, R including Rscript needs to be installed for the workflow. I
 conda install -c conda-forge -c bioconda r-base r-stringr r-reshape2 r-ggplot r-RColorBrewer r-readr r-pheatmap
 ```
 
-## Mutation Profile 
+#### Input
+As an input, the pipeline requires the paths to the consonar data, Escape data, and GInPipe case ascertainment data.
+These variables are stored in [`config.yaml`](https://github.com/KleistLab/VASIL/blob/main/config.yaml).
+For more information about the YAML markup format refer to documentation: [https://yaml.org](https://yaml.org)
+
+## Additional Information
+### Mutation Profile 
 To generate a mutation profile for set of variants from covsonar use the script scripts/mutationprofile/generate_mutation_profile.R
 
 ```
@@ -102,7 +113,7 @@ It takes input data as obtained by covsonar (each lineage one tsv file) , filter
 greps for spike proteins and RBD sites. 
 
 
-## Epitope Landscape 
+### Epitope Landscape 
 To generate the epitope landscape use the script scripts/epitopelandscape/epitope_landscape.R
 
 ```
