@@ -4,7 +4,7 @@ import os
 
 report:"report/workflow.rst"
 
-rule mutation_profiles:
+rule get_mutation_profiles:
 	input: 
 	
 		infile = config["covsonardata"]
@@ -24,5 +24,7 @@ rule mutation_profiles:
 	
 	shell:
 		
-		"Rscript {workflow.basedir}/scripts/mutationprofile/generate_mutation_profile.R {input.infile} \
-		          {output.result} {params.prefix} {params.mutation_threshold}"
+		"Rscript {workflow.basedir}/scripts/mutationprofile/generate_mutation_profile.R {input.infile} {output.result} {params.prefix} {params.mutation_threshold}"
+		        
+rule 		        
+		        

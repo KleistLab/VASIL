@@ -14,8 +14,40 @@ version 3.11.3
 Conda will manage the dependencies of our pipeline. Instructions can be found here:
 [https://docs.conda.io/projects/conda/en/latest/user-guide/install](https://docs.conda.io/projects/conda/en/latest/user-guide/install)
 
-#### Create the working environment
 
+#### R 
+version 4.2.3 (2023-03-15)
+
+Packages:
+
+stringr
+reshape2
+gplots
+RColorBrewer
+readr
+pheatmap
+
+#### Collect required data from other pipelines
+
+##### SARS-CoV-2 genomic data 
+To extract SARS-CoV-2 genomic data from GISAID or RKI, the tool covsonar can be used:
+https://github.com/rki-mf1/covsonar
+
+The usage of covsonar after installing and building the database is the following:
+
+```
+python3 sonar.py match --db database.db --date 2021-07-01:2023-04-16 --collection DESH_STICHPROBE RKI_STICHPROBE --tsv > covsonardata.tsv
+```
+
+##### Escape data
+Please download the escape data as provided from the Bloom lab:
+https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/main/processed_data/escape_data.csv
+
+##### GInPipe incidence data
+Please use GInPipe pipeline to generate case ascertainment data
+https://github.com/KleistLab/GInPipe/tree/main
+
+#### Create the working environment
 
 Create a new environment from the given environment config in [env.yml](https://github.com/KleistLab/VASIL/blob/main/env/env.yml)
 
@@ -31,36 +63,7 @@ To activate the eviromnent
 conda activate VASIL
 ```
 
-#### R 
-version 4.2.3 (2023-03-15)
-
-Packages:
-
-stringr
-reshape2
-gplots
-RColorBrewer
-readr
-pheatmap
-
-
-## SARS-CoV-2 genomic data 
-To extract SARS-CoV-2 genomic data from GISAID or RKI, the tool covsonar can be used:
-https://github.com/rki-mf1/covsonar
-
-The usage of covsonar after installing and building the database is the following:
-
-```
-python3 sonar.py match --db database.db --date 2021-07-01:2023-04-16 --collection DESH_STICHPROBE RKI_STICHPROBE --tsv > covsonardata.tsv
-```
-
-
-## Escape data
-Please download the escape data as provided from the Bloom lab:
-https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/main/processed_data/escape_data.csv
-
-
-## Mutation Profile
+## Mutation Profile 
 To generate a mutation profile for set of variants from covsonar use the script scripts/mutationprofile/generate_mutation_profile.R
 
 ```

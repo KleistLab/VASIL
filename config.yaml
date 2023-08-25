@@ -3,6 +3,6 @@ covsonardata:"path/to/covsonar_data"
 prefix:???
 mutation_threshold: 75
 # 2. Full path to GInPipe incidence data
-GInPipe_cases:"path/to/GInPipe_corrected_cases"
+GInPipe_cases:"path/to/GInPipe_case_assertainment_data"
 # 3. Full path to DMS escape fraction data
 dms_data:"path/to/DMS_Escape_fraction_data"
