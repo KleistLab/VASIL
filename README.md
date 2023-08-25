@@ -63,6 +63,35 @@ To activate the eviromnent
 conda activate VASIL
 ```
 
+#### Install Snakemake
+Snakemake is the workflow management system we use. Install it in your activated environment like this:
+
+```
+conda install -c conda-forge -c bioconda snakemake
+```
+
+NOTE: In case conda is not able to find the packages for snakemake (which was the case for the Linux version), you can install mamba in your environment
+
+```
+conda install -c conda-forge mamba
+```
+
+and download snakemake with
+
+```
+mamba install -c conda-forge -c bioconda snakemake
+```
+
+Detailed Snakemake installation instruction using mamba can be found here:
+(https://snakemake.readthedocs.io/en/stable/getting_started/installation.html.)[https://snakemake.readthedocs.io/en/stable/getting_started/installation.html.]
+
+#### Install R
+To run R routines, R including Rscript needs to be installed for the workflow. If it is not yet, you can install it together with the needed packages in your activated environment with conda or mamba
+
+```
+conda install -c conda-forge -c bioconda r-base r-stringr r-reshape2 r-ggplot r-RColorBrewer r-readr r-pheatmap
+```
+
 ## Mutation Profile 
 To generate a mutation profile for set of variants from covsonar use the script scripts/mutationprofile/generate_mutation_profile.R
 
