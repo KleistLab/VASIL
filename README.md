@@ -129,6 +129,12 @@ TBA
 ## Demo
 Demo datasets are provided in the repository folder [`demo`](https://github.com/KleistLab/VASIL/tree/main/demo)
 
+If your environment is not yet activated, type
+
+```
+conda activate VASIL
+```
+
 To run the pipeline go into the repository where the snakefile [`VASIL`](https://github.com/KleistLab/VASIL/blob/main/VASIL) is located and run
 
 ```
@@ -136,6 +142,10 @@ snakemake --snakefile VASIL --configfile demo/demo_config.yaml -j -d demo
 
 ```
 
+Deactivate the environment to exit the pipeline
+```
+conda deactivate
+```
 
 ## Additional Information
 ### Mutation Profile 
