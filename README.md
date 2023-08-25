@@ -92,14 +92,50 @@ pheatmap
 
 To run R routines, R including Rscript needs to be installed for the workflow. If it is not yet, you can install it together with the needed packages in your activated environment with conda or mamba
 
+If your environment is not yet activated, type
 ```
-conda install -c conda-forge -c bioconda r-base r-stringr r-reshape2 r-ggplot r-RColorBrewer r-readr r-pheatmap
+conda activate VASIL
 ```
 
-#### Input
+```
+conda install -c conda-forge -c bioconda r-base r-stringr r-reshape2 r-ggplot2 r-RColorBrewer r-readr r-pheatmap
+```
+Now the VASIL environment also contains all the dependencies in R
+
+## Input
 As an input, the pipeline requires the paths to the consonar data, Escape data, and GInPipe case ascertainment data.
 These variables are stored in [`config.yaml`](https://github.com/KleistLab/VASIL/blob/main/config.yaml).
 For more information about the YAML markup format refer to documentation: [https://yaml.org](https://yaml.org)
+
+## Execution
+
+If your environment is not yet activated, type
+
+```
+conda activate VASIL
+```
+Go to the pipeline directory (where the Snakefile named [`VASIL`](https://github.com/KleistLab/VASIL/blob/main/VASIL) is located) and enter the following command to execute the pipeline
+
+```
+snakemake --snakefile VASIL --configfile path/to/config.yaml -j -d path/to/workdir
+```
+With parameter `--configfile` you can give the configuration file, described above. The `-j` parameter determines the number of available CPU cores to use in the pipeline. Optionally you can provide the number of cores, e.g. `-j 4`. With parameter `-d` you can set the work directory, i.e. where the results of the pipeline are written to.
+
+## Output
+The pipeline creates a folder *results*, containing all (intermediate) output, with the following structure:
+
+TBA
+
+## Demo
+Demo datasets are provided in the repository folder [`demo`](https://github.com/KleistLab/VASIL/tree/main/demo)
+
+To run the pipeline go into the repository where the snakefile [`VASIL`](https://github.com/KleistLab/VASIL/blob/main/VASIL) is located and run
+
+```
+snakemake --snakefile VASIL --configfile demo/demo_config.yaml -j -d demo
+
+```
+
 
 ## Additional Information
 ### Mutation Profile 
