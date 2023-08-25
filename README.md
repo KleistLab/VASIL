@@ -15,21 +15,9 @@ Conda will manage the dependencies of our pipeline. Instructions can be found he
 [https://docs.conda.io/projects/conda/en/latest/user-guide/install](https://docs.conda.io/projects/conda/en/latest/user-guide/install)
 
 
-#### R 
-version 4.2.3 (2023-03-15)
-
-Packages:
-
-stringr
-reshape2
-gplots
-RColorBrewer
-readr
-pheatmap
-
 #### Collect required data from other pipelines
 
-##### SARS-CoV-2 genomic data 
+#### SARS-CoV-2 genomic data 
 To extract SARS-CoV-2 genomic data from GISAID or RKI, the tool covsonar can be used:
 https://github.com/rki-mf1/covsonar
 
@@ -39,11 +27,11 @@ The usage of covsonar after installing and building the database is the followin
 python3 sonar.py match --db database.db --date 2021-07-01:2023-04-16 --collection DESH_STICHPROBE RKI_STICHPROBE --tsv > covsonardata.tsv
 ```
 
-##### Escape data
+#### Escape data
 Please download the escape data as provided from the Bloom lab:
 https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/main/processed_data/escape_data.csv
 
-##### GInPipe incidence data
+#### GInPipe incidence data
 Please use GInPipe pipeline to generate case ascertainment data
 https://github.com/KleistLab/GInPipe/tree/main
 
@@ -86,6 +74,17 @@ Detailed Snakemake installation instruction using mamba can be found here:
 (https://snakemake.readthedocs.io/en/stable/getting_started/installation.html.)[https://snakemake.readthedocs.io/en/stable/getting_started/installation.html.]
 
 #### Install R
+version 4.2.3 (2023-03-15)
+
+Packages:
+
+stringr
+reshape2
+gplots
+RColorBrewer
+readr
+pheatmap
+
 To run R routines, R including Rscript needs to be installed for the workflow. If it is not yet, you can install it together with the needed packages in your activated environment with conda or mamba
 
 ```
