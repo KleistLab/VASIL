@@ -4,17 +4,22 @@ import pandas as pd
 import numpy as np
 import pickle
 import re
+import sys
 
 """ Loads lineage frequency data aready matched with timeline of infection """
-frequency_lineage_df = pd.read_csv('Data/Daily_Lineages_Freq.csv')
-frequency_lineage_df.drop(columns = "Unnamed: 0", inplace = True)
+frequency_lineage_df = pd.read_csv(sys.argv[1])
+try:
+	frequency_lineage_df.drop(columns = "Unnamed: 0", inplace = True)
+except:
+	pass
+
 fq_cols = frequency_lineage_df.columns.astype(str)
 unique_lineage = fq_cols[fq_cols != "date"]
 days_prop = frequency_lineage_df["date"] ### already matched with timeline of infection -- including excess
 frequency_lineage = frequency_lineage_df.to_numpy()[:, fq_cols != "date"].T.astype(float)
 
 """Load lineage data  """
-variant_mut_data = pd.read_csv('Data/mutationprofile_RBD_NTD_mutations.csv')
+variant_mut_data = pd.read_csv(sys.argv[2])
 variant_x_name_orig = np.array(variant_mut_data["lineage"].values).astype(str)
 mut_x_sites_orig = np.array(variant_mut_data["RBD_NTD_mutations"].values).astype(str)
 mut_x_sites_dic = {}
@@ -50,7 +55,7 @@ for x in range(len(Lineages_list)):
       
 """ Merge proportions by Spike Groups"""
 SpikeGroups_list = []
-Pseudogroups = pd.read_csv("Data/mutationprofile_RBD_NTD_pseudogroups.csv")
+Pseudogroups = pd.read_csv(sys.argv[3])
 variant_x_pseudo = np.array(Pseudogroups["lineage"].values).astype(str)
 pseudo_members = np.array(Pseudogroups["group"].values).astype(str)
 
@@ -104,10 +109,10 @@ if "Wuhan-Hu-1" not in SpikeGroups_list:
     SpikeGroups_list.append("Wuhan-Hu-1")
 
 ### Save SpikeGroups_list and Mutation_Profiles
-spk_file = open("Data/SpikeGroups.pck", "wb")
+spk_file = open(sys.argv[4], "wb")
 pickle.dump({"names":SpikeGroups_list}, spk_file)
 spk_file.close()
-mut_file = open("Data/Mutation_Profiles.pck", "wb")
+mut_file = open(sys.argv[5], "wb")
 pickle.dump({"positions": mut_x_sites_dic}, mut_file)
 mut_file.close()
 

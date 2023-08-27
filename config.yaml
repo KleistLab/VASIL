@@ -1,6 +1,6 @@
 # 1. Full path to covsonar data
 covsonardata:"path/to/covsonar_data"
-prefix:"mutation profile"
+prefix:"mutationprofile"
 mutation_threshold: 75
 # 2. Full path to GInPipe incidence data
 GInPipe_cases:"path/to/GInPipe_case_assertainment_data"

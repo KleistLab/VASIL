@@ -6,36 +6,24 @@ import numpy as np
 from datetime import datetime
 import joblib as jb
 from functools import partial
+import sys
 
 """Load Infection Data: used to make sure that infection timeline matches with lineage proportion timeline"""
-Population_Data = pd.read_csv("Data/caseAscertainmentTable_reportedCasesRatio.csv")
+
+Population_Data = pd.read_csv(sys.argv[1])
 
 ### timeline of infection dates
 days_incidence = list(Population_Data['date']) 
 
-#### Dataset1
-dates_prop_data_0 = pd.read_csv('Data/Stichprobe_RKI-JUL21toFEB22-2023-06-14.tsv', sep = "\t")
-days_prop_0 = dates_prop_data_0["date"].values.astype(str)
-lineages_0 = dates_prop_data_0["lineage"].values.astype(str)
-unique_lineage_0 = np.unique(lineages_0)
-
-#### Dataset2
-dates_prop_data_1 = pd.read_csv('Data/Stichprobe_RKI-MARtoDEC-2022-2023-01-24_KW.tsv', sep = "\t")
-days_prop_1 = dates_prop_data_1["Date"].values.astype(str)
-lineages_1 = dates_prop_data_1["lineage"].values.astype(str)
-unique_lineage_1 = np.unique(lineages_1)
-
-#### Dataset3
-dates_prop_data_2 = pd.read_csv('Data/Stichprobe_RKI-JAN23toMAY23-2023-06-16.tsv', sep = "\t")
-days_prop_2 = dates_prop_data_2["date"].values.astype(str)
-lineages_2 = dates_prop_data_2["lineage"].values.astype(str)
-unique_lineage_2 = np.unique(lineages_2)
-
-##### Combining the datasets
-days_prop = np.concatenate((days_prop_0, days_prop_1, days_prop_2))
-lineages_all = np.concatenate((lineages_0, lineages_1, lineages_2))
-unique_lineage = np.unique(np.concatenate((unique_lineage_0, unique_lineage_1, unique_lineage_2)))
-
+#### covsonar data 
+try:
+	dates_prop_data = pd.read_csv(sys.argv[2], sep = "\t")
+except:
+	dates_prop_data = pd.read_csv(sys.argv[2])
+	
+days_prop = dates_prop_data_2["date"].values.astype(str)
+lineages = dates_prop_data_2["lineage"].values.astype(str)
+unique_lineage = np.unique(lineages)
 
 """Start computing Variant-propotions from the first day July 2021"""
 july2021 = "2021-07-01"
@@ -93,4 +81,4 @@ for x in range(len(unique_lineage)):
     freq_dic[unique_lineage[x]] = frequency_lineage[x, :]
 
 freq_df = pd.DataFrame(freq_dic, index = np.arange(0, frequency_lineage.shape[1]))
-freq_df.to_csv("Data/Daily_Lineages_Freq.csv") 
+freq_df.to_csv(sys.argv[3]) ### output file

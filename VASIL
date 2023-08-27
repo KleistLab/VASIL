@@ -4,10 +4,10 @@ import os
 
 report:"report/workflow.rst"
 
-rule get_mutation_profiles:
+rule get_mutation_and_spikegroups:
 	input: 
 	
-		infile = config["covsonardata"]
+		covsonar = config["covsonardata"]
 	
 	params:
 		
@@ -16,15 +16,45 @@ rule get_mutation_profiles:
 		
 	output:
 		
-		result = "results/data/mutationprofile_RBD_NTD_mutations.csv"
-		
-	conda:
-		
-		"env/env.yml"
+		resultdir = "results/data/"
 	
 	shell:
 		
-		"Rscript {workflow.basedir}/scripts/mutationprofile/generate_mutation_profile.R {input.infile} {output.result} {params.prefix} {params.mutation_threshold}"
+		"Rscript {workflow.basedir}/scripts/mutationprofile/generate_mutation_profile.R {input.covsonar} {output.resultdir} {params.prefix} {params.mutation_threshold}"
 		        
-rule 		        
-		        
+rule get_lineages_frequencies:
+
+	input:
+
+		GInPipe_cases = config["GInPipe_cases"]		        
+		covsonar = config["covsonardata"]
+
+	output:
+		
+		result = "results/data/Daily_Lineages_Freq.csv"
+		
+	shell:
+		
+		"python {workflow.basedir}/scripts/mutationprofile/Lineages_freqs.py {input.GInPipe_cases} {input.covsonar} {output.result}"
+
+rule get_spikegroups_frequencies:
+	
+	input:
+		lins_freqs = "results/data/Daily_Lineages_Freq.csv"
+		mutation_profile = "results/data/mutationprofile_RBD_NTD_mutations.csv"
+		spikegroups = "results/data/mutationprofile_RBD_NTD_pseudogroups.csv"
+	
+	output:
+		
+		result_spk = "results/data/SpikeGroups.pck"
+		result_mut = "results/data/Mutation_Profiles.pck"
+
+	shell:
+		
+		"python {workflow.basedir}/scripts/mutationprofile/SpikeGroups_freqs.py {input.lins_freqs} {input.mutation_profile} {input.spikegroups} {output.result_spk} {output.result_mut}"
+
+Rule get_FR_symmetric:
+	
+	input
+
+		
