@@ -75,13 +75,15 @@ rule get_expected_immunized:
 		cross_spk = "results/data/Cross_react_dic_spikegroups.pck"
 		spikesfile = "results/data/SpikeGroups.pck"
 		spikesfreqs = "results/data/Daily_SpikeGroups_Freq.csv"
+		Escape_data = config["dms_data"]
+		VE_delta = config["VE_delta"]
 
 	output:
 		
 		resultdir = "results/data/"
 	
 	shell:
-		"python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.total_pop} {input.GInPipe_cases} {input.cross_delta} {input.cross_spk} {input.spikesfile} {input.spikesfreqs} {output.resultdir}"
+		"python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.total_pop} {input.GInPipe_cases} {input.cross_delta} {input.cross_spk} {input.spikesfile} {input.spikesfreqs} {input.Escape_data} {input.VE_delta} {output.resultdir}"
 	
 
 		

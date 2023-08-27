@@ -7,3 +7,5 @@ GInPipe_cases:"path/to/GInPipe_case_assertainment_data"
 total_population:84334787
 # 3. Full path to DMS escape fraction data
 dms_data:"path/to/DMS_Escape_fraction_data"
+# 4. Full path to Clinical VE data for delta variant
+VE_delta:""path/to/Clinical_VE_delta"
