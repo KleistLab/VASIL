@@ -24,7 +24,7 @@ rule get_lineages_frequencies:
 
 	input:
 
-		GInPipe_cases = config["GInPipe_cases"]		        
+		cases = config["GInPipe_cases"]		        
 		covsonar = config["covsonardata"]
 
 	output:
@@ -33,7 +33,7 @@ rule get_lineages_frequencies:
 		
 	shell:
 		
-		"python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.GInPipe_cases} {input.covsonar} {output.result}"
+		"python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.cases} {input.covsonar} {output.result}"
 
 rule get_spikegroups_frequencies:
 	
@@ -70,7 +70,7 @@ rule get_expected_immunized:
 	
 	input:
 		total_pop = config["total_population"]
-		GInPipe_cases = config["GInPipe_cases"]	
+		cases = config["GInPipe_cases"]	
 		cross_delta = "results/data/Cross_with_delta_validation.pck"	        
 		cross_spk = "results/data/Cross_react_dic_spikegroups.pck"
 		spikesfile = "results/data/SpikeGroups.pck"
@@ -83,7 +83,7 @@ rule get_expected_immunized:
 		resultdir = "results/data/"
 	
 	shell:
-		"python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.total_pop} {input.GInPipe_cases} {input.cross_delta} {input.cross_spk} {input.spikesfile} {input.spikesfreqs} {input.Escape_data} {input.VE_delta} {output.resultdir}"
+		"python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.total_pop} {input.cases} {input.cross_delta} {input.cross_spk} {input.spikesfile} {input.spikesfreqs} {input.Escape_data} {input.VE_delta} {output.resultdir}"
 	
 
 		
