@@ -1,7 +1,5 @@
 # Main workflow of VASIL
 
-import os
-
 report:"report/workflow.rst"
 
 rule get_mutation_and_spikegroups:
@@ -83,7 +81,7 @@ rule get_expected_immunized:
 		resultdir = "results/data/"
 	
 	shell:
-		"python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.total_pop} {input.GInPipe_cases} {input.cross_delta} {input.cross_spk} {input.spikesfile} {input.spikesfreqs} {outpu.resultdir}"
+		"python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.total_pop} {input.GInPipe_cases} {input.cross_delta} {input.cross_spk} {input.spikesfile} {input.spikesfreqs} {output.resultdir}"
 	
 
 		

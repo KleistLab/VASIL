@@ -102,17 +102,17 @@ for x in range(len(SpikeGroups_list)):
         freq_dic["Spike. "+SpikeGroups_list[x]] = variant_proportion[x, :]*100 
 
 freq_df = pd.DataFrame(freq_dic, index = np.arange(0, len(days_prop)))
-freq_df.to_csv("Data/Daily_SpikeGroups_Freq.csv")
+freq_df.to_csv(sys.argv[4])
 
 if "Wuhan-Hu-1" not in SpikeGroups_list:
     variant_proportion = np.row_stack((variant_proportion, np.zeros(variant_proportion.shape[1])))
     SpikeGroups_list.append("Wuhan-Hu-1")
 
 ### Save SpikeGroups_list and Mutation_Profiles
-spk_file = open(sys.argv[4], "wb")
+spk_file = open(sys.argv[5], "wb")
 pickle.dump({"names":SpikeGroups_list}, spk_file)
 spk_file.close()
-mut_file = open(sys.argv[5], "wb")
+mut_file = open(sys.argv[6], "wb")
 pickle.dump({"positions": mut_x_sites_dic}, mut_file)
 mut_file.close()
 
