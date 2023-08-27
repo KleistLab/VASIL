@@ -35,7 +35,7 @@ rule get_lineages_frequencies:
 		
 	shell:
 		
-		"python {workflow.basedir}/scripts/mutationprofile/Lineages_freqs.py {input.GInPipe_cases} {input.covsonar} {output.result}"
+		"python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.GInPipe_cases} {input.covsonar} {output.result}"
 
 rule get_spikegroups_frequencies:
 	
@@ -45,16 +45,47 @@ rule get_spikegroups_frequencies:
 		spikegroups = "results/data/mutationprofile_RBD_NTD_pseudogroups.csv"
 	
 	output:
-		
+		spikesfreqs = "results/data/Daily_SpikeGroups_Freq.csv"
 		result_spk = "results/data/SpikeGroups.pck"
 		result_mut = "results/data/Mutation_Profiles.pck"
 
 	shell:
 		
-		"python {workflow.basedir}/scripts/mutationprofile/SpikeGroups_freqs.py {input.lins_freqs} {input.mutation_profile} {input.spikegroups} {output.result_spk} {output.result_mut}"
+		"python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.mutation_profile} {input.spikegroups} {output.spikesfreqs} {output.result_spk} {output.result_mut}"
 
-Rule get_FR_symmetric:
+rule get_cross_neutralization:
 	
-	input
+	input:
+		spikesfile = "results/data/SpikeGroups.pck"
+		mutfile = "results/data/Mutation_Profiles.pck"
+		Escape_data = config["dms_data"]
+	
+	output:
+		cross_spk = "results/data/Cross_react_dic_spikegroups.pck"
+		cross_delta = "results/data/Cross_with_delta_validation.pck"
+	
+	shell:
+		
+		"python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikesfile} {input.mutfile} {input.Escape_data} {output.cross_spk} {output.cross_delta}"
+
+rule get_expected_immunized:
+	
+	input:
+		total_pop = config["total_population"]
+		GInPipe_cases = config["GInPipe_cases"]	
+		cross_delta = "results/data/Cross_with_delta_validation.pck"	        
+		cross_spk = "results/data/Cross_react_dic_spikegroups.pck"
+		spikesfile = "results/data/SpikeGroups.pck"
+		spikesfreqs = "results/data/Daily_SpikeGroups_Freq.csv"
+
+	output:
+		
+		resultdir = "results/data/"
+	
+	shell:
+		"python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.total_pop} {input.GInPipe_cases} {input.cross_delta} {input.cross_spk} {input.spikesfile} {input.spikesfreqs} {outpu.resultdir}"
+	
 
 		
+		
+				

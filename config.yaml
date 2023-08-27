@@ -4,5 +4,6 @@ prefix:"mutationprofile"
 mutation_threshold: 75
 # 2. Full path to GInPipe incidence data
 GInPipe_cases:"path/to/GInPipe_case_assertainment_data"
+total_population:84334787
 # 3. Full path to DMS escape fraction data
 dms_data:"path/to/DMS_Escape_fraction_data"
