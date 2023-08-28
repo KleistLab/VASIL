@@ -38,8 +38,9 @@ Ab_classes = list(Cross_react_dic.keys())
 """Compute Antibody concentration over time for a range of t_half and t_max"""
 thalf_vec = np.linspace(25, 69, 15) 
 tmax_vec = np.linspace(14, 28, 5)
-c_t_vec, c_dframe_dic, dataname = Antibody_ranges(thalf_vec, tmax_vec, t, Ab_classes)
-IC50xx_dic, mean_IC50xx_dic = Find_IC50_ranges(thalf_vec, tmax_vec, t, Ab_classes,  Cross_with_delta_validation)
+t_conc = np.arange(1, 700, 1)
+c_t_vec, c_dframe_dic, dataname = Antibody_ranges(thalf_vec, tmax_vec, t_conc, Ab_classes)
+IC50xx_dic, mean_IC50xx_dic = Find_IC50_ranges(thalf_vec, tmax_vec, t_conc, Ab_classes,  Cross_with_delta_validation)
 
 
 file1 = open(sys.argv[5], "rb") 
