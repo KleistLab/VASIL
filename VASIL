@@ -1,94 +1,13 @@
 # Main workflow of VASIL
+report: "report/workflow.rst"
 
-report:"report/workflow.rst"
 
-rule get_mutation_and_spikegroups:
-	input: 
-	
-		covsonar = config["covsonardata"]
-	
-	params:
-		
-		prefix = config["prefix"]
-		mutation_threshold = config["mutation_threshold"]
-		
-	output:
-		
-		resultdir = "results/data/"
-	
-	shell:
-		
-		"Rscript {workflow.basedir}/scripts/mutationprofile/generate_mutation_profile.R {input.covsonar} {output.resultdir} {params.prefix} {params.mutation_threshold}"
-		        
 rule get_lineages_frequencies:
-
-	input:
-
-		cases = config["GInPipe_cases"]		        
-		covsonar = config["covsonardata"]
-		date_start = config["date_start"]
-
-	output:
-		
-		result = "results/data/Daily_Lineages_Freq.csv"
-		
-	shell:
-		
-		"python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.cases} {input.covsonar} {input.date_start} {output.result}"
-
-rule get_spikegroups_frequencies:
-	
-	input:
-		lins_freqs = "results/data/Daily_Lineages_Freq.csv"
-		mutation_profile = "results/data/mutationprofile_RBD_NTD_mutations.csv"
-		spikegroups = "results/data/mutationprofile_RBD_NTD_pseudogroups.csv"
-	
-	output:
-		spikesfreqs = "results/data/Daily_SpikeGroups_Freq.csv"
-		result_spk = "results/data/SpikeGroups.pck"
-		result_mut = "results/data/Mutation_Profiles.pck"
-
-	shell:
-		
-		"python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.mutation_profile} {input.spikegroups} {output.spikesfreqs} {output.result_spk} {output.result_mut}"
-
-rule get_cross_neutralization:
-	
-	input:
-		spikesfile = "results/data/SpikeGroups.pck"
-		mutfile = "results/data/Mutation_Profiles.pck"
-		Escape_data = config["dms_data"]
-	
-	output:
-		cross_spk = "results/data/Cross_react_dic_spikegroups.pck"
-		cross_delta = "results/data/Cross_with_delta_validation.pck"
-	
-	shell:
-		
-		"python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikesfile} {input.mutfile} {input.Escape_data} {output.cross_spk} {output.cross_delta}"
-
-rule get_expected_immunized:
-	
-	input:
-		total_pop = config["total_population"]
-		cases = config["GInPipe_cases"]	
-		cross_delta = "results/data/Cross_with_delta_validation.pck"	        
-		cross_spk = "results/data/Cross_react_dic_spikegroups.pck"
-		spikesfile = "results/data/SpikeGroups.pck"
-		spikesfreqs = "results/data/Daily_SpikeGroups_Freq.csv"
-		Escape_data = config["dms_data"]
-		VE_delta = config["VE_delta"]
-		date_start = config["date_start"]
-		date_end = config["date_end"]
-		
-	output:
-		
-		resultdir = "results/data/"
-	
-	shell:
-		"python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.total_pop} {input.cases} {input.cross_delta} {input.cross_spk} {input.spikesfile} {input.spikesfreqs} {input.Escape_data} {input.VE_delta} {input.date_start} {input.date_end} {output.resultdir}"
-	
-
-		
-		
-				
+    input:
+        cases=config["cases"],
+        covsonar=config["covsonardata"],
+        date_start=config["date_start"],
+    output:
+        result="results/data/Daily_Lineages_Freq.csv",
+    shell:
+        "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.cases} {input.covsonar} {input.date_start} {output.result}"
