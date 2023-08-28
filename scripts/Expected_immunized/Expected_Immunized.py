@@ -9,16 +9,21 @@ import sys
 
 """Load Infection Data"""
 total_pop = sys.argv[1]
+
+"""Load population data"""
 Population_Data = pd.read_csv(sys.argv[2])
+date_start = str(sys.argv[9])
+Population_Data = Population_Data.drop(index = Population_Data.index[:list(Population_Data['date']).index(date_start])
 
-"""Load population data starting from July 1st, 2021"""
-Population_Data = Population_Data.drop(index = Population_Data.index[:list(Population_Data['date']).index("2021-07-01")])
+last_day = sys.arg[10]
+where_last_day = list(Population_Data['date']).index(last_day)
 
-t = np.arange(1, len(Population_Data['date'])+1, 1) # array of timepoints at which to compute the antibody concentration
-infection_data_corrected = Population_Data['minNTrue'].values
-t_dates = Population_Data['date'].values
-days_incidence = list(Population_Data['date']) 
+t = np.arange(1, len(Population_Data['date'][:where_last_day])+1, 1) # array of timepoints at which to compute the antibody concentration
+infection_data_corrected = Population_Data['minNTrue'].values[:where_last_day]
+t_dates = Population_Data['date'].values[:where_last_day]
+days_incidence = list(Population_Data['date'][:where_last_day]) 
 Population_Data["pop"] = total_pop * np.ones(len(days_incidence))
+
 
 
 """Load relevant cross_neutralization files"""
@@ -63,6 +68,8 @@ NormProp = np.sum(spikegroups_freq, axis = 0)
 prop_rounded = np.round(spikegroups_freq,decimals = 10)
 spikegroups_proportion = prop_rounded/NormProp
 
+### end of simulation
+
 def ei_util(i):
     variant_to_sim = [SpikeGroups_list[i]]
     EI = {}
@@ -86,7 +93,7 @@ def ei_util(i):
         
     """ Save Dynamics Without Vaccination """
     EI_df = pd.DataFrame(EI)
-    EI_df.to_csv(sys.argv[9]+"Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
+    EI_df.to_csv(sys.argv[11]+"Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
 
 try:
     jb.Parallel(n_jobs = -1)(jb.delayed(ei_util)(i) for i in range(len(SpikeGroups_list)))    

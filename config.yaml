@@ -9,3 +9,6 @@ total_population:84334787
 dms_data:"path/to/DMS_Escape_fraction_data"
 # 4. Full path to Clinical VE data for delta variant
 VE_delta:""path/to/Clinical_VE_delta"
+# 5. Simulation Time frame --- must be included the case timeframe and covsonar timeframe
+date_start:"date beginning of simulations"
+date_end:"date end of simulations"

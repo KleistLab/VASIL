@@ -26,15 +26,15 @@ lineages = dates_prop_data_2["lineage"].values.astype(str)
 unique_lineage = np.unique(lineages)
 
 """Start computing Variant-propotions from the first day July 2021"""
-july2021 = "2021-07-01"
-where_first_day = list(days_incidence).index(july2021) 
+date_start = sys.argv[3]
+where_first_day = list(days_incidence).index(date_start) 
 
 # initializing variant proportion for all lineages
 unique_days_prop_all = list(np.unique(days_prop))
 ### make sure that dates are sorted
 unique_days_prop_all.sort(key = lambda date: datetime.strptime(date, "%Y-%m-%d")) 
 
-unique_days_prop = np.array(unique_days_prop_all[unique_days_prop_all.index(july2021):])
+unique_days_prop = np.array(unique_days_prop_all[unique_days_prop_all.index(date_start):])
 if len(unique_days_prop)>len(days_incidence[where_first_day:]):
     extra = len(unique_days_prop) - len(days_incidence[where_first_day:])
 else:
@@ -59,6 +59,7 @@ def sub_func2(k, x, days_prop, days_incidence, lineages_all, unique_lineage):
 for x in range(len(unique_lineage)):
     pfunc = partial(sub_func, x = x, days_prop = days_prop, days_incidence = days_incidence, lineages_all = lineages_all, unique_lineage = unique_lineage)
     res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(days_incidence[where_first_day:])))) 
+    
     for s in range(len(days_incidence[where_first_day:])):
         frequency_lineage[x, s] = res[s]
         
@@ -81,4 +82,4 @@ for x in range(len(unique_lineage)):
     freq_dic[unique_lineage[x]] = frequency_lineage[x, :]
 
 freq_df = pd.DataFrame(freq_dic, index = np.arange(0, frequency_lineage.shape[1]))
-freq_df.to_csv(sys.argv[3]) ### output file
+freq_df.to_csv(sys.argv[4]) ### output file
