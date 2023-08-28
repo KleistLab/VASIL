@@ -1,13 +1,53 @@
 # Main workflow of VASIL
+
+
 report: "report/workflow.rst"
+
+
+rule all:
+    input:
+        "results/Daily_SpikeGroups_Freq.csv",
+        "results/SpikeGroups.pck",
+        "results/Mutation_Profiles.pck",
+
+
+rule get_mutation_and_spikegroups:
+    input:
+        covsonar=config["covsonardata"],
+    params:
+        prefix=config["prefix"],
+        mutation_threshold=config["mutation_threshold"],
+    output:
+        dir=directory("results/mutation_data"),
+        pk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
+        spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
+    shell:
+        "Rscript {workflow.basedir}/scripts/mutationprofile/mutation_profile.R {input.covsonar} {output.dir} {params.prefix} {params.mutation_threshold}"
 
 
 rule get_lineages_frequencies:
     input:
         cases=config["cases"],
         covsonar=config["covsonardata"],
+    params:
         date_start=config["date_start"],
     output:
-        result="results/data/Daily_Lineages_Freq.csv",
+        result="results/Daily_Lineages_Freq.csv",
     shell:
-        "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.cases} {input.covsonar} {input.date_start} {output.result}"
+        "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.cases} {input.covsonar} {params.date_start} {output.result}"
+
+
+report: "report/workflow.rst"
+
+
+rule get_spikegroups_frequencies:
+    input:
+        lins_freqs="results/Daily_Lineages_Freq.csv",
+        spk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
+        spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
+    output:
+        spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
+        spikes_dic="results/SpikeGroups.pck",
+        mutations_dic="results/Mutation_Profiles.pck",
+    shell:
+        "python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.spk_profiles} {input.spike_groups} {output.spikes_freqs} {output.spikes_dic} {output.mutations_dic}"

@@ -17,13 +17,13 @@ days_incidence = list(Population_Data['date'])
 
 #### covsonar data 
 try:
-	dates_prop_data = pd.read_csv(sys.argv[2], sep = "\t")
+	covsonar_data = pd.read_csv(sys.argv[2], sep = "\t")
 except:
-	dates_prop_data = pd.read_csv(sys.argv[2])
+	covsonar_data = pd.read_csv(sys.argv[2])
 	
-days_prop = dates_prop_data_2["date"].values.astype(str)
-lineages = dates_prop_data_2["lineage"].values.astype(str)
-unique_lineage = np.unique(lineages)
+days_prop = covsonar_data["date"].values.astype(str)
+lineages_all = covsonar_data["lineage"].values.astype(str)
+unique_lineage = np.unique(lineages_all)
 
 """Start computing Variant-propotions from the first day July 2021"""
 date_start = sys.argv[3]

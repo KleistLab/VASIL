@@ -1,0 +1,14 @@
+# 1. Full path to covsonar data
+covsonardata: "Stichprobe_RKI-JAN23toAPR23-MOCK.tsv"
+prefix: "mutationprofile"
+mutation_threshold: 0.75
+# 2. Full path to GInPipe incidence data
+cases: "caseAscertainmentTable_reportedCasesRatio.csv"
+total_population: 84334787
+# 3. Full path to DMS escape fraction data
+dms_data: "dms_per_ab_per_site.csv"
+# 4. Full path to Clinical VE data for delta variant
+VE_delta: "Processed_Clinical_Delta_VE.csv"
+# 5. Simulation Time frame --- must be included the case timeframe and covsonar timeframe
+date_start: "2023-01-01"
+date_end: "2023-04-16"
