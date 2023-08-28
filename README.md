@@ -98,7 +98,7 @@ conda activate VASIL
 ```
 
 ```
-conda install -c conda-forge -c bioconda r-base r-stringr r-reshape2 r-ggplot2 r-RColorBrewer r-readr r-pheatmap
+conda install -c conda-forge -c bioconda r-base r-stringr r-reshape2 r-gplots r-RColorBrewer r-readr r-pheatmap
 ```
 Now the VASIL environment also contains all the dependencies in R
 
