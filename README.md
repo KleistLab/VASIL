@@ -79,15 +79,10 @@ version 4.2.3 (2023-03-15)
 Packages:
 
 stringr
-
 reshape2
-
 gplots
-
 RColorBrewer
-
 readr
-
 pheatmap
 
 To run R routines, R including Rscript needs to be installed for the workflow. If it is not yet, you can install it together with the needed packages in your activated environment with conda or mamba
