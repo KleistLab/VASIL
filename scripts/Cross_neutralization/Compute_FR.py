@@ -9,8 +9,6 @@ from functools import partial
 import pickle
 import sys
 
-from .util import cross_reactivity
-
 ### Load SpikeGroups list
 file1 = open(sys.argv[1], "rb") 
 SpikeGroups_list = pickle.load(file1)["names"]
