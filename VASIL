@@ -37,9 +37,6 @@ rule get_lineages_frequencies:
         "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.cases} {input.covsonar} {params.date_start} {output.result}"
 
 
-report: "report/workflow.rst"
-
-
 rule get_spikegroups_frequencies:
     input:
         lins_freqs="results/Daily_Lineages_Freq.csv",

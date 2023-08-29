@@ -13,7 +13,7 @@ total_pop = sys.argv[1]
 """Load population data"""
 Population_Data = pd.read_csv(sys.argv[2])
 date_start = str(sys.argv[9])
-Population_Data = Population_Data.drop(index = Population_Data.index[:list(Population_Data['date']).index(date_start])
+Population_Data = Population_Data.drop(index = Population_Data.index[:list(Population_Data['date']).index(date_start)])
 
 last_day = sys.arg[10]
 where_last_day = list(Population_Data['date']).index(last_day)
@@ -75,30 +75,43 @@ def ei_util(i):
     EI = {}
     EI["Days"] = days_incidence
     
-    for key in c_dframe_dic.keys():
-        PK_dframe = c_dframe_dic[key]
-        key_num = np.array(re.findall(r"\d+", key)).astype(int)
-
-        Res_sub_0 = Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data = infection_data_corrected, 
-                                                     present_variant_list = SpikeGroups_list, ### Aligned with rows-indexes of variant_proportion
-                                                     tested_variant_list =  variant_to_sim, 
-                                                     variant_name = variants_in_cross, ### Aligned with Cross_react_dic["variant_list"]
-                                                     variant_proportion =  spikegroups_proportion, ### rows are aligned with present_variant_list
-                                                     Ab_classes = Ab_classes, 
-                                                     IC50xx= mean_IC50xx_dic,
-                                                     Cross_react_dic = Cross_react_dic, 
-                                                     )
+    try:
+        for key in c_dframe_dic.keys():
+            PK_dframe = c_dframe_dic[key]
+            key_num = np.array(re.findall(r"\d+", key)).astype(int)
+    
+            Res_sub_0 = Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data = infection_data_corrected, 
+                                                         present_variant_list = SpikeGroups_list, ### Aligned with rows-indexes of variant_proportion
+                                                         tested_variant_list =  variant_to_sim, 
+                                                         variant_name = variants_in_cross, ### Aligned with Cross_react_dic["variant_list"]
+                                                         variant_proportion =  spikegroups_proportion, ### rows are aligned with present_variant_list
+                                                         Ab_classes = Ab_classes, 
+                                                         IC50xx= mean_IC50xx_dic,
+                                                         Cross_react_dic = Cross_react_dic, 
+                                                         )
+            
+            EI["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = Res_sub_0
+            
+        """ Save Dynamics Without Vaccination """
+        EI_df = pd.DataFrame(EI)
+        EI_df.to_csv(sys.argv[11]+"Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
         
-        EI["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = Res_sub_0
+        Susc_df = pd.DataFrame(Population_Data["pop"].values - EI)
+        Susc_df.to_csv(sys.argv[11]+"Susceptible_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
+        return "Done"
+    
+    except:
         
-    """ Save Dynamics Without Vaccination """
-    EI_df = pd.DataFrame(EI)
-    EI_df.to_csv(sys.argv[11]+"Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
-
+        return "Error"
+        
 try:
-    jb.Parallel(n_jobs = -1)(jb.delayed(ei_util)(i) for i in range(len(SpikeGroups_list)))    
+    simulated_var = jb.Parallel(n_jobs = -1)(jb.delayed(ei_util)(i) for i in range(len(SpikeGroups_list)))    
 except:
-    jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(ei_util)(i) for i in range(len(SpikeGroups_list)))    
+    simulated_var = jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(ei_util)(i) for i in range(len(SpikeGroups_list)))    
+	
+# Save file as a placeholder for exectuted codes, require for snakemake
+sim_df = pd.DataFrame({"SpikeGroups":SpikeGroups_list, "Simulation status":simulated_var})
+ 
 
 def Antibody_ranges(thalf_vec, tmax_vec, t, Ab_classes):
     N = len(Ab_classes) # number of antibody classes
@@ -253,8 +266,8 @@ def Fitting_IC50(thalf, tmax, t, Ab_classes, Cross_dic, quiet = False):
         print("t_max = %.3f, t_half = %.3f"%(t_max[0], t_half[0]),"\n k_a:", ka, "\n k_e:", ke, "\n c_max", c_max_dic)
     
     ### select FR data for delta computed in the cross_reac_dic_show
-    where_wt = list(variant_x_names_show).index("Wuhan-Hu-1")
-    where_delta = list(variant_x_names_show).index("Delta: B.1.617.2")
+    where_wt = list(variants_x_names_show).index("Wuhan-Hu-1")
+    where_delta = list(variants_x_names_show).index("Delta: B.1.617.2")
     FR_delta = [Cross_dic[Ab_classes[i]][where_wt, where_delta] for i in range(len(Ab_classes))]
     ### Estimate one IC50 for all ABs
     guess = 0.3
