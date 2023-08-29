@@ -7,7 +7,8 @@ cases: "caseAscertainmentTable_reportedCasesRatio.csv"
 # 2b. Fixed total population size for the region of interest
 total_population: 84334787
 # 3. Full path to DMS escape fraction data
-escape_data: "dms_per_ab_per_site.csv"
+escape_data: "escape_data_bis.csv"
+antibody_mapping: "antibody_classes.csv"
 # 4. Full path to Clinical VE data for delta variant
 VE_delta: "Processed_Clinical_Delta_VE.csv"
 # 5. Simulation Time frame --- must be included the case timeframe and covsonar timeframe

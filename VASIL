@@ -11,6 +11,7 @@ rule all:
         "results/Mutation_Profiles.pck",
         "results/Cross_react_dic_spikegroups.pck",
         "results/Cross_with_delta_validation.pck",
+        "results/epitope_data/dms_per_ab_per_site.csv",
         "results/Immunological_Landscape/simulation_status.csv",
 
 
@@ -53,11 +54,22 @@ rule get_spikegroups_frequencies:
         "python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.spk_profiles} {input.spike_groups} {output.spikes_freqs} {output.spikes_dic} {output.mutations_dic}"
 
 
+rule get_epitope_landscape:
+    input:
+        Escape_data=config["escape_data"],
+        AB_mapping=config["antibody_mapping"],
+    output:
+        dir=directory("results/epitope_data"),
+        dms_data_regrouped="results/epitope_data/dms_per_ab_per_site.csv",
+    shell:
+        "Rscript {workflow.basedir}/scripts/epitopelandscape/epitope_landscape.R {input.Escape_data} {input.AB_mapping} {output.dir}"
+
+
 rule get_cross_neutralization:
     input:
         spikes_dic="results/SpikeGroups.pck",
         mutations_dic="results/Mutation_Profiles.pck",
-        Escape_data=config["escape_data"],
+        dms_data_regrouped="results/epitope_data/dms_per_ab_per_site.csv",
     params:
         lineage_focus=config["lineage_focus"],
         mutation_focus=config["mutation_focus"],
@@ -65,7 +77,7 @@ rule get_cross_neutralization:
         cross_delta="results/Cross_with_delta_validation.pck",
         cross_spk="results/Cross_react_dic_spikegroups.pck",
     shell:
-        "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.Escape_data} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {output.cross_spk}"
+        "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {output.cross_spk}"
 
 
 rule get_Immunological_Landscape:
@@ -75,7 +87,7 @@ rule get_Immunological_Landscape:
         cross_spk="results/Cross_react_dic_spikegroups.pck",
         spikes_dic="results/SpikeGroups.pck",
         spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
-        Escape_data=config["escape_data"],
+        dms_data_regrouped="results/epitope_data/dms_per_ab_per_site.csv",
         VE_delta=config["VE_delta"],
     params:
         total_pop=config["total_population"],
@@ -86,4 +98,4 @@ rule get_Immunological_Landscape:
         resultdir=directory("results/Immunological_Landscape"),
         results_done="results/Immunological_Landscape/simulation_status.csv",
     shell:
-        "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.Escape_data} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {params.lineage_focus} {output.resultdir}"
+        "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {params.lineage_focus} {output.resultdir}"
