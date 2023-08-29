@@ -143,28 +143,5 @@ conda deactivate
 ```
 
 ## Caution
-Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present, remove relevant files from *results* if needed.
-
-## Additional Information
-### Mutation Profile 
-To generate a mutation profile for set of variants from covsonar use the script scripts/mutationprofile/generate_mutation_profile.R
-
-```
-Rscript generate_mutation_profile.R <covsonar data file> <output directory> <prefix> <mutation threshold>
-```
-
-It takes input data as obtained by covsonar (each lineage one tsv file) , filters for mutations with a predefined threshold (e.g. 75%) of prevalence in all samples per lineage,
-greps for spike proteins and RBD sites. 
-
-
-### Epitope Landscape 
-To generate the epitope landscape use the script scripts/epitopelandscape/epitope_landscape.R
-
-```
-Rscript epitope_landscape.R <escape data file> <antibody mapping file> <fold resistance file> <output directory>
-```
-
-It uses escape values from escape_data.csv to compute epitope landscape for all antibodies in a class, as well as across all antibodies in a class. 
-For aggregating antibodies per class at each site, their mean values are being used. Classes E1, E2.1 and E2.2 are being merged into E12.
-
+Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present, remove older files from *results* if needed.
 
