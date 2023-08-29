@@ -1,14 +1,18 @@
 # 1. Full path to covsonar data
-covsonardata:"path/to/covsonar_data"
+covsonardata:"path/to/covsonar_data.tsv"
 prefix:"mutationprofile"
 mutation_threshold: 75
-# 2. Full path to GInPipe incidence data
-GInPipe_cases:"path/to/GInPipe_case_assertainment_data"
+# 2a. Full path to GInPipe incidence data
+GInPipe_cases:"path/to/GInPipe_case_assertainment_data.csv"
+# 2b. Fixed total population size for the region of interest
 total_population:84334787
 # 3. Full path to DMS escape fraction data
-dms_data:"path/to/DMS_Escape_fraction_data"
+escape_data:"path/to/DMS_Escape_fraction_data.csv"
 # 4. Full path to Clinical VE data for delta variant
-VE_delta:""path/to/Clinical_VE_delta"
+VE_delta:""path/to/Clinical_VE_delta.csv"
 # 5. Simulation Time frame --- must be included the case timeframe and covsonar timeframe
 date_start:"date beginning of simulations"
 date_end:"date end of simulations"
+# 6. Study immunological landscape for lineage/spikegroup name and NTD-RBD mutation positions file (DEL/del are ignored)
+lineage_focus: "lineage_XXX"
+mutation_focus: "path/to/lineage_XXX_mutations.txt"

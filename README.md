@@ -142,6 +142,9 @@ Deactivate the environment to exit the pipeline
 conda deactivate
 ```
 
+## Caution
+Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present, remove relevant files from *results* if needed.
+
 ## Additional Information
 ### Mutation Profile 
 To generate a mutation profile for set of variants from covsonar use the script scripts/mutationprofile/generate_mutation_profile.R

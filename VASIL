@@ -9,6 +9,9 @@ rule all:
         "results/Daily_SpikeGroups_Freq.csv",
         "results/SpikeGroups.pck",
         "results/Mutation_Profiles.pck",
+        "results/Cross_react_dic_spikegroups.pck",
+        "results/Cross_with_delta_validation.pck",
+        "results/Immunological_Landscape/simulation_status.csv",
 
 
 rule get_mutation_and_spikegroups:
@@ -48,3 +51,39 @@ rule get_spikegroups_frequencies:
         mutations_dic="results/Mutation_Profiles.pck",
     shell:
         "python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.spk_profiles} {input.spike_groups} {output.spikes_freqs} {output.spikes_dic} {output.mutations_dic}"
+
+
+rule get_cross_neutralization:
+    input:
+        spikes_dic="results/SpikeGroups.pck",
+        mutations_dic="results/Mutation_Profiles.pck",
+        Escape_data=config["escape_data"],
+    params:
+        lineage_focus=config["lineage_focus"],
+        mutation_focus=config["mutation_focus"],
+    output:
+        cross_delta="results/Cross_with_delta_validation.pck",
+        cross_spk="results/Cross_react_dic_spikegroups.pck",
+    shell:
+        "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.Escape_data} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {output.cross_spk}"
+
+
+rule get_Immunological_Landscape:
+    input:
+        cases=config["cases"],
+        cross_delta="results/Cross_with_delta_validation.pck",
+        cross_spk="results/Cross_react_dic_spikegroups.pck",
+        spikes_dic="results/SpikeGroups.pck",
+        spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
+        Escape_data=config["escape_data"],
+        VE_delta=config["VE_delta"],
+    params:
+        total_pop=config["total_population"],
+        date_start=config["date_start"],
+        date_end=config["date_end"],
+        lineage_focus=config["lineage_focus"],
+    output:
+        resultdir=directory("results/Immunological_Landscape"),
+        results_done="results/Immunological_Landscape/simulation_status.csv",
+    shell:
+        "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.Escape_data} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {params.lineage_focus} {output.resultdir}"
