@@ -25,9 +25,9 @@ if (length(args)!=4) {
 
 #Paper input:
 # inputfile_escape_data <- "DATA/escape_data.csv"
-# inputfile_antibodymapping <- "DATA/antibody_classes_v2_updated.csv"
+# inputfile_antibodymapping <- "DATA/antibody_classes.csv"
 # inputfile_foldresistance <- "DATA/Fold_Resistance_DMS_Sites_Epitopes.csv"
-# outputdir <- "results_epitopelandscape/"
+# outputdir <- "results_epitopelandscape"
 
 
 ## Outputfiles:
@@ -51,11 +51,10 @@ escape_data <- escape_data[-which(escape_data$condition_type == "serum"),]
 escape_data <- merge(escape_data, antibodymapping, by = "condition" )
 
 ## escape_fraction = mut_escape and set max value to 1:
-x <- which(escape_data[col_escape_fraction]>1)
-if (length(x) > 0){ escape_data[x,col_escape_fraction] <- 1}
+x <- which(escape_data[col_escape_fraction]>=0.99)
+if (length(x) > 0){ escape_data[x,col_escape_fraction] <- 0.99}
 rm(x)
 write.csv(escape_data, file = paste0(outputdir,"/escape_data_merged_greaneyclasses.csv"),row.names = FALSE, quote = FALSE)
-
 
 
 ###################### Define RBD sites, antibodies, and antibody classes:
@@ -75,7 +74,16 @@ table(antibodymapping2$group)
 write.csv(antibodymapping2, file = paste0(outputdir,"/antibodymapping_greaneyclasses.csv"),row.names = FALSE, quote = FALSE)
 
 
+# merge groups E1, E2.1 and E2.2 into one group
+escape_data$group = ifelse(grepl("E2", escape_data$group, fixed = TRUE), "E12", escape_data$group)
+escape_data$group = ifelse(escape_data$group == "E1", "E12", escape_data$group)
 
+# aggregate mut_escape to site level
+escape_data_site = aggregate(mut_escape ~ condition + site + group + IC50,
+                             data = escape_data,
+                             FUN = mean)
+
+write.csv(escape_data_site, file = paste0(outputdir,"/dms_per_ab_per_site.csv"),row.names = FALSE, quote = FALSE)
 
 ####################### compare the AB classes by their mean escape fraction per site over all antibodies in this class.
 EL <- as.data.frame(matrix(nrow = length(groups), ncol = length(RBDsites)))
