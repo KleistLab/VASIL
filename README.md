@@ -215,6 +215,22 @@ pip uninstall pyOpenSSL
 pip install pyOpenSSL
 ```
 
+### Issure 5
+```
+ImportError: Unable to import required dependencies:
+numpy:
+IMPORTANT: PLEASE READ THIS FOR ADVICE ON HOW TO SOLVE THIS ISSUE!
+
+Importing the numpy C-extensions failed. This error can happen for
+many reasons, often due to issues with your setup or how NumPy was
+installed.
+```
+
+
+
+
+
+
 
 
 
