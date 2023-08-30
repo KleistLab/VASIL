@@ -45,7 +45,7 @@ date_start = str(sys.argv[9])
 Population_Data = Population_Data.drop(index = Population_Data.index[:list(Population_Data['date']).index(date_start)])
 
 date_end = sys.argv[10]
-where_last_day = list(Population_Data['date']).index(date_end)
+where_last_day = list(Population_Data['date']).index(date_end) + 1
 
 t = np.arange(1, len(Population_Data['date'][:where_last_day])+1, 1) # array of timepoints at which to compute the antibody concentration
 infection_data_corrected = Population_Data['minNTrue'].values[:where_last_day]

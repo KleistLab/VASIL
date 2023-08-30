@@ -36,7 +36,7 @@ Please use GInPipe pipeline to generate case ascertainment data
 https://github.com/KleistLab/GInPipe/tree/main
 
 #### Antibody classification
-Please download antibody antibody class file required for epitope classification
+Please download antibody class file required for epitope classification
 [antibody_classes.csv](https://github.com/KleistLab/VASIL/blob/main/scripts/epitopelandscape/antibody_classes.csv)
 
 #### Create the working environment
@@ -198,8 +198,40 @@ pip unistall scipy
 ```
 ```
 pip install scipy
+
 ```
 
 Now the snakemake code should run smoothly.
+
+### Issue 4
+
+```
+AttributeError: module 'lib' has no attribute 'OpenSSL_add_all_algorithms'
+```
+
+Solution:
+```
+pip uninstall pyOpenSSL
+pip install pyOpenSSL
+```
+
+### Issure 5
+```
+ImportError: Unable to import required dependencies:
+numpy:
+IMPORTANT: PLEASE READ THIS FOR ADVICE ON HOW TO SOLVE THIS ISSUE!
+
+Importing the numpy C-extensions failed. This error can happen for
+many reasons, often due to issues with your setup or how NumPy was
+installed.
+```
+
+
+
+
+
+
+
+
 
 
