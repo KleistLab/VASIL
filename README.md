@@ -201,8 +201,6 @@ pip install scipy
 
 ```
 
-Now the snakemake code should run smoothly.
-
 ### Issue 4
 
 ```
