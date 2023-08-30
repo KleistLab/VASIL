@@ -277,7 +277,6 @@ def Find_IC50_ranges(thalf_vec, tmax_vec, t, Ab_classes, Cross_dic):
             tmax = tmax_vec[n]
             IC50xx, IC50_data, FC_ic50_list, FR_delta, c_dframe = Fitting_IC50(thalf, tmax, t, Ab_classes, Cross_dic, quiet = True)           
             IC50xx_dic["(%d, %d)"%(m, n)] = IC50_data
-            print("fitted", IC50_data)
 
     IC50xx = np.mean(list(IC50xx_dic.values()))
     mean_IC50xx_dic = {Ab_classes[i]:IC50xx*FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))}
