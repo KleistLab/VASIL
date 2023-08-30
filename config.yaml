@@ -6,8 +6,8 @@ mutation_threshold: 75
 GInPipe_cases:"path/to/GInPipe_case_assertainment_data.csv"
 # 2b. Fixed total population size for the region of interest
 total_population:84334787
-# 3. Full path to DMS escape fraction data
-escape_data:"path/to/DMS_Escape_fraction_data.csv"
+# 3. Full path to DMS escape data
+escape_data:"path/to/DMS_Escape_data.csv"
 # 4. Full path to Clinical VE data for delta variant
 VE_delta:""path/to/Clinical_VE_delta.csv"
 # 5. Simulation Time frame --- must be included the case timeframe and covsonar timeframe
