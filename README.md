@@ -190,10 +190,10 @@ File ... from scipy.optimize import root ... .../usr/lib/liblapack.3.dylib (no s
 This is a problem with scipy that is resolved by unistalling and re-installing scipy with `pip` [saturncloud](https://saturncloud.io/blog/pip-installation-of-scipyoptimize-or-scipy-correctly/)
 
 ```
-pip unistall scipy==1.10.1
+pip unistall scipy
 ```
 ```
-pip install scipy==1.10.1
+pip install scipy
 ```
 
 Now the snakemake code should run smoothly.
