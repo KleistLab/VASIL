@@ -142,10 +142,26 @@ Deactivate the environment to exit the pipeline
 conda deactivate
 ```
 
-## Some package issues
+## Caution
+Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present (unless an input file is updated by another rule), remove older files from the *results* folder when needed.
+
+## Resolving some package issues
 Some package-related issues might still arise during code excecution, however, most solutions to these issues can be found online. For example here are some issue we encountered
 
-#### Issue 1
+### Issue 1
+Error message about parameter issues in snakemake file. This might be a snakefile formating issue, which can be solved by
+
+First install [snakefmt](https://github.com/snakemake/snakefmt) into the `VASIL` enviroment
+```
+pip install snakefmt
+```
+Then, when needed, reformat snakefile
+
+```
+snakefmt VASIL
+```
+
+### Issue 2
 ```
 Importing the numpy C-extensions failed. This error can happen for
 many reasons, often due to issues with your setup or how NumPy was
@@ -166,7 +182,7 @@ pip install setuptools
 pip install numpy
 ```
 
-### Issue 2
+### Issue 3
 
 ```
 File ... from scipy.optimize import root ... .../usr/lib/liblapack.3.dylib (no such file)   
@@ -182,7 +198,4 @@ pip install scipy==1.10.1
 
 Now the snakemake code should run smoothly.
 
-
-## Caution
-Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present (unless an input file is updated by another rule), remove older files from the *results* folder when needed.
 
