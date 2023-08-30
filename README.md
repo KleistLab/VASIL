@@ -29,11 +29,15 @@ python3 sonar.py match --db database.db --date 2021-07-01:2023-04-16 --collectio
 
 #### Escape data
 Please download the escape data as provided from the Bloom lab:
-https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/main/processed_data/escape_data.csv
+[escape_data.csv](https://github.com/jbloomlab/SARS2_RBD_Ab_escape_maps/blob/main/processed_data/escape_data.csv)
 
 #### GInPipe incidence data
 Please use GInPipe pipeline to generate case ascertainment data
 https://github.com/KleistLab/GInPipe/tree/main
+
+#### Antibody classification
+Please download antibody antibody class file required for epitope classification
+[antibody_classes.csv](https://github.com/KleistLab/VASIL/blob/main/scripts/epitopelandscape/antibody_classes.csv)
 
 #### Create the working environment
 
