@@ -43,7 +43,7 @@ Create a new environment from the given environment config in [env.yml](https://
 conda env create -f env/env.yml
 ```
 
-This step may take a few minutes.
+This step may take a few minutes. 
 
 To activate the eviromnent
 
@@ -142,6 +142,47 @@ Deactivate the environment to exit the pipeline
 conda deactivate
 ```
 
+## Some package issues
+Some package-related issues might still arise during code excecution, however, most solutions to these issues can be found online. For example here are some issue we encountered
+
+#### Issue 1
+```
+Importing the numpy C-extensions failed. This error can happen for
+many reasons, often due to issues with your setup or how NumPy was
+installed
+```
+
+Typing the following sequence of code solves this issue [(see stackoverflow)](https://stackoverflow.com/questions/58868528/importing-the-numpy-c-extensions-failed)
+```
+pip uninstall -y numpy
+```
+```
+pip uninstall -y setuptools
+```
+```
+pip install setuptools
+```
+```
+pip install numpy
+```
+
+### Issue 2
+
+```
+File ... from scipy.optimize import root ... .../usr/lib/liblapack.3.dylib (no such file)   
+```
+This is a problem with scipy that is resolved by unistalling and re-installing scipy with `pip` [saturncloud](https://saturncloud.io/blog/pip-installation-of-scipyoptimize-or-scipy-correctly/)
+
+```
+pip unistall scipy==1.10.1
+```
+```
+pip install scipy==1.10.1
+```
+
+Now the snakemake code should run smoothly.
+
+
 ## Caution
-Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present, remove older files from *results* if needed.
+Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present (unless an input file is updated by another rule), remove older files from the *results* folder when needed.
 
