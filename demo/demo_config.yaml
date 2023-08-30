@@ -10,7 +10,7 @@ total_population: 84334787
 escape_data: "escape_data.csv"
 antibody_mapping: "antibody_classes.csv"
 # 4. Full path to Clinical VE data for delta variant
-VE_delta: "Processed_Clinical_Delta_VE.csv"
+VE_delta: "Clinical_Delta_VE.xlsx"
 # 5. Simulation Time frame --- must be included the case timeframe and covsonar timeframe
 date_start: "2023-01-01"
 date_end: "2023-04-01"

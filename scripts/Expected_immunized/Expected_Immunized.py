@@ -7,7 +7,7 @@ import re
 import joblib as jb
 import sys
 import warnings
-
+import pdb
 
 """Load Infection Data"""
 Population_Data = pd.read_csv(sys.argv[1])
@@ -25,6 +25,7 @@ variants_in_cross = Cross_react_dic["variant_list"]
 file1.close()
 
 Ab_classes = list(Cross_react_dic.keys())
+Ab_classes.remove("variant_list")
 
 """Spike groups and frequencies"""
 file1 = open(sys.argv[4], "rb") 
@@ -36,7 +37,7 @@ frequency_spk_df = pd.read_csv(sys.argv[5])
 Escape_Fraction = pd.read_csv(sys.argv[6])
 
 """Load vaccing efficacy data for fitting """
-VE_Delta_df = pd.read_csv(sys.argv[7])
+Load_Delta = pd.read_excel(sys.argv[7], engine='openpyxl')
 
 """Load total population and re-adjust infection timeline"""
 total_population = float(sys.argv[8])
@@ -174,18 +175,69 @@ mean_IC50_per_group['fold_change'] = mean_IC50_per_group['IC50']/total_mean
 ntd_row = {'group': 'NTD','IC50': 1, 'fold_change': 1}
 mean_IC50_per_group = pd.concat([mean_IC50_per_group, pd.DataFrame(ntd_row, index=[10])])
 
-Ab_classes = list(Cross_with_delta_validation.keys())
 """Load fold change IC50 in data"""
 FC_ic50_dic = {Ab_classes[i]:(mean_IC50_per_group["fold_change"].values[mean_IC50_per_group["group"] == Ab_classes[i]])[0] for i in range(len(Ab_classes))}
 
-try:
-	VE_Delta_df.drop(columns = "Unnamed: 0", inplace = True)
-except:
-	pass
-	
-ve_fitting = VE_Delta_df["Processed VE (used in IC50 fitting)"].values
-days_fitting = VE_Delta_df["Day since vacc (used in IC50 fitting)"].values
+"""Extract information from Clinical data"""
+def transform(x):
+    x[x<0] = 0
+    return x
 
+def extract_yerr(x, CI):
+    lower_diff = np.minimum(transform(x), np.abs(x - CI[:, 0]))
+    upper_diff = np.minimum(transform(x), np.abs(CI[:, 1] - x))
+    return np.array([lower_diff, upper_diff]), CI[:, 1], CI[:, 0]
+    
+
+"""Fit Delta Vaccine Data """
+days_fitting = []
+ve_fitting = []
+
+Delta_Sources = Load_Delta["Source"].values.astype(str)
+Delta_Vaccine = Load_Delta["Vaccine"].values.astype(str)
+
+All_Days_Delta = np.array([])
+All_Delta_Data = np.array([])
+All_Days_xerr_Delta = np.array([])
+All_Delta_yerr = np.array([])
+
+""" Set up Disease status to restrict the studies on any infected people"""
+keep_status_d = Load_Delta["Disease Status"].values.astype(str) == "Any infection"
+keep_method_d = (Load_Delta["Method"].values.astype(str) != "(1 - Adjusted OR)") & (Load_Delta["Method"].values.astype(str) != "(1 - OR)")
+
+u_Delta_Sources = np.unique(Delta_Sources[keep_status_d & keep_method_d])
+u_Delta_Vaccine = np.unique(Delta_Vaccine[keep_status_d & keep_method_d])
+
+u_Delta_Sources = u_Delta_Sources[~(u_Delta_Sources  == "nan")] 
+u_Delta_Vaccine = u_Delta_Vaccine[~(u_Delta_Vaccine  == "nan")]
+
+
+Delta_done = []
+for source in u_Delta_Sources:
+    for vacc in u_Delta_Vaccine:
+        where_source = (Delta_Sources == source)&(Delta_Vaccine == vacc)
+        
+        if (np.sum(where_source)!=0) and ("%s (%s)"%(vacc, source) not in Delta_done):
+            
+            #if (not re.search("Feikin", source)):
+            days_fitting.append(Load_Delta["Days (Mid)"].values[where_source])
+            ve_fitting.append(transform(Load_Delta["VE (value)"].values[where_source]))
+            
+            All_Days_Delta = np.concatenate((All_Days_Delta, Load_Delta["Days (Mid)"].values[where_source]))
+            All_Delta_Data = np.concatenate((All_Delta_Data, Load_Delta["VE (value)"].values[where_source]))
+            All_Days_xerr_Delta = np.concatenate((All_Days_xerr_Delta, Load_Delta["Days Err (+/-)"].values[where_source]))
+            
+            x = Load_Delta["VE (value)"].values[where_source]
+            CI = np.array([Load_Delta["VE (Lower CI)"].values[where_source], Load_Delta["VE (Upper CI)"].values[where_source]]).T
+            yerr, upper_CI, lower_CI = extract_yerr(x = x, CI = CI)
+            
+            if len(All_Delta_yerr.flatten()) !=0:
+                All_Delta_yerr = np.concatenate((All_Delta_yerr , yerr), axis = 1)
+            else:
+                All_Delta_yerr = yerr
+        
+        Delta_done.append("%s (%s)"%(vacc, source))
+	
 def Fitting_IC50(thalf, tmax, t, Ab_classes, Cross_dic, quiet = False):  
    
     
@@ -208,7 +260,7 @@ def Fitting_IC50(thalf, tmax, t, Ab_classes, Cross_dic, quiet = False):
     ### Estimate one IC50 for all ABs
     guess = 0.3
     FC_ic50_list = [FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))]
-    IC50_data = root(sqrt_diff_FR, guess, args = ([days_fitting], np.array(FC_ic50_list)*np.array(FR_delta), [ve_fitting], len(Ab_classes), c_dframe), method = "lm").x
+    IC50_data = root(sqrt_diff_FR, guess, args = (days_fitting, np.array(FC_ic50_list)*np.array(FR_delta), ve_fitting, len(Ab_classes), c_dframe), method = "lm").x
     #print("fitted", IC50_data)
     
     """Extract the IC50xx -- conserving the fold changes deviation from the mean of each epitope classes"""
@@ -225,11 +277,11 @@ def Find_IC50_ranges(thalf_vec, tmax_vec, t, Ab_classes, Cross_dic):
             tmax = tmax_vec[n]
             IC50xx, IC50_data, FC_ic50_list, FR_delta, c_dframe = Fitting_IC50(thalf, tmax, t, Ab_classes, Cross_dic, quiet = True)           
             IC50xx_dic["(%d, %d)"%(m, n)] = IC50_data
-    
+            print("fitted", IC50_data)
+
     IC50xx = np.mean(list(IC50xx_dic.values()))
     mean_IC50xx_dic = {Ab_classes[i]:IC50xx*FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))}
     return IC50xx_dic, mean_IC50xx_dic
-
 
 
 """Expected Immunity Efficacy as a function of COVI19 variant proportions -- vectorization 2"""
@@ -272,10 +324,11 @@ def Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data, present_variant_
 """Compute Antibody concentration over time for a range of t_half and t_max"""
 thalf_vec = np.linspace(25, 69, 15) 
 tmax_vec = np.linspace(14, 28, 5)
-t_conc = np.arange(1, 700, 1)
+t_conc = np.arange(1, 656, 1) ### used in older codes
 c_t_vec, c_dframe_dic, dataname = Antibody_ranges(thalf_vec, tmax_vec, t_conc, Ab_classes)
 IC50xx_dic, mean_IC50xx_dic = Find_IC50_ranges(thalf_vec, tmax_vec, t_conc, Ab_classes,  Cross_with_delta_validation)
 ### spikegroup frequency
+
 print("Fitted mean IC50=%.3f \n IC50 per epitope class is "%mean_IC50xx_dic["NTD"], mean_IC50xx_dic)
 try:
 	frequency_spk_df.drop(columns = "Unnamed: 0", inplace = True)
