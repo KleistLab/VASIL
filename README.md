@@ -226,6 +226,14 @@ many reasons, often due to issues with your setup or how NumPy was
 installed.
 ```
 
+Solution:
+
+```
+pip uninstall -y numpy
+pip uninstall -y setuptools
+pip install setuptools
+pip install numpy
+```
 
 
 
