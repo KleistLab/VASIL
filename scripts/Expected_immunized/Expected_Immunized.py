@@ -276,6 +276,7 @@ t_conc = np.arange(1, 700, 1)
 c_t_vec, c_dframe_dic, dataname = Antibody_ranges(thalf_vec, tmax_vec, t_conc, Ab_classes)
 IC50xx_dic, mean_IC50xx_dic = Find_IC50_ranges(thalf_vec, tmax_vec, t_conc, Ab_classes,  Cross_with_delta_validation)
 ### spikegroup frequency
+print("Fitted mean IC50=%.3f \n IC50 per epitope class is "%mean_IC50xx_dic["NTD"], mean_IC50xx_dic)
 try:
 	frequency_spk_df.drop(columns = "Unnamed: 0", inplace = True)
 except:
