@@ -30,7 +30,6 @@ dir.create(outputdir, showWarnings = FALSE)
 ##################### READ IN escape data from bloom lab
 escape_data <- read.csv(inputfile_escape_data)
 antibodymapping <- read.csv(inputfile_antibodymapping)
-
 ## filter the inputfiles: remove serum, keep antibodies
 escape_data <- escape_data[-which(escape_data$condition_type == "serum"),]
 
@@ -64,12 +63,24 @@ write.csv(antibodymapping2, file = paste0(outputdir,"/antibodymapping_greaneycla
 # merge groups E1, E2.1 and E2.2 into one group
 escape_data$group = ifelse(grepl("E2", escape_data$group, fixed = TRUE), "E12", escape_data$group)
 escape_data$group = ifelse(escape_data$group == "E1", "E12", escape_data$group)
+escape_data$IC50 = (sub("\\;.*", "", escape_data$IC50s))
+escape_data = escape_data[!(escape_data$IC50 == "NA"),]
+escape_data$IC50 = as.numeric(escape_data $IC50)
+escape_data$IC50s <- NULL
+
+# one IC50 per AB
+escape_data_ic50 = aggregate(IC50 ~ condition + group,
+                        data = escape_data,
+                        FUN = mean)
 
 # aggregate mut_escape to site level
-escape_data_site = aggregate(mut_escape ~ condition + site + group + IC50,
+escape_data_site = aggregate(mut_escape ~ condition + site + group,
                              data = escape_data,
-                             FUN = mean,
-			     na.rm = TRUE)
+                             FUN = mean)
+
+# merge unique IC50 to site
+escape_data_site = merge(escape_data_site, escape_data_ic50, by = c("condition", "group"))
+
 
 write.csv(escape_data_site, file = paste0(outputdir,"/dms_per_ab_per_site.csv"),row.names = FALSE, quote = FALSE)
 

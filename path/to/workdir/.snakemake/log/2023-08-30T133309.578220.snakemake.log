@@ -1,0 +1,7 @@
+Building DAG of jobs...
+MissingInputException in rule get_lineages_frequencies in file /Users/nilsgubela/Desktop/Projects/Covid Immune/VASIL/VASIL, line 32:
+Missing input files for rule get_lineages_frequencies:
+    output: results/Daily_Lineages_Freq.csv
+    affected files:
+        Stichprobe_RKI-JAN23toAPR23-MOCK.tsv
+        caseAscertainmentTable_reportedCasesRatio.csv
