@@ -215,24 +215,15 @@ pip uninstall pyOpenSSL
 pip install pyOpenSSL
 ```
 
-### Issure 5
+### Issure 5 (Apple silicon)
 ```
-ImportError: Unable to import required dependencies:
-numpy:
-IMPORTANT: PLEASE READ THIS FOR ADVICE ON HOW TO SOLVE THIS ISSUE!
-
-Importing the numpy C-extensions failed. This error can happen for
-many reasons, often due to issues with your setup or how NumPy was
-installed.
+Library not loaded: @rpath/liblapack.3.dylib
 ```
 
 Solution:
 
 ```
-pip uninstall -y numpy
-pip uninstall -y setuptools
-pip install setuptools
-pip install numpy
+pip install --upgrade --force-reinstall scikit-learn
 ```
 
 
