@@ -15,12 +15,14 @@ def moving_average(X, window = 7):
 ES_df = pd.read_csv(sys.argv[1])
 lineage_freq = pd.read_csv(sys.argv[2])
 threshold = sys.argv[3]
- variant = sys.arg[4]
+variant = sys.arg[4]
+S_mean_df = sys.arg[5]
 
 #ES_df = pd.read_csv("demo/results/Immunological_Landscape/Susceptible_SpikeGroup_lineage_XXX_all_PK.csv")
 #lineage_freq = pd.read_csv("demo/results/Daily_Lineages_Freq.csv")
 #threshold = 0 #(percent)
 #variant = "BA.5.1"
+#S_mean_df = pd.read_csv("demo/results/Immunological_Landscape/Susceptible_weighted_mean_over_pseudogroups_all_PK.csv")
 
 # processing of susceptibles 
 ES_df.drop(columns = "Unnamed: 0", inplace = True)
