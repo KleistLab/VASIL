@@ -1,5 +1,5 @@
 # 1. Full path to covsonar data
-covsonardata: "Stichprobe_RKI-JAN23toAPR23-MOCK.tsv"
+covsonardata: "covsonar_mock.tsv"
 prefix: "mutationprofile"
 mutation_threshold: 0.75
 # 2a. Full path to GInPipe incidence data
@@ -13,7 +13,9 @@ antibody_mapping: "antibody_classes.csv"
 VE_delta: "Clinical_Delta_VE.xlsx"
 # 5. Simulation Time frame --- must be included the case timeframe and covsonar timeframe
 date_start: "2023-01-01"
-date_end: "2023-04-01"
-# 6. Study immunological landscape for lineage/spikegroup name and NTD-RBD mutation positions file (DEL/del are ignored)
+date_end: "2023-01-07"
+# 6. Get immunological landscape for lineage/spikegroup name and NTD-RBD mutation positions file (DEL/del are ignored)
 lineage_focus: "lineage_XXX"
 mutation_focus: "XXX_mutation_focus.txt"
+# 7. Get Immunological landscape for all lineages/spikegroups in simulation timeframe TRUE/FALSE
+all_il: TRUE

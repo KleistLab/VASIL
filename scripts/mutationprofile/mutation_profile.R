@@ -17,6 +17,8 @@ library(pheatmap)
 #### (In2) results directory
 #### (In3) prefix for output files
 #### (In4) threshold: mutations should be present in at least x% of all samples
+#### (In5) date start: date to starting simulations
+#### (In6) date end: date to end simulations
 ### OUTPUT:
 #### (Out1) <prefix>_mutations_spike_lists.csv : table with mutated sites for each lineage
 #### (Out2) <prefix>_mutations_spike.csv : matrix with mutation profile for each lineage
@@ -27,15 +29,16 @@ library(pheatmap)
 #### (Out7) <prefix>_positiongroups_RBD_NTD_groups_zoom.pdf : Mutation Profile of predefined lineages.
 
 args = commandArgs(trailingOnly=TRUE)
-if (length(args)!=4) {
-  stop("Call: Rscript generate_mutation_profile <covsonar data file> <output directory> <prefix> <mutation threshold>", call.=FALSE)
+if (length(args)!=6) {
+  stop("Call: Rscript generate_mutation_profile <covsonar data file> <output directory> <prefix> <mutation threshold> <date start> <date end>", call.=FALSE)
 } else  {
   input_datafile_covsonar <- args[1]
   outputdir <- args[2]
   output_prefix_for_file <- args[3]
   threshold <- as.numeric(args[4])
+  date_start <- args[5]
+  date_end <- args[6]
 }
-
 #Paper input:
 #input_datafile_covsonar <- "DATA/Stichprobe_RKI-JUL21toMay23_merged.tsv"
 #outputdir <- "results_mutationprofiles/"
@@ -60,12 +63,33 @@ NTD_position_end <- 317
 RBD_position_start <- 318
 RBD_position_end <- 541
 
-
-
 ######################################### DATA PROCESSING 1: mutation profile
 
 #### READ DATA and FILTER for mutations with at least 75% prevalence in all samples per lineage
 D <- read.csv(input_datafile_covsonar, sep = "\t")
+# Produce demo file
+#v1 <- sort(sample(11:length(D$date)-10, 200, replace=F))
+#t_keep <- c(1:10, v1)
+#t_keep <- c(t_keep, (length(D$date)-9):length(D$date))
+#print(length(t_keep))
+#Dmock <- D[t_keep,]
+#write.table(Dmock, file='covsonar_mock.tsv', quote=FALSE, sep='\t', col.names = NA)
+
+### filter data to start and end date
+dates <- D$date
+u_dates <- unique(dates)
+id_dates <- 1:length(u_dates)
+between_dates <- subset(u_dates, (id_dates >= match(date_start, u_dates))&(id_dates <= match(date_end, u_dates)))
+to_keep <- c()
+for (i in 1:length(dates)){
+  if (dates[i] %in% between_dates){
+    to_keep <- append(to_keep, i)
+  }
+}
+D <- D[to_keep,]
+sprintf("Timeframe of extracted mutation profiles %s to %s", unique(D$date)[1], unique(D$date)[length(unique(D$date))])
+
+### filter mutations 
 lineages <- sort(unique(D$lineage))
 number_lineages <- length(lineages)
 
@@ -260,13 +284,15 @@ mydf3 <- as.data.frame(mydf3[x,]); colnames(mydf3) <- "category"; rownames(mydf3
 rm(x)
 print(paste("Number of lineages / Spike-pseudogroups found with > 1000 genomes available in the dataset that are plotted as a heatmap:", nrow(MP4_unique)))
 
-pdf(paste0(outputdir,"/",outputfile_mutationprofile_plot), height = 15, width = 15)
-pheatmap(as.matrix(MP4_unique), main = paste("Spike Mutation Profile (NTD / RBD)"), col=c("white","red"),
-         cluster_cols = F, cluster_rows = T,
-         fontsize_col = 10,fontsize_row = 10,
-         legend = FALSE,
-         annotation_col = mydf3)
-dev.off()
+if (length(MP4_unique)>=2){
+  pdf(paste0(outputdir,"/",outputfile_mutationprofile_plot), height = 15, width = 15)
+  pheatmap(as.matrix(MP4_unique), main = paste("Spike Mutation Profile (NTD / RBD)"), col=c("white","red"),
+           cluster_cols = F, cluster_rows = T,
+           fontsize_col = 10,fontsize_row = 10,
+           legend = FALSE,
+           annotation_col = mydf3)
+  dev.off()
+  }
 
 
 ### Zooming in for a predefined set of lineages:
@@ -277,12 +303,14 @@ MP2_zoom <- MP2_zoom[,which(apply(MP2_zoom,2,sum)>0)]
 MP2_zoom <- MP2_zoom[,unlist(lapply(intersect(rownames(mydf3),colnames(MP2_zoom)), 
                                     function(x) which(colnames(MP2_zoom) == x)))]
 
-pdf(paste0(outputdir,"/",stringr::str_replace(outputfile_mutationprofile_plot,".pdf","_zoom.pdf")),height = 3, width = 10)
-pheatmap(as.matrix(MP2_zoom), 
-         main = paste("Zoom Mutation Profile of",paste(zoom_in_lineages,collapse = ",")), 
-         col=c("white","red"),
-         cluster_cols = F, cluster_rows = T,
-         fontsize_col = 10,fontsize_row = 10,
-         legend = FALSE,
-         annotation_col = mydf3)
-dev.off()
+if (length(MP2_zoom)>=2){
+  pdf(paste0(outputdir,"/",stringr::str_replace(outputfile_mutationprofile_plot,".pdf","_zoom.pdf")),height = 3, width = 10)
+  pheatmap(as.matrix(MP2_zoom), 
+           main = paste("Zoom Mutation Profile of",paste(zoom_in_lineages,collapse = ",")), 
+           col=c("white","red"),
+           cluster_cols = F, cluster_rows = T,
+           fontsize_col = 10,fontsize_row = 10,
+           legend = FALSE,
+           annotation_col = mydf3)
+  dev.off()
+ }

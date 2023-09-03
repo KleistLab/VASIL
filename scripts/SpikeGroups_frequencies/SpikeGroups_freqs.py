@@ -35,7 +35,7 @@ for i in range(len(unique_muts)):
 
 NormProp = np.sum(frequency_lineage, axis = 0)
 prop_rounded = np.round(frequency_lineage,decimals = 10)
-proportion_lineage = prop_rounded/NormProp
+proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
 
 """Finalizing variant proportion parameter """
 Lineages_list = ["Wuhan-Hu-1"] + list(unique_lineage)
@@ -83,7 +83,7 @@ for x in range(len(unique_group)):
         SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
         
         for Om in splited_var:
-            SpikeGroups_dic [Om] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
+            SpikeGroups_dic[Om] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
     
     pseudo_members_dic[variant_x_pseudo[pseudo_members == unique_group[x]][0]] = unique_group[x]
 
@@ -100,6 +100,7 @@ freq_dic["date"] = days_prop
 for x in range(len(SpikeGroups_list)):
     if SpikeGroups_list[x]!= "Wuhan-Hu-1":
         freq_dic["Spike. "+SpikeGroups_list[x]] = variant_proportion[x, :]*100 
+
 
 freq_df = pd.DataFrame(freq_dic, index = np.arange(0, len(days_prop)))
 freq_df.to_csv(sys.argv[4])

@@ -93,7 +93,7 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     """
   
     for d in range(len(conditions)):
-        print(d+1, len(conditions))
+        #print(d+1, len(conditions))
         Inter_Cond_Mut = Where_Mut & Where_Cond[np.newaxis, d, :]
         Bind_list[:, d] = np.prod(1 - tiled_esc[:, np.newaxis, :]*Inter_Cond_Mut, axis = (1,2))  
         Missing_cond_data[:, d] = ~np.any(np.any(Where_Mut & Where_Cond[np.newaxis, d, :], axis = 2), axis = 1)
@@ -210,34 +210,57 @@ file0 = open(sys.argv[6], "wb")
 pickle.dump(Cross_with_delta_validation, file0)
 file0.close()
 
-"""Compute Cross reactivity to Lineage focus"""
+"""Compute Cross reactivity"""
 Cross_react_dic = {}
 AB = ""
 a = 1
 print("Cross reactivity computation might take a while")
-for ab in Ab_classes:
-    print("Assess Lineage %s with the NTD-RBD mutation positions "%Lin_name, mut_Lin)
-    print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))
-    FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
-
-    if ab!= "NTD":
-        Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_name], variant_x_names_cross), 
-                   Escape_Fraction, 
-                   [ab],
-                   mut_x_sites_dic_updated)
+if Lin_name != "ALL":
+    for ab in Ab_classes:
+        print("Assess Lineage %s with the NTD-RBD mutation positions "%Lin_name, mut_Lin)
+        print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))    
         
-        """
-        Only the information for the specific lineage studied is required for immunological landscape calculation
-        the FRxy_ab matrix is kept only for compatibility with other codes
-        """
-        FRxy_ab[len(variant_x_names_cross), :len(variant_x_names_cross)] = Cross_Lin[ab][0, :]
-        FRxy_ab[:len(variant_x_names_cross), len(variant_x_names_cross)] = Cross_Lin[ab][0, :]
-
-    Cross_react_dic[ab] = FRxy_ab
-    a +=1
+        if ab!= "NTD":
+            FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
+            Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_name], variant_x_names_cross), 
+                       Escape_Fraction, 
+                       [ab],
+                       mut_x_sites_dic_updated)
+            
+            """
+            Only the information for the specific lineage studied is required for immunological landscape calculation
+            the FRxy_ab matrix is kept only for compatibility with other codes
+            """
+            FRxy_ab[len(variant_x_names_cross), :len(variant_x_names_cross)] = Cross_Lin[ab][0, :]
+            FRxy_ab[:len(variant_x_names_cross), len(variant_x_names_cross)] = Cross_Lin[ab][0, :]
     
-Cross_react_dic["variant_list"] = list(variant_x_names_cross)+[Lin_name]
+            Cross_react_dic[ab] = FRxy_ab
+        a +=1
+        
+    Cross_react_dic["variant_list"] = list(variant_x_names_cross)+[Lin_name]
 
+else:
+    
+    for ab in Ab_classes:
+        print("Assess all spikegroups with the NTD-RBD mutation positions ")
+        print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))
+        if ab!= "NTD":
+            Cross_Lin, Missed, Greater_one = cross_reactivity((variant_x_names_cross, variant_x_names_cross), 
+                       Escape_Fraction, 
+                       [ab],
+                       mut_x_sites_dic_updated)
+            
+            """
+            Only the information for the specific lineage studied is required for immunological landscape calculation
+            the FRxy_ab matrix is kept only for compatibility with other codes
+            """
+            FRxy_ab = Cross_Lin[ab]
+    
+            Cross_react_dic[ab] = FRxy_ab
+        a +=1
+    
+    Cross_react_dic["variant_list"] = list(variant_x_names_cross)
+    
 """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
 n = len(Cross_react_dic["variant_list"])
 FR_NTB = np.ones((n, n))
@@ -258,7 +281,7 @@ for i in range(n):
                     FR_sites *= 10
             FR_NTB[i, j] = FR_sites
             FR_NTB[j, i] = FR_sites
-        
+    
 Cross_react_dic["NTD"] = FR_NTB
 file0 = open(sys.argv[7], "wb") 
 pickle.dump(Cross_react_dic, file0)

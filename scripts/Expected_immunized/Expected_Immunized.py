@@ -342,7 +342,8 @@ for i in range(len(SpikeGroups_list)):
 
 NormProp = np.sum(spikegroups_freq, axis = 0)
 prop_rounded = np.round(spikegroups_freq,decimals = 10)
-spikegroups_proportion = prop_rounded/NormProp
+spikegroups_proportion = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
+
 
 ### end of simulation
 def ei_util(Lin_name):
@@ -369,7 +370,6 @@ def ei_util(Lin_name):
             
             EI["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = Res_sub_0
             Susc["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = total_population - Res_sub_0
-            
         """ Save Dynamics Without Vaccination """
         EI_df = pd.DataFrame(EI)
         EI_df.to_csv(sys.argv[12]+"/Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
@@ -381,9 +381,17 @@ def ei_util(Lin_name):
     except:
         
         return "Error"
- 
-       
-simulated_var = ei_util(Lin_name)   
-# Save file as a placeholder for exectuted codes, require for snakemake
-sim_df = pd.DataFrame({"SpikeGroups":[Lin_name], "Simulation status":simulated_var})
-sim_df.to_csv(sys.argv[12]+"/simulation_status.csv")
+
+if Lin_name != "ALL":
+    status_var = ei_util(Lin_name) 
+    # Save file as a placeholder for exectuted codes, required for snakemake
+    sim_df = pd.DataFrame({"SpikeGroups":[Lin_name], "Simulation status":status_var})
+    sim_df.to_csv(sys.argv[12]+"/simulation_status_%s.csv"%Lin_name)
+else:
+    status_var = []
+    for i in range(len(SpikeGroups_list)):
+        status_var.append(ei_util(SpikeGroups_list[i]))
+    # Save file as a placeholder for exectuted codes, required for snakemake
+    sim_df = pd.DataFrame({"SpikeGroups":SpikeGroups_list, "Simulation status":status_var})
+    sim_df.to_csv(sys.argv[12]+"/simulation_status_ALL.csv")
+    
