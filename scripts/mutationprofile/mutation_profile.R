@@ -282,7 +282,7 @@ x <- which(apply(MP4_unique,2,sum)>0)
 MP4_unique <- MP4_unique[,x]
 mydf3 <- as.data.frame(mydf3[x,]); colnames(mydf3) <- "category"; rownames(mydf3) <- colnames(MP4_unique)
 rm(x)
-print(paste("Number of lineages / Spike-pseudogroups found with > 1000 genomes available in the dataset that are plotted as a heatmap:", nrow(MP4_unique)))
+print(paste("Number of lineages / Spike-pseudogroups found with > ",min_number_genomes_for_plotting," genomes available in the dataset that are plotted as a heatmap:", nrow(MP4_unique)))
 
 if (length(MP4_unique)>=2){
   pdf(paste0(outputdir,"/",outputfile_mutationprofile_plot), height = 15, width = 15)
