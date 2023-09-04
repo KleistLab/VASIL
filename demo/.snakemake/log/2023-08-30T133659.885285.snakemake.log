@@ -1,6 +1,0 @@
-Building DAG of jobs...
-MissingInputException in rule get_epitope_landscape in file /Users/nilsgubela/Desktop/Projects/Covid Immune/VASIL/VASIL, line 57:
-Missing input files for rule get_epitope_landscape:
-    output: results/epitope_data, results/epitope_data/dms_per_ab_per_site.csv
-    affected files:
-        antibody_classes.csv

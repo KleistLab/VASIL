@@ -9,8 +9,9 @@ rule all:
         "results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv",
         "plots/absolute/absolute_estimate.pdf",
         "plots/absolute/absolute_estimate.svg",
-        "plots/relative/relative_fitness_" + config["lineage_focus"] + ".csv",
-        "plots/relative/relative_fitness_" + config["lineage_focus"] + ".svg",
+        #"plots/relative/relative_fitness_" + config["lineage_focus"] + ".csv",
+        #"plots/relative/relative_fitness_" + config["lineage_focus"] + ".svg",
+        "plots/relative/plot_status.csv",
 
 
 rule get_susceptible_weighted_mean:
@@ -34,9 +35,9 @@ rule get_absolute_advantage:
     params:
         color=config["color"],
     output:
-        "plots/absolute/absolute_estimate.pdf",
-        "plots/absolute/absolute_estimate.svg",
         res_dir=directory("plots/absolute"),
+        res1="plots/absolute/absolute_estimate.pdf",
+        res2="plots/absolute/absolute_estimate.svg",
     shell:
         "python {workflow.basedir}/scripts/plotting/absolute_estimation.py {input.cases} {input.mean_trend} {params.color} {output.res_dir}"
 
@@ -52,8 +53,9 @@ rule get_relative_advantage:
         threshold=config["weight_prop"],
         lineage_focus=config["lineage_focus"],
     output:
-        "plots/relative/relative_fitness_" + config["lineage_focus"] + ".csv",
-        "plots/relative/relative_fitness_" + config["lineage_focus"] + ".svg",
         res_dir=directory("plots/relative"),
+        res="plots/relative/plot_status.csv",
+        #res1="plots/relative/relative_fitness_"+config["lineage_focus"]+".csv",
+        #res2="plots/relative/relative_fitness_"+config["lineage_focus"]+".svg",
     shell:
         "python {workflow.basedir}/scripts/plotting/relative_advantage.py {input.ES_lin} {input.spikes_freqs} {params.threshold} {params.lineage_focus} {input.mean_trend} {output.res_dir}"

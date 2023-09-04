@@ -99,3 +99,9 @@ pdf.savefig(fig, bbox_inches = "tight")
 pdf.close()
 
 fig.savefig(sys.argv[6]+"/relative_fitness_%s.svg"%variant, bbox_inches = "tight")
+
+status = pd.DataFrame({"lineage":variant, "relative_advantage":"Done"}, index = [1])
+status.to_csv(sys.argv[6]+"/plot_status.csv")
+
+
+
