@@ -64,9 +64,8 @@ fig, ax = plt.subplots()
 plt.plot(x, infection_data_corrected["minNTrue"], color = "black", label = "Infections", linewidth = 3)
 plt.ylabel("Infections", fontsize = 25)
 
-plt.legend(loc = (0.4, 0.8), fontsize = 25)
  
-perday = range(0,len(t_dates), 28)
+perday = range(0,len(t_dates), 14)
 
 ax.set_xticks(perday)
 ax.set_xticklabels(t_dates[perday].tolist(),
@@ -85,7 +84,11 @@ ax2.fill_between(x, r_ABS_min, r_ABS_max, alpha = 0.3, color = "grey", label = "
 
 
 plt.ylabel("Susceptibles", fontsize = 25)
-plt.legend(loc = (0.7, 0.8) ,fontsize = 25)
+
+ax.legend(loc='upper center', bbox_to_anchor=(0.6, -0.2),
+          fancybox=True, shadow=True, ncol=5)
+ax2.legend(loc='upper center', bbox_to_anchor=(0.3, -0.2),
+          fancybox=True, shadow=True, ncol=5)
 
 # add vlines
 plt.vlines(x=r.real[abs(r.imag)<1e-5], ymin=min(r_ABS_min), ymax=max(r_ABS_max), colors="black", ls='--', lw=0.5, label='Delta infection')
@@ -95,4 +98,4 @@ plt.subplots_adjust(hspace=0.75, wspace=0.25)
 pdf = PdfPages(sys.argv[4]+"/absolute_estimate.pdf")
 pdf.savefig(fig, bbox_inches = "tight")
 pdf.close()
-plt.savefig(sys.argv[4]+"/absolute_estimate.svg")
+plt.savefig(sys.argv[4]+"/absolute_estimate.svg", bbox_inches='tight')

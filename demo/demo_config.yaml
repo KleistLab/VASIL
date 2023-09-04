@@ -12,8 +12,8 @@ antibody_mapping: "antibody_classes.csv"
 # 4. Full path to Clinical VE data for delta variant
 VE_delta: "Clinical_Delta_VE.xlsx"
 # 5. Simulation Time frame --- must be included the case timeframe and covsonar timeframe
-date_start: "2023-01-01"
-date_end: "2023-01-07"
+date_start: "2023-01-06"
+date_end: "2023-03-31"
 # 6. Get immunological landscape for lineage/spikegroup name and NTD-RBD mutation positions file (DEL/del are ignored)
 lineage_focus: "lineage_XXX"
 mutation_focus: "XXX_mutation_focus.txt"

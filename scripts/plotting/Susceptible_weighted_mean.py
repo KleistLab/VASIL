@@ -45,7 +45,7 @@ col_sums = frequency_spk_df.sum(axis = 1).values
 frequency_spk_df = frequency_spk_df.divide(col_sums, axis="rows")
 frequency_spk_df = frequency_spk_df.fillna(0)
 
-pS_all = np.zeros((len(t)-1, len(SpikeGroups_list[SpikeGroups_list!="Wuhan-Hu-1"]), len(pk_cols[pk_cols!="Day since activation"])))
+pS_all = np.zeros((len(t)-1, len(SpikeGroups_list[SpikeGroups_list!="Wuhan-Hu-1"]), len(pk_cols[pk_cols!="Days"])))
 dprop_all = np.zeros((len(t)-1, len(SpikeGroups_list[SpikeGroups_list!="Wuhan-Hu-1"])))
 for x in range(len(SpikeGroups_list)):
     if SpikeGroups_list[x] != "Wuhan-Hu-1":
@@ -72,7 +72,7 @@ pS_all_mean = np.sum(pS_all, axis = 1) ### it's already weighted
 dprop_mean = np.sum(dprop_all[~np.isnan(dprop_all)])
 
 #### save for future runs
-S_mean_df = pd.DataFrame(data = pS_all_mean, index = phold_df['Days'][:len(t)-1], columns = pk_cols[pk_cols!="Day since activation"])
+S_mean_df = pd.DataFrame(data = pS_all_mean, index = phold_df['Days'][:len(t)-1], columns = pk_cols[pk_cols!="Days"])
 S_mean_df.to_csv(results_dir+"/Susceptible_weighted_mean_over_spikegroups_all_PK.csv")
 
 dprop_df = pd.DataFrame(data = dprop_mean, index = phold_df['Days'][:len(t)-1], columns = ["Mean dProp"])

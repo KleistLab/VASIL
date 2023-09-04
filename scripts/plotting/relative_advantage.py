@@ -88,7 +88,7 @@ plt.plot(t_dates[:-1], gamma_prop, color = "orange")
 #ax.axhline(xmin = 0, xmax = t_dates[-1], ls = "--", linewidth = 2, color = "black")
 ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
 
-perday = range(0,len(t_dates), min(len(t_dates), 28))
+perday = range(0,len(t_dates), min(len(t_dates), 14))
 
 ax.set_xticks(perday)
 ax.set_xticklabels(t_dates[perday].tolist(),
