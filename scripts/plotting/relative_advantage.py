@@ -83,7 +83,7 @@ gSI_max = ma.array([gamma_SI_max], mask = [gamma_SI_max.mask])
 # plotting
 fig, ax = plt.subplots()
 
-plt.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green")
+plt.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3)
 plt.plot(t_dates[:-1], gamma_prop, color = "orange")
 #ax.axhline(xmin = 0, xmax = t_dates[-1], ls = "--", linewidth = 2, color = "black")
 ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
