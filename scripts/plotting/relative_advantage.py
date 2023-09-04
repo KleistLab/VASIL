@@ -26,7 +26,7 @@ S_mean_file = sys.argv[5]
 #variant = "BA.5.1"
 
 # needs to be updated to allow individual weighting 
-S_mean_df = pd.read_csv(S_mean_file)#pd.read_csv("/Users/nilsgubela/Desktop/VASIL NO GIT/demo/results/Immunological_Landscape/Susceptible_weighted_mean_over_pseudogroups_all_PK.csv")
+S_mean_df = pd.read_csv(S_mean_file)
 S_all_mean = S_mean_df.to_numpy()[:, S_mean_df.columns != "Days"].astype(float)
 t_dates = S_mean_df["Days"]
 
