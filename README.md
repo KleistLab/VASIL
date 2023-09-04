@@ -120,6 +120,13 @@ snakemake --snakefile VASIL --configfile path/to/config.yaml -j -d path/to/workd
 ```
 With parameter `--configfile` you can give the configuration file, described above. The `-j` parameter determines the number of available CPU cores to use in the pipeline. Optionally you can provide the number of cores, e.g. `-j 4`. With parameter `-d` you can set the work directory, i.e. where the results of the pipeline are written to.
 
+After generating the main results, our manuscripts figures are obtained by running
+
+```
+snakemake --snakefile VASILplots --configfile path/to/config.yaml -j -d path/to/workdir
+
+```
+
 ## Output
 The pipeline creates a folder *results*, containing all (intermediate) output, with the following structure:
 
@@ -140,6 +147,14 @@ To run the pipeline go into the repository where the snakefile [`VASIL`](https:/
 snakemake --snakefile VASIL --configfile demo/demo_config.yaml -j -d demo
 
 ```
+
+After generating the main results, our manuscripts figures are obtained by running
+
+```
+snakemake --snakefile VASILplots --configfile demo/demo_config_plots.yaml -j -d demo
+
+```
+
 
 Deactivate the environment to exit the pipeline
 ```
@@ -175,14 +190,8 @@ installed
 Typing the following sequence of code solves this issue [(see stackoverflow)](https://stackoverflow.com/questions/58868528/importing-the-numpy-c-extensions-failed)
 ```
 pip uninstall -y numpy
-```
-```
 pip uninstall -y setuptools
-```
-```
 pip install setuptools
-```
-```
 pip install numpy
 ```
 
@@ -213,7 +222,7 @@ pip uninstall pyOpenSSL
 pip install pyOpenSSL
 ```
 
-### Issure 5 (Apple silicon)
+### Issue 5 (Apple silicon)
 ```
 Library not loaded: @rpath/liblapack.3.dylib
 ```
@@ -223,7 +232,6 @@ Solution:
 ```
 pip install --upgrade --force-reinstall scikit-learn
 ```
-
 
 
 
