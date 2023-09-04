@@ -233,6 +233,14 @@ Solution:
 pip install --upgrade --force-reinstall scikit-learn
 ```
 
+### Issue 6 
+If the conda installation fails, please use the following commands to install it manually:
+
+```
+conda create --name VASIL
+conda activate VASIL
+conda install -c conda-forge -c bioconda -c anaconda python==3.11.3 numpy scipy openpyxl pandas==1.5.3 matplotlib seaborn joblib regex pip pyOpenSSL patsy scikit-learn  
+```
 
 
 
