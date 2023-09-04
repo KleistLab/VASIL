@@ -1,0 +1,10 @@
+# 1a. Full path to GInPipe incidence data
+cases: "caseAscertainmentTable_reportedCasesRatio.csv"
+# 1b. Fixed total population size for the region of interest
+total_population: 84334787
+# 2. Focus lineage
+lineage_focus: "BA.5"
+# 3. Weight threshold spikes-group proportions for predictions
+weight_prop: 0.01
+# 4. Color used in absolute fitness plot
+color: "red"

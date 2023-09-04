@@ -123,7 +123,7 @@ With parameter `--configfile` you can give the configuration file, described abo
 After generating the main results, our manuscripts figures are obtained by running
 
 ```
-snakemake --snakefile VASILplots --configfile path/to/config.yaml -j -d path/to/workdir
+snakemake --snakefile VASILplots --configfile path/to/config_plots.yaml -j -d path/to/workdir
 
 ```
 
