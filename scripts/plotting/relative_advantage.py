@@ -20,6 +20,7 @@ threshold = float(sys.argv[3])
 variant = str(sys.argv[4])
 S_mean_file = sys.argv[5]
 
+
 #ES_df = pd.read_csv("demo/results/Immunological_Landscape/Susceptible_SpikeGroup_lineage_XXX_all_PK.csv")
 #lineage_freq = pd.read_csv("demo/results/Daily_Lineages_Freq.csv")
 #threshold = 0 #(percent)
@@ -66,12 +67,20 @@ for i in range(ES_ranges.shape[1]):
 gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
 
 # change in relative frequency from genomic surveillance data 
+Pseudo_Prop = moving_average(lineage_freq["Spike. " + variant], window = 14)
+Pseudo_Prop[Pseudo_Prop < 0.05] = 0
 
-gamma_prop = np.diff(np.log(lineage_freq["Spike. " + variant]))
+gamma_prop = np.zeros(len(t_dates))
+for l in range(len(t_dates)-1):
+    if Pseudo_Prop[l] == 0 or Pseudo_Prop[l+1] == 0:
+        gamma_prop[l] = float('nan')
+    else:
+        gamma_prop[l] = Pseudo_Prop[l+1]/Pseudo_Prop[l] -1
+
 
 # Smooth gamma_prop with moving_average
 window = 14
-gamma_prop = moving_average(gamma_prop, window = window)
+#gamma_prop = moving_average(gamma_prop, window = window)
   
 # mask absent variant prop data
 Prop = moving_average(lineage_freq["Spike. " + variant], window = window)
@@ -84,7 +93,7 @@ gSI_max = ma.array([gamma_SI_max], mask = [gamma_SI_max.mask])
 fig, ax = plt.subplots()
 
 plt.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3)
-plt.plot(t_dates[:-1], gamma_prop, color = "orange")
+plt.plot(t_dates, gamma_prop, color = "orange")
 #ax.axhline(xmin = 0, xmax = t_dates[-1], ls = "--", linewidth = 2, color = "black")
 ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
 
@@ -102,6 +111,8 @@ fig.savefig(sys.argv[6]+"/relative_fitness_%s.svg"%variant, bbox_inches = "tight
 
 status = pd.DataFrame({"lineage":variant, "relative_advantage":"Done"}, index = [1])
 status.to_csv(sys.argv[6]+"/plot_status.csv")
+
+
 
 
 
