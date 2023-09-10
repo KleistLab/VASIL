@@ -3,17 +3,24 @@
 
 report: "report/workflow.rst"
 
+rule_all_common = ["results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv",
+                   "plots/absolute/absolute_estimate.pdf",
+                   "plots/absolute/absolute_estimate.svg",
+                   "plots/relative/plot_status.csv",
+		    #"plots/relative/relative_fitness_" + config["lineage_focus"] + ".csv",
+                    #"plots/relative/relative_fitness_" + config["lineage_focus"] + ".svg",
+                   ]
+if config["FR_DMS_sites"]:
+    rule_all_common.append("plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf")
+
+if config["Cross_ALL"]:
+    rule_all_common.append("plots/Cross_spikegroups/Cross_reactivity_map.pdf")
+
 
 rule all:
     input:
-        "results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv",
-        "plots/absolute/absolute_estimate.pdf",
-        "plots/absolute/absolute_estimate.svg",
-        #"plots/relative/relative_fitness_" + config["lineage_focus"] + ".csv",
-        #"plots/relative/relative_fitness_" + config["lineage_focus"] + ".svg",
-        "plots/relative/plot_status.csv",
-
-
+	rule_all_common  
+	
 rule get_susceptible_weighted_mean:
     input:
         spikes_dic="results/SpikeGroups.pck",
@@ -59,3 +66,17 @@ rule get_relative_advantage:
         #res2="plots/relative/relative_fitness_"+config["lineage_focus"]+".svg",
     shell:
         "python {workflow.basedir}/scripts/plotting/relative_advantage.py {input.ES_lin} {input.spikes_freqs} {params.threshold} {params.lineage_focus} {input.mean_trend} {output.res_dir}"
+
+if config["FR_DMS_sites"]:
+    rule plot_FR_sites:
+	input:
+	    FR_sites="results/Fold_Resistance_DMS_Sites_Epitopes.csv",
+	output:
+	    res_dir=directory("plots/FR_sites"),
+	    res="plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf",	
+	shell:
+	    "Rscript {workflow.basedir}/scripts/plotting/FR_sites_landscape.R {input.FR_sites} {output.res_dir}"
+
+if config["Cross_ALL"]:
+    rule plot_cross_all:
+    	rule_all_common.append("plots/Cross_spikegroups/Cross_reactivity_map.pdf")
