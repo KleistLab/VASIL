@@ -29,6 +29,13 @@ dir.create(outputdir, showWarnings = FALSE)
 
 ##################### READ IN escape data from bloom lab
 escape_data <- read.csv(inputfile_escape_data)
+
+# Produce demo file
+#v1 <- sort(sample(1:length(escape_data$condition_type), 1000, replace=F))
+#Dmock <- escape_data[v1,]
+#write.csv(Dmock, file='escape_data_mock.csv', quote=FALSE, col.names = NA)
+
+
 antibodymapping <- read.csv(inputfile_antibodymapping)
 ## filter the inputfiles: remove serum, keep antibodies
 escape_data <- escape_data[-which(escape_data$condition_type == "serum"),]

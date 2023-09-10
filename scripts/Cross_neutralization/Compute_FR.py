@@ -60,7 +60,7 @@ def sub_Bind(d, tiled_esc, Where_Mut, Where_Cond):
     return [Bind_list_d, Missing_cond_data_d]
 
 
-def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, mut_sites_per_variant, EF_func = "MEAN", GM = False, quiet = True):
+def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, EF_func = "MEAN", GM = False, quiet = True):
     vars_num = mut_bool_g2.shape[0]
     
     test_i = np.tile(mut_bool_g1[i, :], (vars_num, 1))
@@ -215,7 +215,7 @@ Cross_react_dic = {}
 AB = ""
 a = 1
 print("Cross reactivity computation might take a while")
-if Lin_name != "ALL":
+if Lin_name not in ("ALL", "FR_DMS_sites"):
     for ab in Ab_classes:
         print("Assess Lineage %s with the NTD-RBD mutation positions "%Lin_name, mut_Lin)
         print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))    
@@ -238,9 +238,34 @@ if Lin_name != "ALL":
         a +=1
         
     Cross_react_dic["variant_list"] = list(variant_x_names_cross)+[Lin_name]
-
-else:
+    """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
+    n = len(Cross_react_dic["variant_list"])
+    FR_NTB = np.ones((n, n))
+    for i in range(n):
+        var_1 = Cross_react_dic["variant_list"][i]
+        for j in range(n):
+            if i > j:
+                var_2 = Cross_react_dic["variant_list"][j]
     
+                sites_1 = set(np.array(mut_x_sites_dic_updated[var_1]).astype(int))
+                sites_2 = set(np.array(mut_x_sites_dic_updated[var_2]).astype(int))
+    
+                sites = list(sites_1.symmetric_difference(sites_2))
+                FR_sites = 1
+                for s in sites:
+                    s = int(s)
+                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                        FR_sites *= 10
+                FR_NTB[i, j] = FR_sites
+                FR_NTB[j, i] = FR_sites
+        
+    Cross_react_dic["NTD"] = FR_NTB
+    file0 = open(sys.argv[7], "wb") 
+    pickle.dump(Cross_react_dic, file0)
+    file0.close()
+
+
+elif Lin_name == "ALL":            
     for ab in Ab_classes:
         print("Assess all spikegroups with the NTD-RBD mutation positions ")
         print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))
@@ -261,28 +286,102 @@ else:
     
     Cross_react_dic["variant_list"] = list(variant_x_names_cross)
     
-"""Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
-n = len(Cross_react_dic["variant_list"])
-FR_NTB = np.ones((n, n))
-for i in range(n):
-    var_1 = Cross_react_dic["variant_list"][i]
-    for j in range(n):
-        if i > j:
-            var_2 = Cross_react_dic["variant_list"][j]
-
-            sites_1 = set(np.array(mut_x_sites_dic_updated[var_1]).astype(int))
-            sites_2 = set(np.array(mut_x_sites_dic_updated[var_2]).astype(int))
-
+    """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
+    n = len(Cross_react_dic["variant_list"])
+    FR_NTB = np.ones((n, n))
+    for i in range(n):
+        var_1 = Cross_react_dic["variant_list"][i]
+        for j in range(n):
+            if i > j:
+                var_2 = Cross_react_dic["variant_list"][j]
+    
+                sites_1 = set(np.array(mut_x_sites_dic_updated[var_1]).astype(int))
+                sites_2 = set(np.array(mut_x_sites_dic_updated[var_2]).astype(int))
+    
+                sites = list(sites_1.symmetric_difference(sites_2))
+                FR_sites = 1
+                for s in sites:
+                    s = int(s)
+                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                        FR_sites *= 10
+                FR_NTB[i, j] = FR_sites
+                FR_NTB[j, i] = FR_sites
+        
+    Cross_react_dic["NTD"] = FR_NTB
+    file0 = open(sys.argv[7], "wb") 
+    pickle.dump(Cross_react_dic, file0)
+    file0.close()
+    
+elif Lin_name == "FR_DMS_sites":
+    """ Compute FR sites DMS """
+    One_mut_lin = np.unique(Escape_Fraction["site"].values.astype(str))
+    """Add NTD sites """
+    
+    One_mut_lin = np.concatenate((One_mut_lin, np.arange(14, 21), np.arange(140, 159), np.arange(245, 265))).astype(int)
+    One_mut_lin = np.unique(np.array(One_mut_lin))
+    One_mut_lin = One_mut_lin[np.argsort(One_mut_lin)]
+    One_mut_lin = One_mut_lin.astype(str)
+    
+    
+    Ab_One_Mut = Ab_classes
+    One_mut_dic = {}
+    for x in One_mut_lin:
+        One_mut_dic[x] = [x]
+    
+    """ Add a wild-type lineage place holder"""
+    One_mut_lin_new = np.append(["WT"], One_mut_lin)
+    One_mut_dic["WT"] = []
+    
+    """Compute FR for each sites and Ab"""
+    FR_Sites_Ab = np.ones((len(Ab_One_Mut), len(One_mut_lin_new)))
+    for k in range(len(Ab_One_Mut)):
+        ab = Ab_One_Mut[k]
+        print("Cross reactivity DMS sites countdown %d out of %d epitope clases"%(k+1, len(Ab_One_Mut)))
+        FR, missed, gOne = cross_reactivity((["WT"], One_mut_lin_new),
+                                            Escape_Fraction, 
+                                            [ab],
+                                            One_mut_dic
+                                            )
+        
+        FR_Sites_Ab[k, :] = FR[ab][0, :]
+      
+    """Add NTD-targeting antibody class"""
+    Ab_One_Mut = list(Ab_One_Mut) + ["NTD"]
+    
+    """
+    Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite
+    Reference to Antigenic Supersites: McCallum et al. 2021: N-terminal domain antigenic mapping reveals a site 
+    vulnerability of SARS-Cov-2
+    """   
+    idx_WT = list(One_mut_lin_new).index("WT")
+    n = len(One_mut_lin_new)
+    FR_NTB = np.ones(n)
+    for i in range(n):
+        var_1 = One_mut_lin_new[i]
+        if i > idx_WT:
+            var_2 = One_mut_lin_new[idx_WT]
+    
+            sites_1 = set(np.array(One_mut_dic[var_1]).astype(int))
+            sites_2 = set(np.array(One_mut_dic[var_2]).astype(int))
+    
             sites = list(sites_1.symmetric_difference(sites_2))
             FR_sites = 1
             for s in sites:
                 s = int(s)
-                if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)): ### Antigenic supersites
                     FR_sites *= 10
-            FR_NTB[i, j] = FR_sites
-            FR_NTB[j, i] = FR_sites
+            FR_NTB[i] = FR_sites
     
-Cross_react_dic["NTD"] = FR_NTB
-file0 = open(sys.argv[7], "wb") 
-pickle.dump(Cross_react_dic, file0)
-file0.close()
+    FR_Sites_Ab = np.row_stack((FR_Sites_Ab, FR_NTB)) 
+    
+    
+    ### Saving file
+    FR_dic = {}
+    FR_dic["Epitope Classes"] = Ab_One_Mut
+    for i in range(len(One_mut_lin_new)):
+        if i != idx_WT:
+            FR_dic[One_mut_lin_new[i]] = FR_Sites_Ab[:, i]
+            
+    FR_df = pd.DataFrame(FR_dic)
+    FR_df.to_csv(sys.argv[7]) 
+
