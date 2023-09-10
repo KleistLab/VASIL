@@ -179,6 +179,11 @@ Then, when needed, reformat snakefile
 ```
 snakefmt VASIL
 ```
+In case you had to interrupt snakemake run code (e.g. by Ctr + Z), you need to remove the folder `workdir/.snakemake/locks/`
+
+```
+rm -rf workdir/.snakemake/locks
+```
 
 ### Issue 2
 ```
