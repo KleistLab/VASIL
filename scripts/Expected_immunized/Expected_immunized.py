@@ -22,10 +22,11 @@ file1.close()
 file1 = open(sys.argv[3], "rb") # Check that this is the file you want to load
 Cross_react_dic = pickle.load(file1)
 variants_in_cross = Cross_react_dic["variant_list"]
+Cross_react_dic.pop("variant_list")
 file1.close()
 
 Ab_classes = list(Cross_react_dic.keys())
-Ab_classes.remove("variant_list")
+#Ab_classes.remove("variant_list")
 
 """Spike groups and frequencies"""
 file1 = open(sys.argv[4], "rb") 
