@@ -18,7 +18,7 @@ Conda will manage the dependencies of our pipeline. Instructions can be found he
 #### Collect required data from other pipelines
 
 #### SARS-CoV-2 genomic data 
-To extract SARS-CoV-2 genomic data from GISAID or RKI, the tool covsonar can be used:
+To extract SARS-CoV-2 genomic data from [GISAID](https://gisaid.org/) or [RKI](https://github.com/robert-koch-institut/SARS-CoV-2-Sequenzdaten_aus_Deutschland/), the covsonar tool can be used:
 https://github.com/rki-mf1/covsonar
 
 The usage of covsonar after installing and building the database is the following:
