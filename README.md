@@ -126,6 +126,7 @@ snakemake --snakefile VASILplots --configfile path/to/config_plots.yaml -j -d pa
 
 ## Output
 The main pipeline (`config.yaml`) creates a folder *results*, containing all (intermediate) output, with the following structure:
+######
 ```
 |-- results
  	|-- Cross_react_dic_spikegroups_ALL.pck	# Pairwise cross reactivity between spikegroups (all_il: TRUE or lineage_focus: "ALL")
