@@ -54,9 +54,7 @@ rule get_absolute_advantage:
 
 rule get_relative_advantage:
     input:
-        ES_lin="results/Immunological_Landscape_ALL/Immunized_SpikeGroup_"
-        + config["lineage_focus"]
-        + "_all_PK.csv",
+        ES_lin=config["S_linfocus"],
         spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
         mean_trend="results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv",
     params:
