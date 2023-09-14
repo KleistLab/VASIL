@@ -127,6 +127,7 @@ snakemake --snakefile VASILplots --configfile path/to/config_plots.yaml -j -d pa
 The main pipeline (`config.yaml`) creates a folder *results*, containing all (intermediate) output, with the following structure:
 
 ```
+```
 |-- results
  	|-- Cross_react_dic_spikegroups_ALL.pck	# Pairwise cross reactivity between spikegroups (all_il: TRUE or lineage_focus: "ALL")
 	|-- Cross_react_dic_spikegroups_*.pck   # Cross reactivity between lineage_focuss and spikegroups
@@ -148,10 +149,11 @@ The main pipeline (`config.yaml`) creates a folder *results*, containing all (in
 		|-- mutationprofile_mutations_spike_lists # Full mutation profile
 		|-- mutationprofile_mutations_spike	  # Mutation status for each spike
 		|-- mutationprofile_mutations_spikenumber_of_genomes_per_lineage.csv # Number of spike mutations per lineages
-		|-- mutationprofile_positiongroups_RBD_NTD_groups_zoom.pdf	     # Heatmap mutation profile (Zoomed)
-		|-- mutationprofile_positiongroups_RBD_NTD_groups.pdf		     # Heatmap mutation profile 
+		|-- mutationprofile_positiongroups_RBD_NTD_groups_zoom.pdf # Heatmap mutation profile (Zoomed)
+		|-- mutationprofile_positiongroups_RBD_NTD_groups.pdf	   # Heatmap mutation profile 
 		|-- mutationprofile_RBD_NTD_mutations.csv	# RBD-NTD mutation profile
 		|-- mutationprofile_RBD_NTD_pseudogroups.csv    # Spikegroups and their members
+```
 ```
 
 The figure pipeline (`config_plots.yaml`) add new data to *results* folder and creates a folder *plots*, containing important figures, with the following structure
