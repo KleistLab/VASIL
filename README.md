@@ -126,11 +126,11 @@ snakemake --snakefile VASILplots --configfile path/to/config_plots.yaml -j -d pa
 
 ## Output
 The main pipeline (`config.yaml`) creates a folder *results*, containing all (intermediate) output, with the following structure:
-######
+
 ```
 |-- results
- 	|-- Cross_react_dic_spikegroups_ALL.pck	# Pairwise cross reactivity between spikegroups (all_il: TRUE or lineage_focus: "ALL")
-	|-- Cross_react_dic_spikegroups_*.pck		# Cross reactivity between lineage_focuss and spikegroups
+ 	|-- Cross_react_dic_spikegroups_ALL.pck		# Pairwise cross reactivity between spikegroups (all_il: TRUE or lineage_focus: "ALL")
+	|-- Cross_react_dic_spikegroups_*.pck     		# Cross reactivity between lineage_focuss and spikegroups
 	|-- Cross_with_delta_validation.pck			# Cross reactivity between Delta variant and Wild Type (used of VE fitting)
 	|-- Daily_Lineages_Freq.csv				# Daily frequency of specific lineages (in percentage)
 	|-- Daily_SpikeGroups_Freqs.csv 			# Daily frequency of spikegroups (in percentage)
@@ -161,6 +161,7 @@ The figure pipeline (`config_plots.yaml`) add new data to *results* folder and c
 |-- results
  	|-- mean_proportion_changes_over_pseudogroups.csv  	# Mean change in daily spikegroups proportions 
 	|-- Susceptible_weighted_mean_over_spikegroups_all_PK.csv 	# Mean growth advantage accross  all spikegroups > 1% 
+|-- plots	
 	|-- absolute
 		|-- absolute_estimate.pdf 		# Absolute growth of the epidemics
 		|-- absolute_estimate.svg
