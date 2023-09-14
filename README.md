@@ -127,7 +127,6 @@ snakemake --snakefile VASILplots --configfile path/to/config_plots.yaml -j -d pa
 The main pipeline (`config.yaml`) creates a folder *results*, containing all (intermediate) output, with the following structure:
 
 ```
-```
 |-- results
  	|-- Cross_react_dic_spikegroups_ALL.pck	# Pairwise cross reactivity between spikegroups (all_il: TRUE or lineage_focus: "ALL")
 	|-- Cross_react_dic_spikegroups_*.pck   # Cross reactivity between lineage_focuss and spikegroups
@@ -154,27 +153,26 @@ The main pipeline (`config.yaml`) creates a folder *results*, containing all (in
 		|-- mutationprofile_RBD_NTD_mutations.csv	# RBD-NTD mutation profile
 		|-- mutationprofile_RBD_NTD_pseudogroups.csv    # Spikegroups and their members
 ```
-```
 
 The figure pipeline (`config_plots.yaml`) add new data to *results* folder and creates a folder *plots*, containing important figures, with the following structure
 
 ```
 |-- results
- 	|-- mean_proportion_changes_over_pseudogroups.csv  	# Mean change in daily spikegroups proportions 
-	|-- Susceptible_weighted_mean_over_spikegroups_all_PK.csv 	# Mean growth advantage accross  all spikegroups > 1% 
+ 	|-- mean_proportion_changes_over_pseudogroups.csv  	  # Mean change in daily spikegroups proportions 
+	|-- Susceptible_weighted_mean_over_spikegroups_all_PK.csv # Mean growth advantage accross  all spikegroups > 1% 
 |-- plots	
 	|-- absolute
-		|-- absolute_estimate.pdf 		# Absolute growth of the epidemics
+		|-- absolute_estimate.pdf 	# Absolute growth of the epidemics
 		|-- absolute_estimate.svg
 	|-- relative
-		|-- plot_status.csv	# Writes if plot is "done" or "Error"
-		|-- relative_fitness_*.pdf		# relative growth advantage of lineage_focuss
+		|-- plot_status.csv	  	# Writes if plot is "done" or "Error"
+		|-- relative_fitness_*.pdf	# relative growth advantage of lineage_focuss
 		|-- relative_fitness_*.svg
 	|-- Cross_spikegroups
 		|-- Cross_React_AB_*.pdf	# Heatmap FR for each epitope classes (max of 10 spikegroups)
 		|-- Corss_React_AB_*.svg		
 	|--- FR_sites
-		|--- foldresistance_DMS_sites_epitopes.pdf	# Heatmap Fold resistance of all the sites present in the DMS data (FR_DMS_sites: TRUE)
+		|--- foldresistance_DMS_sites_epitopes.pdf # Heatmap Fold resistance of all the sites present in the DMS data (FR_DMS_sites: TRUE)
 ```
 
 ## Demo
