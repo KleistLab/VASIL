@@ -1,7 +1,7 @@
 # VA*riant-resolved* S*ars-cov-2* I*mmunological* L*andscape* 
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
 ![](https://img.shields.io/github/v/release/kleistlab/ginpipe)
-[![DOI](https://zenodo.org/badge/359502958.svg)](https://zenodo.org/badge/latestdoi/359502958)
+[![DOI](https://zenodo.org/badge/681107366.svg)](https://zenodo.org/badge/latestdoi/681107366)
 ## System requirements 
 
 ### Prerequisites
