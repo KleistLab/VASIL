@@ -6,7 +6,7 @@
 
 ### Operating System
 
-This workflow was tested on macOS Ventura Version 13.3.
+This workflow was tested on macOS Ventura Version 13.3, as well as Ubuntu Version 20.04.5 LTS.
 
 ### Prerequisites
 #### Python
@@ -225,9 +225,9 @@ Deactivate the environment to exit the pipeline
 conda deactivate
 ```
 It should take less than a minute to run the pipeline.
-The result folder is created in the [`demo`](./demo) folder where you find the output files, as described above. The relative fitness plot of the demo sample should look like this:
+The result folder is created in the [`demo`](./demo) folder where you find the output files, as described above. The plot for the estimation of change in absolute  of the demo sample should look like this:
 
-![alt text](https://github.com/KleistLab/VASIL/blob/main/demo/plots/relative/relative_fitness_lineage_XXX.svg)
+![alt text](https://github.com/KleistLab/VASIL/blob/main/demo/plots/absolute/absolute_estimate.svg)
 
 ## Caution
 Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present (unless an input file is updated by another rule), remove older files from the *results* folder when needed.
