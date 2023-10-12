@@ -4,6 +4,10 @@
 [![DOI](https://zenodo.org/badge/681107366.svg)](https://zenodo.org/badge/latestdoi/681107366)
 ## System requirements 
 
+### Operating System
+
+This workflow was tested on macOS Ventura Version 13.3.
+
 ### Prerequisites
 #### Python
 
@@ -13,7 +17,26 @@ version 3.11.3
 Conda will manage the dependencies of our pipeline. Instructions can be found here:
 [https://docs.conda.io/projects/conda/en/latest/user-guide/install](https://docs.conda.io/projects/conda/en/latest/user-guide/install)
 
+### Dependencies
 
+This workflow uses the following dependencies:
+
+
+  | software/package | version  |
+  | ----------- | ------- |
+  | python      | 3.11.3  |
+  | numpy	| ?	|
+  | scipy	| ?	|
+  | openpyxl	| ?	|
+  | pandas	| 1.5.3	|
+  | matplotlib	| ?	|
+  | seaborn	| ?	|
+  | joblib	| ?	|
+  | regex	| ?	|
+  | pip		| ?	|
+  | pyOpenSSL	| ?	|
+  | patsy	| ?	|
+  | scikit-learn	| ?	|
 #### Collect required data from other pipelines
 
 #### SARS-CoV-2 genomic data 
