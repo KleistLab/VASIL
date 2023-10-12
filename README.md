@@ -15,18 +15,18 @@ version 3.11.3
 
 Packages:
 
-numpy
-scipy
-openpyxl
-pandas (1.5.3)
-matplotlib
-seaborn
-joblib
-regex
-pip
-pyOpenSSL
-patsy
-scikit-learn
+numpy,
+scipy,
+openpyxl,
+pandas (1.5.3),
+matplotlib,
+seaborn,
+joblib,
+regex,
+pip,
+pyOpenSSL,
+patsy,
+scikit-learn.
 
 #### Install Conda/Miniconda
 Conda will manage the dependencies of our pipeline. Instructions can be found here:
@@ -99,12 +99,12 @@ version 4.2.3 (2023-03-15)
 
 Packages:
 
-stringr
-reshape2
-gplots
-RColorBrewer
-readr
-pheatmap
+stringr,
+reshape2,
+gplots,
+RColorBrewer,
+readr,
+pheatmap.
 
 To run R routines, R including Rscript needs to be installed for the workflow. If it is not yet, you can install it together with the needed packages in your activated environment with conda or mamba
 
@@ -224,6 +224,7 @@ Deactivate the environment to exit the pipeline
 ```
 conda deactivate
 ```
+It should take less than a minute to run the pipeline.
 
 ## Caution
 Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present (unless an input file is updated by another rule), remove older files from the *results* folder when needed.
