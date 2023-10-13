@@ -15,8 +15,8 @@ VE_delta: "Clinical_Delta_VE.xlsx"
 date_start: "2023-01-06"
 date_end: "2023-03-31"
 # 6. Get immunological landscape for lineage/spikegroup name and NTD-RBD mutation positions file (DEL/del are ignored) --- please replace "." with "_"
-lineage_focus: "lineage_XXX"
-mutation_focus: "XXX_mutation_focus.txt"
+lineage_focus: "BA_2_86"
+mutation_focus: "BA.2.86_mutationsprofile_outbreak.info_28-8-23.txt"
 # 7. Get Immunological landscape for all lineages/spikegroups in simulation timeframe TRUE/FALSE
 all_il: TRUE
 # 8. Get Fold resistance of all mutation sites present in the DMS data
