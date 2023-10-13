@@ -3,8 +3,8 @@ cases: "caseAscertainmentTable_reportedCasesRatio.csv"
 # 1b. Fixed total population size for the region of interest
 total_population: 84334787
 # 2. Focus lineage 
-lineage_focus: "lineage_XXX"
-S_linfocus: "results/Immunological_Landscape/Susceptible_SpikeGroup_lineage_XXX_all_PK.csv"
+lineage_focus: "BA_2_86"
+S_linfocus: "results/Immunological_Landscape/Susceptible_SpikeGroup_BA_2_86_all_PK.csv"
 # 3. Weight threshold spikes-group proportions for predictions
 weight_prop: 0.01
 # 4. Color used in absolute fitness plot
@@ -14,5 +14,5 @@ FR_DMS_sites: TRUE
 # 6. Plot Cross reactivity of all lineages/spikegroups 
 Cross_ALL: TRUE
 # 7. Add Cross reactivity to specific lineage
-added_lineage: "lineage_XXX"
-Cross_Lin_file: "results/Cross_react_dic_spikegroups_lineage_XXX.pck"
+added_lineage: "BA_2_86"
+Cross_Lin_file: "results/Cross_react_dic_spikegroups_BA_2_86.pck"
