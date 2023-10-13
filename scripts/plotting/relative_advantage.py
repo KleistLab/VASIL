@@ -107,7 +107,7 @@ def plot_fit(ES_df, lineage):
     pdf.savefig(fig, bbox_inches = "tight")
     pdf.close()
  
-    fig.savefig(sys.argv[6]+"/relative_fitness_%s.svg"%variant, bbox_inches = "tight")
+    fig.savefig(sys.argv[6]+"/relative_fitness_%s.svg"%lineage, bbox_inches = "tight")
 
 
 if variant != "ALL":
@@ -121,7 +121,7 @@ else:
     lineage_freq.drop(columns = "date", inplace = True)
     for variant in lineage_freq.columns.astype(str):
         ES_df = pd.read_csv(sys.argv[1]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant[7:])
-        plot_fit(ES_df, variant[7:])
+        plot_fit(ES_df, variant)
         status_list.append("Done")
         
     
