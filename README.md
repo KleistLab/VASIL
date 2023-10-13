@@ -6,7 +6,7 @@
 
 ### Operating System
 
-This workflow was tested on macOS Ventura Version 13.3, as well as Ubuntu Version 20.04.5 LTS.
+This workflow was tested on macOS Monterey Version 12.5, macOS Ventura Version 13.3, as well as Ubuntu Version 20.04.5 LTS.
 
 ### Prerequisites
 #### Python
@@ -189,6 +189,10 @@ The figure pipeline (`config_plots.yaml`) add new data to *results* folder and c
 		|-- plot_status.csv	  	# Writes if plot is "done" or "Error"
 		|-- relative_fitness_*.pdf	# relative growth advantage of lineage_focuss
 		|-- relative_fitness_*.svg
+        |-- relative_all
+		|-- plot_status_all.csv	  	# Writes if plot is "done" or "Error"
+		|-- relative_fitness_*.pdf	# relative growth advantage for all spikegroups present in data
+		|-- relative_fitness_*.svg
 	|-- Cross_spikegroups
 		|-- Cross_React_AB_*.pdf	# Heatmap FR for each epitope classes (max of 10 spikegroups)
 		|-- Corss_React_AB_*.svg		
@@ -219,6 +223,8 @@ snakemake --snakefile VASILplots --configfile demo/demo_config_plots.yaml -j -d 
 
 ```
 
+### Expected Runtime for demo
+Less than 1 min
 
 Deactivate the environment to exit the pipeline
 ```
