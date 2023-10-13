@@ -4,7 +4,7 @@ cases: "caseAscertainmentTable_reportedCasesRatio.csv"
 total_population: 84334787
 # 2. Focus lineage
 lineage_focus: "BA.5"
-S_linfocus:"file_to_Expected_Susceptible_to_lineage_focus.csv"
+S_linfocus:"file_to_Expected_Susceptible_to_BA.5.csv"
 # 3. Weight threshold spikes-group proportions for predictions
 weight_prop: 0.01
 # 4. Color used in absolute fitness plot
@@ -13,6 +13,6 @@ color: "red"
 FR_DMS_sites: TRUE
 # 6. Plot Cross reactivity of all lineages/spikegroups 
 Cross_all: TRUE
-# 7. Add Cross reactivity to specific lineage
-added_lineage: "lineage_XXX"
-Cross_lin_file: "file_to_cross_lin.pck"
+# 7. Add Cross reactivity to specific lineage --- please replace "." with "_"
+added_lineage: "BA_2_86"
+Cross_lin_file: "file_to_cross_lineage_BA_2_86.pck"
