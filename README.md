@@ -237,8 +237,6 @@ The plot for the estimation of change in absolute fitness of the demo sample sho
 
 ![alt text](https://github.com/KleistLab/VASIL/blob/main/demo/plots/absolute/absolute_estimate.svg)
 
-The plot for the estimation of change in relative fitness of the demo sample should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/demo/plots/absolute/absolute_estimate.svg)
 
 ## Caution
 Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present (unless an input file is updated by another rule), remove older files from the *results* folder when needed.

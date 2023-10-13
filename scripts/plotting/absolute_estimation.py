@@ -93,7 +93,7 @@ ax2.legend(loc='upper center', bbox_to_anchor=(0.3, -0.2),
 # add vlines
 plt.vlines(x=r.real[abs(r.imag)<1e-5], ymin=min(r_ABS_min), ymax=max(r_ABS_max), colors="black", ls='--', lw=0.5, label='Delta infection')
 
-plt.suptitle("Absolute growth Simulations Without Vaccination Timeline", fontsize = 20)
+plt.suptitle("Absolute growth Simulations", fontsize = 20)
 plt.subplots_adjust(hspace=0.75, wspace=0.25)
 pdf = PdfPages(sys.argv[4]+"/absolute_estimate.pdf")
 pdf.savefig(fig, bbox_inches = "tight")
