@@ -11,12 +11,14 @@ S_linfocus: "results/Immunological_Landscape/Susceptible_SpikeGroup_BA_2_86_all_
 weight_prop: 0.01
 # 4. Color used in absolute fitness plot
 color: "red"
-# 5. Plot Fold resistance of DMS sites
+# 5. OPTIONAL: Plot Fold resistance of DMS sites
 FR_DMS_sites: TRUE
 # 6. Plot Cross reactivity of all lineages/spikegroups 
 Cross_ALL: TRUE
-# 7. Add Cross reactivity to specific lineage --- please replace "." with "_"
+# 7. OPTIONAL: Add Cross reactivity to specific lineage
+added_cross: FALSE
 added_lineage: "BA_2_86"
 Cross_Lin_file: "results/Cross_react_dic_spikegroups_BA_2_86.pck"
-# 8. OPTIONAL: Plot relative fitness for all lineages in Data
+# 8. OPTIONAL: Plot relative fitness for all spikegroups in Data
 all_fit: TRUE
+S_ALL: "results/Immunological_Landscape_ALL"

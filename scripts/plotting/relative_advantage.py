@@ -14,7 +14,6 @@ def moving_average(X, window = 7):
     
     return u
 
-ES_df = pd.read_csv(sys.argv[1])
 lineage_freq = pd.read_csv(sys.argv[2])
 threshold = float(sys.argv[3])
 variant = str(sys.argv[4])
@@ -31,12 +30,7 @@ S_mean_df = pd.read_csv(S_mean_file)
 S_all_mean = S_mean_df.to_numpy()[:, S_mean_df.columns != "Days"].astype(float)
 t_dates = S_mean_df["Days"]
 
-# processing of susceptibles 
-ES_df.drop(columns = "Unnamed: 0", inplace = True)
-es_cols = ES_df.columns
-ES_df = ES_df[ES_df['Days'].isin(t_dates)]
-ES_ranges = ES_df.to_numpy()[:, es_cols!="Days"].astype(float)
-    
+
 # processing of frequency data
 try:
     lineage_freq.drop(columns = "Unnamed: 0", inplace = True)
@@ -54,58 +48,84 @@ freqs = freqs.divide(col_sums, axis="rows")
 freqs = freqs.fillna(0)
 lineage_freq.loc[:, lineage_freq.columns != 'date'] = freqs
 
-# calculation of change in relative frequency from model
-gamma_SI = np.zeros((len(t_dates), ES_ranges.shape[1]))
 
-for i in range(ES_ranges.shape[1]):
-    S_x = ES_ranges[:, i]
-    S_mean = S_all_mean[:, i]
-
-    gamma_SI[:, i] = np.divide(S_x - S_mean, S_mean, out = S_x, where = S_mean != 0)
-
-# get min max gamma over PK at each timepoints
-gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
-
-# change in relative frequency from genomic surveillance data 
-if "Spike. " + variant in lineage_freq.columns.astype(str):
-    Pseudo_Prop = moving_average(lineage_freq["Spike. " + variant], window = 14)
-    Pseudo_Prop[Pseudo_Prop < 0.05] = 0
+def plot_fit(ES_df, lineage):
+    # processing of susceptibles 
+    ES_df.drop(columns = "Unnamed: 0", inplace = True)
+    es_cols = ES_df.columns
+    ES_df = ES_df[ES_df['Days'].isin(t_dates)]
+    ES_ranges = ES_df.to_numpy()[:, es_cols!="Days"].astype(float)
     
+    # calculation of change in relative frequency from model
+    gamma_SI = np.zeros((len(t_dates), ES_ranges.shape[1]))
     
-elif variant in lineage_freq.columns.astype(str):
-    Pseudo_Prop = moving_average(lineage_freq[variant], window = 14)
-    Pseudo_Prop[Pseudo_Prop < 0.05] = 0
-else:
-    Pseudo_Prop = np.zeros(len(t_dates))
-
-gamma_prop = np.zeros(len(t_dates))
-for l in range(len(t_dates)-1):
-    if Pseudo_Prop[l] == 0 or Pseudo_Prop[l+1] == 0:
-        gamma_prop[l] = float('nan')
+    for i in range(ES_ranges.shape[1]):
+        S_x = ES_ranges[:, i]
+        S_mean = S_all_mean[:, i]
+    
+        gamma_SI[:, i] = np.divide(S_x - S_mean, S_mean, out = S_x, where = S_mean != 0)
+    
+    # get min max gamma over PK at each timepoints
+    gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
+    
+    # change in relative frequency from genomic surveillance data 
+    if "Spike. " + lineage in lineage_freq.columns.astype(str):
+        Pseudo_Prop = moving_average(lineage_freq["Spike. " + lineage], window = 14)
+        Pseudo_Prop[Pseudo_Prop < 0.05] = 0
+        
+        
+    elif lineage in lineage_freq.columns.astype(str):
+        Pseudo_Prop = moving_average(lineage_freq[lineage], window = 14)
+        Pseudo_Prop[Pseudo_Prop < 0.05] = 0
+    
     else:
-        gamma_prop[l] = Pseudo_Prop[l+1]/Pseudo_Prop[l] -1
+        Pseudo_Prop = np.zeros(len(t_dates))
+    
+    gamma_prop = np.zeros(len(t_dates))
+    for l in range(len(t_dates)-1):
+        if Pseudo_Prop[l] == 0 or Pseudo_Prop[l+1] == 0:
+            gamma_prop[l] = float('nan')
+        else:
+            gamma_prop[l] = Pseudo_Prop[l+1]/Pseudo_Prop[l] -1
+    
+    # plotting
+    fig, ax = plt.subplots()
+    
+    plt.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3)
+    plt.plot(t_dates, gamma_prop, color = "orange")
+    
+    #ax.axhline(xmin = 0, xmax = t_dates[-1], ls = "--", linewidth = 2, color = "black")
+    ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
+    
+    perday = range(0,len(t_dates), min(len(t_dates), 14))
+    
+    ax.set_xticks(perday)
+    ax.set_xticklabels(t_dates[perday].tolist(),
+        rotation = 45, horizontalalignment = "right")
+    
+    pdf = PdfPages(sys.argv[6]+"/relative_fitness_%s.pdf"%lineage)
+    pdf.savefig(fig, bbox_inches = "tight")
+    pdf.close()
+ 
+    fig.savefig(sys.argv[6]+"/relative_fitness_%s.svg"%variant, bbox_inches = "tight")
 
-# plotting
-fig, ax = plt.subplots()
 
-plt.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3)
-plt.plot(t_dates, gamma_prop, color = "orange")
+if variant != "ALL":
+    ES_df = pd.read_csv(sys.argv[1])
+    plot_fit(ES_df, variant)
+    status = pd.DataFrame({"lineage":variant, "relative_advantage":"Done"}, index = [1])
+    status.to_csv(sys.argv[6]+"/plot_status.csv")
 
-#ax.axhline(xmin = 0, xmax = t_dates[-1], ls = "--", linewidth = 2, color = "black")
-ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
-
-perday = range(0,len(t_dates), min(len(t_dates), 14))
-
-ax.set_xticks(perday)
-ax.set_xticklabels(t_dates[perday].tolist(),
-    rotation = 45, horizontalalignment = "right")
-
-pdf = PdfPages(sys.argv[6]+"/relative_fitness_%s.pdf"%variant)
-pdf.savefig(fig, bbox_inches = "tight")
-pdf.close()
-
-fig.savefig(sys.argv[6]+"/relative_fitness_%s.svg"%variant, bbox_inches = "tight")
-
-status = pd.DataFrame({"lineage":variant, "relative_advantage":"Done"}, index = [1])
-status.to_csv(sys.argv[6]+"/plot_status.csv")
+else:
+    status_list = []
+    lineage_freq.drop(columns = "date", inplace = True)
+    for variant in lineage_freq.columns.astype(str):
+        ES_df = pd.read_csv(sys.argv[1]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant[7:])
+        plot_fit(ES_df, variant[7:])
+        status_list.append("Done")
+        
+    
+    status = pd.DataFrame({"lineage":lineage_freq.columns.astype(str), "relative_advantage":status_list})
+    status.to_csv(sys.argv[6]+"/plot_status_all.csv")
+        
 
