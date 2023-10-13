@@ -16,7 +16,7 @@ FR_DMS_sites: TRUE
 # 6. Plot Cross reactivity of all lineages/spikegroups 
 Cross_ALL: TRUE
 # 7. OPTIONAL: Add Cross reactivity to specific lineage
-added_cross: FALSE
+added_cross: TRUE
 added_lineage: "BA_2_86"
 Cross_Lin_file: "results/Cross_react_dic_spikegroups_BA_2_86.pck"
 # 8. OPTIONAL: Plot relative fitness for all spikegroups in Data

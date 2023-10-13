@@ -15,11 +15,12 @@ if config["FR_DMS_sites"]:
 if config["Cross_ALL"]:
     rule_all_common.append("plots/Cross_spikegroups/Cross_React_AB_A.pdf")
 
-if config["all_fit"]: 
+if config["all_fit"]:
     rule_all_common.append("plots/relative_all/plot_status_all.csv")
 
 if config["fit_lineage_focus"]:
     rule_all_common.append("plots/relative/plot_status.csv"),
+
 
 rule all:
     input:
@@ -53,7 +54,9 @@ rule get_absolute_advantage:
     shell:
         "python {workflow.basedir}/scripts/plotting/absolute_estimation.py {input.cases} {input.mean_trend} {params.color} {output.res_dir}"
 
+
 if config["fit_lineage_focus"]:
+
     rule get_relative_advantage:
         input:
             ES_lin=config["S_linfocus"],
@@ -68,7 +71,9 @@ if config["fit_lineage_focus"]:
         shell:
             "python {workflow.basedir}/scripts/plotting/relative_advantage.py {input.ES_lin} {input.spikes_freqs} {params.threshold} {params.lineage_focus} {input.mean_trend} {output.res_dir}"
 
-if config["all_fit"]: 
+
+if config["all_fit"]:
+
     rule get_relative_advantage_all:
         input:
             ES_lin=config["S_ALL"],
@@ -80,7 +85,6 @@ if config["all_fit"]:
         output:
             res_dir=directory("plots/relative_all/"),
             res="plots/relative_all/plot_status_all.csv",
-     
         shell:
             "python {workflow.basedir}/scripts/plotting/relative_advantage.py {input.ES_lin} {input.spikes_freqs} {params.threshold} {params.lineage_focus} {input.mean_trend} {output.res_dir}"
 
@@ -97,8 +101,9 @@ if config["FR_DMS_sites"]:
             "Rscript {workflow.basedir}/scripts/plotting/FR_sites_landscape.R {input.FR_sites} {output.res_dir}"
 
 
-if config["Cross_ALL"]:	 
-    if config["added_cross"]: 
+if config["Cross_ALL"]:
+    if config["added_cross"]:
+
         rule plot_cross_all:
             input:
                 cross_ALL="results/Cross_react_dic_spikegroups_ALL.pck",
@@ -110,9 +115,10 @@ if config["Cross_ALL"]:
                 res="plots/Cross_spikegroups/Cross_React_AB_A.pdf",
             shell:
                 "python {workflow.basedir}/scripts/plotting/Cross_maps.py {input.cross_ALL} {params.lin_name} {input.cross_lin} {output.res_dir}"
+
     else:
-	
-	rule plot_cross_all:
+
+        rule plot_cross_all:
             input:
                 cross_ALL="results/Cross_react_dic_spikegroups_ALL.pck",
             params:
