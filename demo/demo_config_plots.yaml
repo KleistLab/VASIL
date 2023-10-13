@@ -2,7 +2,9 @@
 cases: "caseAscertainmentTable_reportedCasesRatio.csv"
 # 1b. Fixed total population size for the region of interest
 total_population: 84334787
-# 2. Focus lineage 
+# 2.a OPTIONAL: Plot relative fitness for Focus lineage 
+fit_lineage_focus: TRUE
+# 2.b if above is TRUE Focus lineage name
 lineage_focus: "BA_2_86"
 S_linfocus: "results/Immunological_Landscape/Susceptible_SpikeGroup_BA_2_86_all_PK.csv"
 # 3. Weight threshold spikes-group proportions for predictions
@@ -16,3 +18,5 @@ Cross_ALL: TRUE
 # 7. Add Cross reactivity to specific lineage --- please replace "." with "_"
 added_lineage: "BA_2_86"
 Cross_Lin_file: "results/Cross_react_dic_spikegroups_BA_2_86.pck"
+# 8. OPTIONAL: Plot relative fitness for all lineages in Data
+all_fit: TRUE
