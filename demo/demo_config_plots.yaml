@@ -13,6 +13,6 @@ color: "red"
 FR_DMS_sites: TRUE
 # 6. Plot Cross reactivity of all lineages/spikegroups 
 Cross_ALL: TRUE
-# 7. Add Cross reactivity to specific lineage
+# 7. Add Cross reactivity to specific lineage --- please replace "." with "_"
 added_lineage: "BA_2_86"
 Cross_Lin_file: "results/Cross_react_dic_spikegroups_BA_2_86.pck"
