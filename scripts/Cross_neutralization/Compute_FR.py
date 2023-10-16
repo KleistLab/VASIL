@@ -84,7 +84,7 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     """Parallel codes --- not very efficient with snakemake"""
     """
     pfunc = partial(sub_Bind, tiled_esc = tiled_esc, Where_Mut = Where_Mut, Where_Cond = Where_Cond)
-    #jb_res = list(jb.Parallel(n_jobs = 10)(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+    #jb_res = list(jb.Parallel(n_jobs = -1)(jb.delayed(pfunc)(d) for d in range(len(conditions))))
     jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
     
     for d in range(len(conditions)):
