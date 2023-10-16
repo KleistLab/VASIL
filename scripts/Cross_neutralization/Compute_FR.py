@@ -81,17 +81,20 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     tiled_mut = ma.array(np.tile(mut_sites, (vars_num, 1)), mask = ~diff_sites)
     Where_Mut = tiled_mut[:, :, np.newaxis] == escape_sites[np.newaxis, np.newaxis,  :]
     
-    """Parallel codes --- not very efficient with snakemake"""
+    """Parallel codes --- macOS Monterey 12.5 crashes """
     """
     pfunc = partial(sub_Bind, tiled_esc = tiled_esc, Where_Mut = Where_Mut, Where_Cond = Where_Cond)
-    #jb_res = list(jb.Parallel(n_jobs = -1)(jb.delayed(pfunc)(d) for d in range(len(conditions))))
-    jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+    try:
+        jb_res = list(jb.Parallel(n_jobs = -1)(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+    except:
+        jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
     
     for d in range(len(conditions)):
         Bind_list[:, d]   = np.array(jb_res[d][0])
         Missing_cond_data[:, d] = np.array(jb_res[d][1])
     """
-  
+    
+    """ Brute force method """
     for d in range(len(conditions)):
         #print(d+1, len(conditions))
         Inter_Cond_Mut = Where_Mut & Where_Cond[np.newaxis, d, :]
