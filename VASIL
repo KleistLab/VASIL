@@ -16,10 +16,11 @@ if config["all_il"]:
     rule_all_common.append(
         "results/Immunological_Landscape_ALL/simulation_status_ALL.csv"
     )
-    rule_all_common.append("results/Cross_with_delta_validation_too.pck"),
+
 
 if config["FR_DMS_sites"]:
     rule_all_common.append("results/Fold_Resistance_DMS_Sites_Epitopes.csv")
+    rule_all_common.append("results/Cross_with_delta_validation_too.pck"),
 
 if config["run_for_lineage_focus"]:
     rule_all_common.append(
