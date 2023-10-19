@@ -212,9 +212,12 @@ for i in range(n):
 
 Cross_with_delta_validation["NTD"] = FR_NTB
 Cross_with_delta_validation["variant_list"] = variant_x_names_show
-file0 = open(sys.argv[6], "wb") 
-pickle.dump(Cross_with_delta_validation, file0)
-file0.close()
+try:
+    file0 = open(sys.argv[6], "wb") 
+    pickle.dump(Cross_with_delta_validation, file0)
+    file0.close()
+except:
+    pass
 
 """Compute Cross reactivity"""
 Cross_react_dic = {}
