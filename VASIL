@@ -20,7 +20,6 @@ if config["all_il"]:
 
 if config["FR_DMS_sites"]:
     rule_all_common.append("results/Fold_Resistance_DMS_Sites_Epitopes.csv")
-    rule_all_common.append("results/Cross_with_delta_validation_too.pck"),
 
 if config["run_for_lineage_focus"]:
     rule_all_common.append(
@@ -144,7 +143,7 @@ if config["all_il"]:
             dms_data_regrouped="results/epitope_data/dms_per_ab_per_site.csv",
         params:
             lineage_focus="ALL",
-            mutation_focus=config["mutation_focus"],
+            mutation_focus="None",
         output:
             cross_delta="results/Cross_with_delta_validation_recomputed.pck",
             cross_spk="results/Cross_react_dic_spikegroups_ALL.pck",
@@ -181,7 +180,7 @@ if config["FR_DMS_sites"]:
             dms_data_regrouped="results/epitope_data/dms_per_ab_per_site.csv",
         params:
             dms_sites="FR_DMS_sites",
-            mutation_focus=config["mutation_focus"],
+            mutation_focus="None",
         output:
             cross_delta="results/Cross_with_delta_validation_too.pck",
             cross_dms="results/Fold_Resistance_DMS_Sites_Epitopes.csv",

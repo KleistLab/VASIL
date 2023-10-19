@@ -33,25 +33,28 @@ Escape_Fraction = pd.read_csv(sys.argv[3])
 Ab_classes = np.unique(Escape_Fraction["group"].values.astype(str))
 
 """Load lineage name to assess and it's mutation profile"""
-Lin_name = sys.argv[4]
-mut_file = open(sys.argv[5], "r")
-mut_lin0 = mut_file.readlines()
-mut_file.close()
+try:
+    Lin_name = sys.argv[4]
+    mut_file = open(sys.argv[5], "r")
+    mut_lin0 = mut_file.readlines()
+    mut_file.close()
 
-mut_Lin = []
-for mut in mut_lin0:
-    if mut[:3] not in ("DEL", "del"):
-        if len(re.findall(r'\d+', mut))>0:
-            mut_Lin.append(re.findall(r'\d+', mut)[0])       
-mut_Lin = list(np.unique(np.array(mut_Lin).astype(int)))
+    mut_Lin = []
+    for mut in mut_lin0:
+        if mut[:3] not in ("DEL", "del"):
+            if len(re.findall(r'\d+', mut))>0:
+                mut_Lin.append(re.findall(r'\d+', mut)[0])       
+                mut_Lin = list(np.unique(np.array(mut_Lin).astype(int)))
 
-"""Update mutation profile dictionary"""
-mut_x_sites_dic_updated = mut_x_sites_dic.copy()
-if Lin_name not in SpikeGroups_list: ### Keep Lin_name as it is
-    mut_x_sites_dic_updated[Lin_name] = mut_Lin
-else:
-    Lin_name = Lin_name + "_requested" ### renamed to avoid ambiguities
-    mut_x_sites_dic_updated[Lin_name] = mut_Lin
+    """Update mutation profile dictionary"""
+    mut_x_sites_dic_updated = mut_x_sites_dic.copy()
+    if Lin_name not in SpikeGroups_list: ### Keep Lin_name as it is
+        mut_x_sites_dic_updated[Lin_name] = mut_Lin
+    else:
+        Lin_name = Lin_name + "_requested" ### renamed to avoid ambiguities
+        mut_x_sites_dic_updated[Lin_name] = mut_Lin
+except:
+    pass
 
 def sub_Bind(d, tiled_esc, Where_Mut, Where_Cond):
     Inter_Cond_Mut = Where_Mut & Where_Cond[np.newaxis, d, :]
@@ -276,7 +279,7 @@ elif Lin_name == "ALL":
             Cross_Lin, Missed, Greater_one = cross_reactivity((variant_x_names_cross, variant_x_names_cross), 
                        Escape_Fraction, 
                        [ab],
-                       mut_x_sites_dic_updated)
+                       mut_x_sites_dic)
             
             """
             Only the information for the specific lineage studied is required for immunological landscape calculation
@@ -298,8 +301,8 @@ elif Lin_name == "ALL":
             if i > j:
                 var_2 = Cross_react_dic["variant_list"][j]
     
-                sites_1 = set(np.array(mut_x_sites_dic_updated[var_1]).astype(int))
-                sites_2 = set(np.array(mut_x_sites_dic_updated[var_2]).astype(int))
+                sites_1 = set(np.array(mut_x_sites_dic[var_1]).astype(int))
+                sites_2 = set(np.array(mut_x_sites_dic[var_2]).astype(int))
     
                 sites = list(sites_1.symmetric_difference(sites_2))
                 FR_sites = 1
