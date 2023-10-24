@@ -230,7 +230,6 @@ Deactivate the environment to exit the pipeline
 ```
 conda deactivate
 ```
-It should take less than a minute to run the pipeline.
 The result folder is created in the [`demo`](./demo) folder where you find the output files, as described above. 
 
 The plot for the estimation of change in absolute fitness of the demo sample should look like this:
