@@ -12,18 +12,31 @@ import numpy.ma as ma
 
 #### Load Data #####
 cross_file = open(sys.argv[1], "rb")
-Cross_Epitope_Dic = pickle.load(cross_file)
+Cross_Epitope_Dic_orig = pickle.load(cross_file)
 cross_file.close()
-Top_Pseudo = Cross_Epitope_Dic["variant_list"][:10]
+Top_Pseudo = ["Wuhan-Hu-1"]+list(Cross_Epitope_Dic_orig["variant_list"][:9])
 Pseudo_lab_cross = []
+
 for i in range(len(Top_Pseudo)):
     if Top_Pseudo[:7] == "Spike. ":
         Pseudo_lab_cross.append(Top_Pseudo[i][7:])
     else:
         Pseudo_lab_cross.append(Top_Pseudo[i])
 
-Cross_Epitope_Dic.pop("variant_list")
-choosen_Ab = list(Cross_Epitope_Dic.keys())#["A", "B", "D1", "D2"]#, "B", "D1", "D2"]
+All_Pseudo = list(Cross_Epitope_Dic_orig["variant_list"])
+Cross_Epitope_Dic_orig.pop("variant_list")
+choosen_Ab = list(Cross_Epitope_Dic_orig.keys())#["A", "B", "D1", "D2"]#, "B", "D1", "D2"]
+
+Cross_Epitope_Dic = {}
+for ab in choosen_Ab:
+    Cross = np.ones((len(Top_Pseudo),len(Top_Pseudo)))
+    for i in range(len(Top_Pseudo)):
+        w_i = All_Pseudo.index(Top_Pseudo[i])
+        for j in range(len(Top_Pseudo)):
+            w_j = All_Pseudo.index(Top_Pseudo[j])
+            Cross[i,j] = Cross_Epitope_Dic_orig[ab][w_i, w_j]
+    Cross_Epitope_Dic[ab] = Cross
+        
 
 ### Colors picked from figure sketch.pptx 3D structure of epitope classes ### Replace RGBA ####
 #cmap_base = ["Reds", "Blues", "Wistia", "Wistia"]
@@ -80,11 +93,11 @@ try:
             for i in range(len(Top_Pseudo)):
                 FR_lin[1+i] = Cross_Epitope_lin[ab][list(var_lin).index(Lin_name), list(var_lin).index(Top_Pseudo[i])]
             
-            Cross_Epitope_Dic[ab] = np.row_stack((FR_lin[1:], Cross_Epitope_Dic[ab]))
-            Cross_Epitope_Dic[ab] = np.column_stack((FR_lin.T, Cross_Epitope_Dic[ab]))
+            Cross_Epitope_Dic[ab] = np.row_stack((Cross_Epitope_Dic[ab], FR_lin[1:]))
+            Cross_Epitope_Dic[ab] = np.column_stack((Cross_Epitope_Dic[ab], FR_lin.T))
         
-        Top_Pseudo = [Lin_name] + list(Top_Pseudo)
-        Pseudo_lab_cross = [Lin_name]+ list(Pseudo_lab_cross)
+        Top_Pseudo = list(Top_Pseudo) + [Lin_name] 
+        Pseudo_lab_cross = list(Pseudo_lab_cross) + [Lin_name]
 except:
     pass
 
@@ -95,6 +108,8 @@ mask_triup = np.ones((len(Top_Pseudo), len(Top_Pseudo))).astype(bool)
 mask_triup[triup] = False
 mask_triup = mask_triup.astype(bool)
 
+
+import pdb
 for k in range(len(choosen_Ab)):
     ab = choosen_Ab[k]
     Cross_ab = Cross_Epitope_Dic[ab]
