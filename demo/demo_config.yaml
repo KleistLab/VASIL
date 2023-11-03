@@ -21,6 +21,10 @@ lineage_focus: "BA_2_86"
 # 6.c and NTD-RBD mutation positions file (DEL/del are ignored)
 mutation_focus: "BA.2.86_mutationsprofile_outbreak.info_28-8-23.txt"
 # 7. OPTIONAL: Get Immunological landscape for all lineages/spikegroups in simulation timeframe TRUE/FALSE
-all_il: TRUE
+cross_all: FALSE 
+# if cross_all is FALSE, you must include the precomputed files:
+# results/Cross_with_delta_validation.pck & results/Cross_react_dic_spikegroups_ALL.pck 
+#(if TRUE these files are regenerated)
+all_il: TRUE # get all immunological landscapes (requiring the cross files above)
 # 8. Get Fold resistance of all mutation sites present in the DMS data
-FR_DMS_sites: TRUE
+FR_DMS_sites: FALSE
