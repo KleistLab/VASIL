@@ -14,7 +14,12 @@ import numpy.ma as ma
 cross_file = open(sys.argv[1], "rb")
 Cross_Epitope_Dic_orig = pickle.load(cross_file)
 cross_file.close()
-Top_Pseudo = ["Wuhan-Hu-1"]+list(Cross_Epitope_Dic_orig["variant_list"][:9])
+Top_Pseudo = np.array(Cross_Epitope_Dic_orig["variant_list"][:10])
+if "Wuhan-Hu-1" not in Top_Pseudo:
+    Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[-1:])
+else:
+    Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[Top_Pseudo!="Wuhan-Hu-1"])
+
 Pseudo_lab_cross = []
 
 for i in range(len(Top_Pseudo)):
