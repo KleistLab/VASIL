@@ -49,11 +49,10 @@ Population_Data = Population_Data.drop(index = Population_Data.index[:list(Popul
 date_end = sys.argv[10]
 where_last_day = list(Population_Data['date']).index(date_end) + 1
 
-t = np.arange(1, len(Population_Data['date'][:where_last_day + 1]), 1)
+t = np.arange(1, len(Population_Data['date'][:where_last_day]) + 1, 1)
 infection_data_corrected = Population_Data['minNTrue'].values[:where_last_day]
 t_dates = Population_Data['date'].values[:where_last_day]
 days_incidence = list(Population_Data['date'][:where_last_day]) 
-
 """Load Lineage to assess """
 Lin_name = sys.argv[11]
 """Update name if necessary -- this is the same update as in Compute_FR"""
@@ -302,7 +301,8 @@ def Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data, present_variant_
     
     Infected_l_vect = infection_data[np.newaxis, :]*variant_proportion[:, :len(infection_data)]
     present_variant_index = np.array([list(variant_name).index(present_variant_list[j]) for j in range(len(present_variant_list))])
-
+    
+    
     Prob_Neut = P_Neut(t, present_variant_index, PK_dframe, tested_variant_list, variant_name, Ab_classes, IC50xx, Cross_react_dic)
     
     """
@@ -358,7 +358,6 @@ def ei_util(Lin_name):
         for key in c_dframe_dic.keys():
             PK_dframe = c_dframe_dic[key]
             key_num = np.array(re.findall(r"\d+", key)).astype(int)
-    
             Res_sub_0 = Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data = infection_data_corrected, 
                                                          present_variant_list = SpikeGroups_list, ### Aligned with rows-indexes of variant_proportion
                                                          tested_variant_list =  variant_to_sim, 
@@ -372,6 +371,7 @@ def ei_util(Lin_name):
             EI["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = Res_sub_0
             Susc["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = total_population - Res_sub_0
         """ Save Dynamics Without Vaccination """
+        
         EI_df = pd.DataFrame(EI)
         EI_df.to_csv(sys.argv[12]+"/Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
         
