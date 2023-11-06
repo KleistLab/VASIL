@@ -87,6 +87,7 @@ fig, ax = Display_Envelope(pk_t, np.array([PK_min]), np.array([PK_max]),
                           fig = fig,
                           ax = ax)
 
+fig.savefig(sys.argv[5]+"/PK_Epitopes_ranges.svg", bbox_inches = "tight")
 status = {"PK":"done"}
 
 ### Load P_Neut Data already pre-made ####
@@ -116,4 +117,5 @@ fig, ax = Display_Envelope(t, np.array([EnvO_Min]), np.array([EnvO_Max]),
                           ax = ax) 
 
 status["P_neut"] = "done"
+fig.savefig(sys.argv[5]+"/P_Neut_"+str(sys.argv[4])+".svg", bbox_inches = "tight")
 (pd.DataFrame(status, index=[1,2])).to_csv(sys.argv[5]+"/plot_status.csv")
