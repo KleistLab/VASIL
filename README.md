@@ -157,10 +157,12 @@ The main pipeline (`config.yaml`) creates a folder *results*, containing all (in
 	|-- Fold_Resistance_DMS_Sites_Epitopes.csv. # Fold resistance of all the sites present in the DMS data (FR_DMS_sites: TRUE)
 	|-- Mutation_Profile.pck	# Mutation profile of each spikegroups 
 	|-- SpikeGroups.pck		# List of all spikegroups names
+	|-- PK_for_all_Epitopes.csv    # Pharmacokynetics for any epitope class with all combinations of PK parameters
 	|-- Immunological_Landscape
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized for lineage_focuss with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible for lineage_focuss with all combinations of PK parameters
 		|-- simulation_status_*.csv  	      # Writes if Immunological Landscape "done" or "Error"
+		|-- P_neut_*.csv  	      # Virus neutralization probability 
 	|-- Immunological_Landscape_ALL
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized for all spikegroups with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible for all spikegroupswith all combinations of PK parameters
@@ -198,6 +200,9 @@ The figure pipeline (`config_plots.yaml`) add new data to *results* folder and c
 		|-- Corss_React_AB_*.svg		
 	|--- FR_sites
 		|--- foldresistance_DMS_sites_epitopes.pdf # Heatmap Fold resistance of all the sites present in the DMS data (FR_DMS_sites: TRUE)
+	|--- P_neut_PK
+		|--- PK_Epitope_ranges.pdf/svg# Pharmacokynetics of for any epitope class
+		|--- P_Neut_*.pdf/svg # Virus neutralization probability
 ```
 
 ## Demo
