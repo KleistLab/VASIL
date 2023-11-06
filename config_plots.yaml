@@ -22,3 +22,8 @@ Cross_Lin_file: "path/to/Cross_react_dic_spikegroups_BA_2_86.pck"
 # 8. OPTIONAL: Plot relative fitness for all spikegroups in Data
 all_fit: TRUE
 S_ALL: "folder path/to/ Expected Susceptible for all spikegroups in Data"
+# 9. OPTIONAL: Plot neutralization proba curve for lineage focus, PK figure is plotted alongside
+p_neut: TRUE
+p_neut_file: "path/to/P_neut_BA_2_86.csv"
+color_pneut: "orange"
+pk_file: "path/to/PK_for_all_Epitopes.csv"

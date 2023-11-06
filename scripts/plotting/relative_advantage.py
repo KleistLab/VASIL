@@ -30,7 +30,6 @@ S_mean_df = pd.read_csv(S_mean_file)
 S_all_mean = S_mean_df.to_numpy()[:, S_mean_df.columns != "Days"].astype(float)
 t_dates = S_mean_df["Days"]
 
-
 # processing of frequency data
 try:
     lineage_freq.drop(columns = "Unnamed: 0", inplace = True)
@@ -96,11 +95,19 @@ def plot_fit(ES_df, lineage):
     
     #ax.axhline(xmin = 0, xmax = t_dates[-1], ls = "--", linewidth = 2, color = "black")
     ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
+    if len(t_dates)>200:
+        pp = 7*4
+    else:
+        pp = min(len(t_dates), 14)
     
-    perday = range(0,len(t_dates), min(len(t_dates), 14))
+    perday = np.arange(0,len(t_dates), pp)
     
+    date_ticks = t_dates[perday].tolist()
+    if t_dates[len(t_dates) - 1] not in date_ticks:
+        date_ticks.append(t_dates[len(t_dates) - 1])
+        perday = np.append(perday, len(t_dates)-1)
     ax.set_xticks(perday)
-    ax.set_xticklabels(t_dates[perday].tolist(),
+    ax.set_xticklabels(date_ticks,
         rotation = 45, horizontalalignment = "right")
     
     pdf = PdfPages(sys.argv[6]+"/relative_fitness_%s.pdf"%lineage)

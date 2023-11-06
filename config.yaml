@@ -28,3 +28,5 @@ cross_all: FALSE
 all_il: TRUE # get all immunological landscapes (requiring the cross files above)
 # 8. Get Fold resistance of all mutation sites present in the DMS data
 FR_DMS_sites: TRUE
+# 9. OPTIONAL:Compute neutralization proba curve for lineage focus
+p_neut: TRUE

@@ -321,14 +321,48 @@ def Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data, present_variant_
     return Expected_Immuned
 
 
+def PNeut_Envelope(t, variants, variant_x_names, Cross_react_dic, c_dframe_dic, IC50xx_dic, mean_IC50xx = True):
+    res = np.zeros((len(variants), len(list(c_dframe_dic.keys())), len(t)))
+    if mean_IC50xx:
+        IC50xx = np.mean(list(IC50xx_dic.values()))
+        print("Used mean fitted IC50", IC50xx)
+    
+    for i in range(len(variants)):
+        where_y = list(variant_x_names).index(variants[i])
+        where_x = list(variant_x_names).index("Wuhan-Hu-1")
+    
+        for j in range(len(list(c_dframe_dic.keys()))):
+            if not mean_IC50xx:
+                IC50xx = IC50xx_dic[list(c_dframe_dic.keys())[j]]
+            
+            IC50xy = [Cross_react_dic[Ab_classes[i]][where_x, where_y]*IC50xx*FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))]
+                
+            c_dframe = c_dframe_dic[list(c_dframe_dic.keys())[j]]
+            for l in range(len(t)): 
+                antibody_level = c_dframe.loc[l][1:]
+                res[i, j, l] = efficacy_n_antibodies(antibody_level, IC50xy) 
+    
+    return np.min(res, axis = (0, 1)), np.max(res, axis = (0, 1))
+
 """Compute Antibody concentration over time for a range of t_half and t_max"""
 thalf_vec = np.linspace(25, 69, 15) 
 tmax_vec = np.linspace(14, 28, 5)
 t_conc = np.arange(1, 656, 1) ### used in older codes
 c_t_vec, c_dframe_dic, dataname = Antibody_ranges(thalf_vec, tmax_vec, t_conc, Ab_classes)
 IC50xx_dic, mean_IC50xx_dic = Find_IC50_ranges(thalf_vec, tmax_vec, t_conc, Ab_classes,  Cross_with_delta_validation)
-### spikegroup frequency
 
+"""Save Dynamics: The Antibody PK is assumed to be the same for all Epitope Classes"""
+PK = {}
+PK["Day since activation"] = t_conc
+for key in c_dframe_dic.keys():
+    key_num = np.array(re.findall(r"\d+", key)).astype(int)
+    PK["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = c_dframe_dic[key]["A"]
+
+
+PK_df = pd.DataFrame(PK)
+PK_df.to_csv("results/PK_for_all_Epitopes.csv")
+
+### spikegroup frequency
 print("Fitted mean IC50=%.3f \n IC50 per epitope class is "%mean_IC50xx_dic["NTD"], mean_IC50xx_dic)
 try:
 	frequency_spk_df.drop(columns = "Unnamed: 0", inplace = True)
@@ -347,13 +381,25 @@ spikegroups_proportion = np.divide(prop_rounded, NormProp, out = np.zeros(prop_r
 
 
 ### end of simulation
-def ei_util(Lin_name):
+def ei_util(Lin_name, save_pneut=None):
     variant_to_sim = [Lin_name]
     EI = {}
     EI["Days"] = days_incidence
     
     Susc = {}
     Susc["Days"] = days_incidence
+    if save_pneut in ("TRUE", "True"):
+        EnvD_Min,EnvD_Max = PNeut_Envelope(t_conc, [Lin_name], variants_in_cross, Cross_react_dic, c_dframe_dic, IC50xx_dic, mean_IC50xx = True)
+        """ Save VE-Delta ranges"""
+        VE = {}
+        VE["Day since infection"] = t_conc
+        VE["Proba Neut Min"] = EnvD_Min
+        VE["Proba Neut Max"] = EnvD_Max
+        
+        VE_df = pd.DataFrame(VE)
+        VE_df.to_csv(sys.argv[12]+"/P_neut_"+Lin_name+".csv")
+    else:
+        pass
     try:
         for key in c_dframe_dic.keys():
             PK_dframe = c_dframe_dic[key]
@@ -378,16 +424,17 @@ def ei_util(Lin_name):
         Susc_df = pd.DataFrame(Susc)
         Susc_df.to_csv(sys.argv[12]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
         return "Done"
-    
+        
     except:
         
         return "Error"
 
 if Lin_name != "ALL":
-    status_var = ei_util(Lin_name) 
+    status_var = ei_util(Lin_name, str(sys.argv[13])) 
     # Save file as a placeholder for exectuted codes, required for snakemake
     sim_df = pd.DataFrame({"SpikeGroups":[Lin_name], "Simulation status":status_var})
     sim_df.to_csv(sys.argv[12]+"/simulation_status_%s.csv"%Lin_name)
+    
 else:
     status_var = []
     for i in range(len(SpikeGroups_list)):

@@ -21,6 +21,9 @@ if config["all_fit"]:
 if config["fit_lineage_focus"]:
     rule_all_common.append("plots/relative/plot_status.csv"),
 
+if config["p_neut"]:
+    rule_all_common.append("plots/P_neut_PK/plot_status.csv"),
+
 
 rule all:
     input:
@@ -129,3 +132,19 @@ if config["Cross_ALL"]:
                 res="plots/Cross_spikegroups/Cross_React_AB_A.pdf",
             shell:
                 "python {workflow.basedir}/scripts/plotting/Cross_maps.py {input.cross_ALL} {params.lin_name} {params.cross_lin} {output.res_dir}"
+
+
+if config["p_neut"]:
+
+    rule plot_pneut:
+        input:
+            pneut_file=config["p_neut_file"],
+            pk_file=config["pk_file"],
+        params:
+            lin_name=config["lineage_focus"],
+            col_pneut=config["color_pneut"],
+        output:
+            res_dir=directory("plots/P_neut_PK/"),
+            res="plots/P_neut_PK/plot_status.csv",
+        shell:
+            "python {workflow.basedir}/scripts/plotting/P_neut.py {input.pk_file} {input.pneut_file} {params.col_pneut} {params.lin_name} {output.res_dir}"
