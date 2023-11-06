@@ -400,6 +400,7 @@ def ei_util(Lin_name, save_pneut=None):
         VE_df.to_csv(sys.argv[12]+"/P_neut_"+Lin_name+".csv")
     else:
         pass
+    
     try:
         for key in c_dframe_dic.keys():
             PK_dframe = c_dframe_dic[key]
@@ -413,11 +414,9 @@ def ei_util(Lin_name, save_pneut=None):
                                                          IC50xx= mean_IC50xx_dic,
                                                          Cross_react_dic = Cross_react_dic, 
                                                          )
-            
             EI["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = Res_sub_0
             Susc["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = total_population - Res_sub_0
         """ Save Dynamics Without Vaccination """
-        
         EI_df = pd.DataFrame(EI)
         EI_df.to_csv(sys.argv[12]+"/Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
         
@@ -437,6 +436,7 @@ if Lin_name != "ALL":
     
 else:
     status_var = []
+    
     for i in range(len(SpikeGroups_list)):
         status_var.append(ei_util(SpikeGroups_list[i]))
     # Save file as a placeholder for exectuted codes, required for snakemake
