@@ -47,7 +47,14 @@ freqs = freqs.divide(col_sums, axis="rows")
 freqs = freqs.fillna(0)
 lineage_freq.loc[:, lineage_freq.columns != 'date'] = freqs
 
-
+import matplotlib
+def PreFig(xsize = 12, ysize = 12):
+    '''
+    @brief: customize figure parameters
+    '''
+    matplotlib.rc('xtick', labelsize=xsize) 
+    matplotlib.rc('ytick', labelsize=ysize)
+    
 def plot_fit(ES_df, lineage):
     # processing of susceptibles 
     ES_df.drop(columns = "Unnamed: 0", inplace = True)
@@ -70,13 +77,12 @@ def plot_fit(ES_df, lineage):
     # change in relative frequency from genomic surveillance data 
     if "Spike. " + lineage in lineage_freq.columns.astype(str):
         Pseudo_Prop = moving_average(lineage_freq["Spike. " + lineage], window = 14)
-        Pseudo_Prop[Pseudo_Prop < 0.05] = 0
-        
-        
+        Pseudo_Prop[Pseudo_Prop < threshold] = 0        
+        Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
     elif lineage in lineage_freq.columns.astype(str):
         Pseudo_Prop = moving_average(lineage_freq[lineage], window = 14)
-        Pseudo_Prop[Pseudo_Prop < 0.05] = 0
-    
+        Pseudo_Prop[Pseudo_Prop < threshold] = 0
+        Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
     else:
         Pseudo_Prop = np.zeros(len(t_dates))
     
@@ -88,27 +94,56 @@ def plot_fit(ES_df, lineage):
             gamma_prop[l] = Pseudo_Prop[l+1]/Pseudo_Prop[l] -1
     
     # plotting
-    fig, ax = plt.subplots()
+    PreFig(xsize = 20, ysize = 20)
+    fig = plt.figure(figsize = (15, 7))
+    ax = fig.add_subplot(1, 1, 1)
     
     plt.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3)
     plt.plot(t_dates, gamma_prop, color = "orange")
     
     #ax.axhline(xmin = 0, xmax = t_dates[-1], ls = "--", linewidth = 2, color = "black")
     ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
-    if len(t_dates)>200:
+    
+    try:
+        x_min = list(t_dates).index(str(sys.argv[7]))
+        x_max = list(t_dates).index(str(sys.argv[8]))
+    except:
+        x_min = None
+        x_max = None
+    
+    if (x_min is not None):
+        ax.set_xlim((x_min, x_max))
+        t_dates_show = np.array(t_dates)[x_min:x_max+1]
+    else:
+        t_dates_show = t_dates
+
+    if len(t_dates_show)>200:
         pp = 7*4
     else:
-        pp = min(len(t_dates), 14)
+        pp = min(len(t_dates_show), 14)
     
-    perday = np.arange(0,len(t_dates), pp)
-    
-    date_ticks = t_dates[perday].tolist()
+    perday = np.arange(0,len(t_dates_show), pp)
+    date_ticks = t_dates_show[perday].tolist()
     if t_dates[len(t_dates) - 1] not in date_ticks:
+        n=list(t_dates).index(date_ticks[-1])+pp
+        while n<len(t_dates)-1:
+            date_ticks.append(t_dates[n])
+            perday = np.append(perday, n)
+            n += pp
         date_ticks.append(t_dates[len(t_dates) - 1])
-        perday = np.append(perday, len(t_dates)-1)
-    ax.set_xticks(perday)
+        perday = np.append(perday, len(t_dates) - 1)
+    
+    if x_min is not None:
+        perday_orig = []
+        for i in range(len(date_ticks)):
+            perday_orig.append(list(t_dates).index(date_ticks[i]))
+    else:
+        perday_orig = perday
+        
+    ax.set_xticks(perday_orig)
     ax.set_xticklabels(date_ticks,
         rotation = 45, horizontalalignment = "right")
+    
     
     pdf = PdfPages(sys.argv[6]+"/relative_fitness_%s.pdf"%lineage)
     pdf.savefig(fig, bbox_inches = "tight")

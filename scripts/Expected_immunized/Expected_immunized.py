@@ -299,7 +299,8 @@ from scipy import signal
 def Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data, present_variant_index, tested_variant_list, variant_name, variant_proportion, Ab_classes, 
                                   IC50xx, Cross_react_dic, escape_per_sites = None, mut_sites_per_variant = None, parallel = False, mode_func = None):
     
-    Infected_l_vect = infection_data[np.newaxis, :]*variant_proportion[:, :len(infection_data)]    
+    stop = min(len(infection_data), variant_proportion.shape[0])
+    Infected_l_vect = infection_data[np.newaxis, :stop]*variant_proportion[:, :stop]    
     
     Prob_Neut = P_Neut(t, present_variant_index, PK_dframe, tested_variant_list, variant_name, Ab_classes, IC50xx, Cross_react_dic)
     

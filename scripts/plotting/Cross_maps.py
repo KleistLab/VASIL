@@ -8,6 +8,7 @@ import pickle
 import sys
 import seaborn as sns
 import numpy.ma as ma
+import pdb
 
 
 #### Load Data #####
@@ -16,12 +17,11 @@ Cross_Epitope_Dic_orig = pickle.load(cross_file)
 cross_file.close()
 Top_Pseudo = np.array(Cross_Epitope_Dic_orig["variant_list"][:10])
 if "Wuhan-Hu-1" not in Top_Pseudo:
-    Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[-1:])
+    Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[:-1])
 else:
     Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[Top_Pseudo!="Wuhan-Hu-1"])
 
 Pseudo_lab_cross = []
-
 for i in range(len(Top_Pseudo)):
     if Top_Pseudo[:7] == "Spike. ":
         Pseudo_lab_cross.append(Top_Pseudo[i][7:])
@@ -30,7 +30,7 @@ for i in range(len(Top_Pseudo)):
 
 All_Pseudo = list(Cross_Epitope_Dic_orig["variant_list"])
 Cross_Epitope_Dic_orig.pop("variant_list")
-choosen_Ab = list(Cross_Epitope_Dic_orig.keys())#["A", "B", "D1", "D2"]#, "B", "D1", "D2"]
+choosen_Ab = list(Cross_Epitope_Dic_orig.keys())
 
 Cross_Epitope_Dic = {}
 for ab in choosen_Ab:
@@ -104,8 +104,45 @@ try:
         Top_Pseudo = list(Top_Pseudo) + [Lin_name] 
         Pseudo_lab_cross = list(Pseudo_lab_cross) + [Lin_name]
 except:
-    pass
-
+    try:
+        Lin_name = sys.argv[2]
+        cross_lin = open(sys.argv[3], "rb")
+        Cross_Epitope_lin = pickle.load(cross_lin)
+        var_lin = Cross_Epitope_lin["variant_list"]
+        Top_Pseudo = var_lin[:9]
+        
+        Cross_Epitope_Dic = {}
+        if "Wuhan-Hu-1" not in Top_Pseudo:
+            Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[:-1])
+        else:
+            Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[Top_Pseudo!="Wuhan-Hu-1"])
+        
+        Pseudo_lab_cross = []
+        for i in range(len(Top_Pseudo)):
+            if Top_Pseudo[:7] == "Spike. ":
+                Pseudo_lab_cross.append(Top_Pseudo[i][7:])
+            else:
+                Pseudo_lab_cross.append(Top_Pseudo[i])
+                
+        if Lin_name not in Top_Pseudo:            
+            Top_Pseudo = list(Top_Pseudo) + [Lin_name] 
+            Pseudo_lab_cross = list(Pseudo_lab_cross) + [Lin_name]
+            for ab in choosen_Ab:
+                Cross = np.ones((len(Top_Pseudo), len(Top_Pseudo)))
+                for i in range(len(Top_Pseudo)):
+                    for j in range(len(Top_Pseudo)):
+                        if (Top_Pseudo[i] != Lin_name)&(Top_Pseudo[j]!= Lin_name):
+                            w_i = list(All_Pseudo).index(Top_Pseudo[i])
+                            w_j = list(All_Pseudo).index(Top_Pseudo[j])
+                            Cross[i, j] = Cross_Epitope_Dic_orig[ab][w_i, w_j]
+                        else:
+                            w_i = list(var_lin).index(Top_Pseudo[i])
+                            w_j = list(var_lin).index(Top_Pseudo[j])
+                            Cross[i, j] = Cross_Epitope_lin[ab][w_i, w_j]
+                Cross_Epitope_Dic[ab] = Cross
+                
+    except:
+        pass
 
 
 triup = np.triu_indices(len(Top_Pseudo), k=0)
@@ -114,7 +151,6 @@ mask_triup[triup] = False
 mask_triup = mask_triup.astype(bool)
 
 
-import pdb
 for k in range(len(choosen_Ab)):
     ab = choosen_Ab[k]
     Cross_ab = Cross_Epitope_Dic[ab]

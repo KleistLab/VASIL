@@ -70,7 +70,6 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     diff_sites = (test_i ^ mut_bool_g2)
 
     escape_data_ab = escape_ab_dic["escape_data_ab"]
-    escape_data_ab[escape_data_ab >= 1] = 0.99 # bound on escape fraction
     
     conditions = escape_ab_dic["conditions"]
     ab_sub_list = escape_ab_dic["ab_sub_list"]   
