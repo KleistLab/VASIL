@@ -63,7 +63,7 @@ def sub_Bind(d, tiled_esc, Where_Mut, Where_Cond):
     return [Bind_list_d, Missing_cond_data_d]
 
 
-def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, EF_func = "MEAN", GM = False, quiet = True):
+def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, EF_func = "MEAN", GM = False, quiet = True, joblib = None):
     vars_num = mut_bool_g2.shape[0]
     
     test_i = np.tile(mut_bool_g1[i, :], (vars_num, 1))
@@ -84,25 +84,24 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     tiled_mut = ma.array(np.tile(mut_sites, (vars_num, 1)), mask = ~diff_sites)
     Where_Mut = tiled_mut[:, :, np.newaxis] == escape_sites[np.newaxis, np.newaxis,  :]
     
-    """Parallel codes --- macOS Monterey 12.5 crashes """
-    """
-    pfunc = partial(sub_Bind, tiled_esc = tiled_esc, Where_Mut = Where_Mut, Where_Cond = Where_Cond)
-    try:
-        jb_res = list(jb.Parallel(n_jobs = -1)(jb.delayed(pfunc)(d) for d in range(len(conditions))))
-    except:
-        jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
-    
-    for d in range(len(conditions)):
-        Bind_list[:, d]   = np.array(jb_res[d][0])
-        Missing_cond_data[:, d] = np.array(jb_res[d][1])
-    """
-    
-    """ Brute force method """
-    for d in range(len(conditions)):
-        #print(d+1, len(conditions))
-        Inter_Cond_Mut = Where_Mut & Where_Cond[np.newaxis, d, :]
-        Bind_list[:, d] = np.prod(1 - tiled_esc[:, np.newaxis, :]*Inter_Cond_Mut, axis = (1,2))  
-        Missing_cond_data[:, d] = ~np.any(np.any(Where_Mut & Where_Cond[np.newaxis, d, :], axis = 2), axis = 1)
+    if joblib is not None:
+        """Parallel codes --- macOS Monterey 12.5 crashes --- Not used by default """
+        pfunc = partial(sub_Bind, tiled_esc = tiled_esc, Where_Mut = Where_Mut, Where_Cond = Where_Cond)
+        try:
+            jb_res = list(jb.Parallel(n_jobs = -1)(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+        except:
+            jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+        
+        for d in range(len(conditions)):
+            Bind_list[:, d]   = np.array(jb_res[d][0])
+            Missing_cond_data[:, d] = np.array(jb_res[d][1])
+    else:
+        """ Brute force method """
+        for d in range(len(conditions)):
+            #print(d+1, len(conditions))
+            Inter_Cond_Mut = Where_Mut & Where_Cond[np.newaxis, d, :]
+            Bind_list[:, d] = np.prod(1 - tiled_esc[:, np.newaxis, :]*Inter_Cond_Mut, axis = (1,2))  
+            Missing_cond_data[:, d] = ~np.any(np.any(Where_Mut & Where_Cond[np.newaxis, d, :], axis = 2), axis = 1)
 
     
     retained_binding = Bind_list
@@ -224,6 +223,11 @@ Cross_react_dic = {}
 AB = ""
 a = 1
 print("Cross reactivity computation might take a while")
+try:
+    joblib = str(sys.argv[8])
+except:
+    joblib = None
+    
 if Lin_name not in ("ALL", "FR_DMS_sites"):
     for ab in Ab_classes:
         print("Assess Lineage %s with the NTD-RBD mutation positions "%Lin_name, mut_Lin)
@@ -234,7 +238,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
             Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_name], variant_x_names_cross), 
                        Escape_Fraction, 
                        [ab],
-                       mut_x_sites_dic_updated)
+                       mut_x_sites_dic_updated, joblib=joblib)
             
             """
             Only the information for the specific lineage studied is required for immunological landscape calculation

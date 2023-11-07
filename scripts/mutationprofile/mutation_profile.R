@@ -75,6 +75,9 @@ D <- read.csv(input_datafile_covsonar, sep = "\t")
 #Dmock <- D[t_keep,]
 #write.table(Dmock, file='covsonar_mock.tsv', quote=FALSE, sep='\t', col.names = NA)
 
+### order dates
+D <- D[order(D$date),]
+
 ### filter data to start and end date
 dates <- D$date
 u_dates <- unique(dates)

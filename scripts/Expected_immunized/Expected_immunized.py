@@ -403,6 +403,7 @@ def ei_util(Lin_name, save_pneut=None):
     
     try:
         for key in c_dframe_dic.keys():
+            pdb.set_trace()
             PK_dframe = c_dframe_dic[key]
             key_num = np.array(re.findall(r"\d+", key)).astype(int)
             Res_sub_0 = Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data = infection_data_corrected, 
@@ -416,6 +417,7 @@ def ei_util(Lin_name, save_pneut=None):
                                                          )
             EI["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = Res_sub_0
             Susc["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = total_population - Res_sub_0
+            pdb.set_trace()
         """ Save Dynamics Without Vaccination """
         EI_df = pd.DataFrame(EI)
         EI_df.to_csv(sys.argv[12]+"/Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])

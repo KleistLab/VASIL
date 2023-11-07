@@ -5,6 +5,7 @@ import numpy as np
 import pickle
 import re
 import sys
+#import pdb
 
 """ Loads lineage frequency data aready matched with timeline of infection """
 frequency_lineage_df = pd.read_csv(sys.argv[1])
@@ -52,7 +53,7 @@ for x in range(len(Lineages_list)):
             prop_miss = proportion_lineage[x_lin, :]
             missing_var_prop[variant] = prop_miss 
             print("Missing mutation profile for variant %s :\n"%variant, "proportion (min, mean, max):", (np.min(prop_miss), np.mean(prop_miss), np.max(prop_miss)))
-      
+            
 """ Merge proportions by Spike Groups"""
 SpikeGroups_list = []
 Pseudogroups = pd.read_csv(sys.argv[3])
