@@ -296,12 +296,10 @@ def P_Neut(t, present_variant_index, PK_dframe, tested_variant_list, variant_nam
 
 """Immunity dynamics using Fast Frourier Transform: scipy.signal.fftconvolve"""
 from scipy import signal
-def Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data, present_variant_list, tested_variant_list, variant_name, variant_proportion, Ab_classes, 
+def Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data, present_variant_index, tested_variant_list, variant_name, variant_proportion, Ab_classes, 
                                   IC50xx, Cross_react_dic, escape_per_sites = None, mut_sites_per_variant = None, parallel = False, mode_func = None):
     
-    Infected_l_vect = infection_data[np.newaxis, :]*variant_proportion[:, :len(infection_data)]
-    present_variant_index = np.array([list(variant_name).index(present_variant_list[j]) for j in range(len(present_variant_list))])
-    
+    Infected_l_vect = infection_data[np.newaxis, :]*variant_proportion[:, :len(infection_data)]    
     
     Prob_Neut = P_Neut(t, present_variant_index, PK_dframe, tested_variant_list, variant_name, Ab_classes, IC50xx, Cross_react_dic)
     
@@ -381,7 +379,7 @@ spikegroups_proportion = np.divide(prop_rounded, NormProp, out = np.zeros(prop_r
 
 
 ### end of simulation
-def ei_util(Lin_name, save_pneut=None):
+def ei_util(Lin_name, save_pneut=None, var_list_index = None):
     variant_to_sim = [Lin_name]
     EI = {}
     EI["Days"] = days_incidence
@@ -402,12 +400,15 @@ def ei_util(Lin_name, save_pneut=None):
         pass
     
     try:
+        if var_list_index is None:
+            SpikeGroups_list_index = np.array([list(variants_in_cross).index(SpikeGroups_list[j]) for j in range(len(SpikeGroups_list))])
+        else:
+            SpikeGroups_list_index = var_list_index
         for key in c_dframe_dic.keys():
-            pdb.set_trace()
             PK_dframe = c_dframe_dic[key]
             key_num = np.array(re.findall(r"\d+", key)).astype(int)
             Res_sub_0 = Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data = infection_data_corrected, 
-                                                         present_variant_list = SpikeGroups_list, ### Aligned with rows-indexes of variant_proportion
+                                                         present_variant_index = SpikeGroups_list_index, ### indexes of variant in variant_in_cross
                                                          tested_variant_list =  variant_to_sim, 
                                                          variant_name = variants_in_cross, ### Aligned with Cross_react_dic["variant_list"]
                                                          variant_proportion =  spikegroups_proportion, ### rows are aligned with present_variant_list
@@ -417,7 +418,6 @@ def ei_util(Lin_name, save_pneut=None):
                                                          )
             EI["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = Res_sub_0
             Susc["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = total_population - Res_sub_0
-            pdb.set_trace()
         """ Save Dynamics Without Vaccination """
         EI_df = pd.DataFrame(EI)
         EI_df.to_csv(sys.argv[12]+"/Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
@@ -438,9 +438,10 @@ if Lin_name != "ALL":
     
 else:
     status_var = []
-    
+    SpikeGroups_list_index = np.array([list(variants_in_cross).index(SpikeGroups_list[j]) for j in range(len(SpikeGroups_list))])
     for i in range(len(SpikeGroups_list)):
-        status_var.append(ei_util(SpikeGroups_list[i]))
+        print("Compute E[immunized] for %d out of %d spikegroups"%(i, len(SpikeGroups_list)))
+        status_var.append(ei_util(SpikeGroups_list[i], var_list_index=SpikeGroups_list_index))
     # Save file as a placeholder for exectuted codes, required for snakemake
     sim_df = pd.DataFrame({"SpikeGroups":SpikeGroups_list, "Simulation status":status_var})
     sim_df.to_csv(sys.argv[12]+"/simulation_status_ALL.csv")

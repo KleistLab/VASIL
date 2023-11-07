@@ -118,6 +118,14 @@ mut_file = open(sys.argv[6], "wb")
 pickle.dump({"positions": mut_x_sites_dic}, mut_file)
 mut_file.close()
 
+### Save SpikeGroups_dic
+try:
+    file = open("Spikegroups_membership.pck", "wb")
+    pickle.dump(SpikeGroups_dic,file)
+    file.close()
+except:
+    pass
+
 
 
 
