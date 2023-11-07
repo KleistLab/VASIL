@@ -192,17 +192,18 @@ file = open("Spikegroups_membership.pck", "rb")
 Pseudogroup_dic = pickle.load(file)
 file.close()
 
+
 lineages_sim = ["BA.2", "BA.4", "BA.5", "BQ.1.1", "BE.1.1", "CH.1.1", "XBB.1.5"]
 Top_Pseudo = []
 Pseudo_done = []
 for spklin in lineages_sim:
-    if Pseudogroup_dic[spklin] not in Pseudo_done:
-        try:
+    try:
+        if Pseudogroup_dic[spklin] not in Pseudo_done:
             Top_Pseudo.append(Pseudogroup_dic[spklin])
             Pseudo_done.append(Pseudogroup_dic[spklin])
-        except:
-            pass
-
+    except:
+        pass
+        
 Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo)
 a = 1
 if len(Top_Pseudo)!=0:

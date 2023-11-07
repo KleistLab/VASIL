@@ -93,7 +93,7 @@ if config["all_fit"]:
             res_dir=directory("plots/relative_all/"),
             res="plots/relative_all/plot_status_all.csv",
         shell:
-            "python {workflow.basedir}/scripts/plotting/relative_advantage.py {input.ES_lin} {input.spikes_freqs} {params.threshold} {params.lineage_focus} {input.mean_trend} {output.res_dir}{params.time_start} {params.time_stop}"
+            "python {workflow.basedir}/scripts/plotting/relative_advantage.py {input.ES_lin} {input.spikes_freqs} {params.threshold} {params.lineage_focus} {input.mean_trend} {output.res_dir} {params.time_start} {params.time_stop}"
 
 
 if config["FR_DMS_sites"]:
