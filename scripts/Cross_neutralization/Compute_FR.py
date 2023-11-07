@@ -226,7 +226,7 @@ try:
     joblib = str(sys.argv[8])
 except:
     joblib = None
-    
+        
 if Lin_name not in ("ALL", "FR_DMS_sites"):
     for ab in Ab_classes:
         print("Assess Lineage %s with the NTD-RBD mutation positions "%Lin_name, mut_Lin)
@@ -287,10 +287,6 @@ elif Lin_name == "ALL":
                        [ab],
                        mut_x_sites_dic, joblib=joblib)
             
-            """
-            Only the information for the specific lineage studied is required for immunological landscape calculation
-            the FRxy_ab matrix is kept only for compatibility with other codes
-            """
             FRxy_ab = Cross_Lin[ab]
     
             Cross_react_dic[ab] = FRxy_ab
@@ -333,7 +329,6 @@ elif Lin_name == "FR_DMS_sites":
     One_mut_lin = np.unique(np.array(One_mut_lin))
     One_mut_lin = One_mut_lin[np.argsort(One_mut_lin)]
     One_mut_lin = One_mut_lin.astype(str)
-    
     
     Ab_One_Mut = Ab_classes
     One_mut_dic = {}
@@ -396,4 +391,4 @@ elif Lin_name == "FR_DMS_sites":
             
     FR_df = pd.DataFrame(FR_dic)
     FR_df.to_csv(sys.argv[7]) 
-
+    

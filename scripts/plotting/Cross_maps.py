@@ -15,11 +15,12 @@ import pdb
 cross_file = open(sys.argv[1], "rb")
 Cross_Epitope_Dic_orig = pickle.load(cross_file)
 cross_file.close()
-#Top_Pseudo = np.array(Cross_Epitope_Dic_orig["variant_list"][:10])
-lineages_sim = ["BA.2", "BA.4", "BA.5", "BQ.1.1", "BE.1.1", "CH.1.1", "XBB.1.5"]
 file = open("Spikegroups_membership.pck", "rb")
 Pseudogroup_dic = pickle.load(file)
 file.close()
+
+
+lineages_sim = ["BA.2", "BA.4", "BA.5", "BQ.1.1", "BE.1.1", "CH.1.1", "XBB.1.5"]
 Top_Pseudo = []
 Top_lab = []
 Pseudo_done = []
@@ -31,15 +32,22 @@ for spklin in lineages_sim:
             Top_lab.append(Pseudogroup_dic[spklin]+"/"+spklin)
         else:
             Top_lab.append(spklin)
+    else:
+        ix = Pseudo_done.index(Pseudogroup_dic[spklin])
+        Top_lab[ix] = Top_lab[ix]+"/"+spklin
+       
 
+Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo)
+Top_lab = ["Wuhan-Hu-1"]+Top_lab
+Pseudo_lab_cross = Top_lab
+
+"""
+Top_Pseudo = np.array(Cross_Epitope_Dic_orig["variant_list"][:10])
 if "Wuhan-Hu-1" not in Top_Pseudo:
     Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[:-1])
 else:
     Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[Top_Pseudo!="Wuhan-Hu-1"])
-
-Pseudo_lab_cross = Top_lab
-
-"""
+    
 Pseudo_lab_cross = []
 for i in range(len(Top_Pseudo)):
     if Top_Pseudo[:7] == "Spike. ":
@@ -47,7 +55,6 @@ for i in range(len(Top_Pseudo)):
     else:
         Pseudo_lab_cross.append(Top_Pseudo[i])
 """
-Top_lab = ["Wuhan-Hu-1"]+Top_lab
 
 All_Pseudo = list(Cross_Epitope_Dic_orig["variant_list"])
 Cross_Epitope_Dic_orig.pop("variant_list")
@@ -63,8 +70,6 @@ for ab in choosen_Ab:
             Cross[i,j] = Cross_Epitope_Dic_orig[ab][w_i, w_j]
     Cross_Epitope_Dic[ab] = Cross
         
-print(Top_Pseudo)
-print(Top_lab)
 ### Colors picked from figure sketch.pptx 3D structure of epitope classes ### Replace RGBA ####
 #cmap_base = ["Reds", "Blues", "Wistia", "Wistia"]
 from matplotlib.colors import ListedColormap
@@ -172,7 +177,6 @@ mask_triup = np.ones((len(Top_Pseudo), len(Top_Pseudo))).astype(bool)
 mask_triup[triup] = False
 mask_triup = mask_triup.astype(bool)
 
-
 for k in range(len(choosen_Ab)):
     ab = choosen_Ab[k]
     Cross_ab = Cross_Epitope_Dic[ab]
@@ -259,6 +263,121 @@ for k in range(len(choosen_Ab)):
     fig_fr.savefig(sys.argv[4]+"/Cross_React_AB_%s.svg"%ab, bbox_inches = "tight")
     pdf.close()
  
+### Always plot Cross reactivity between major variant groups for sanity checks, 
+#only computed when the timeline is wide enough to contain the major variant groups   
+try:     
+    file0 = open("results/Cross_to_major_variants.pck", "rb") 
+    Cross_show=pickle.load(file0)
+    file0.close()
+    Top_Pseudo_var = Cross_show["variant_list"]
+    Top_Pseudo = []
+    Top_lab = []
+    Pseudo_done = []
+    for spklin in lineages_sim:
+        if Pseudogroup_dic[spklin] in Top_Pseudo_var:
+            if Pseudogroup_dic[spklin] not in Pseudo_done:
+                Top_Pseudo.append(Pseudogroup_dic[spklin])
+                Pseudo_done.append(Pseudogroup_dic[spklin])
+                if Pseudogroup_dic[spklin] != spklin:
+                    Top_lab.append(Pseudogroup_dic[spklin]+"/"+spklin)
+                else:
+                    Top_lab.append(spklin)
+            else:
+                ix = Pseudo_done.index(Pseudogroup_dic[spklin])
+                Top_lab[ix] = Top_lab[ix]+"/"+spklin
+    if "Wuhan-Hu-1" not in Top_Pseudo:
+        Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo)
         
-    
+    triup = np.triu_indices(len(Top_Pseudo), k=0)
+    mask_triup = np.ones((len(Top_Pseudo), len(Top_Pseudo))).astype(bool)
+    mask_triup[triup] = False
+    mask_triup = mask_triup.astype(bool)
+
+    for k in range(len(choosen_Ab)):
+        ab = choosen_Ab[k]
+        Cross_ab = Cross_show[ab]
+        ### Set Colorbar limit ###
+        Cross_sub = np.log10(Cross_ab)
+        
+        if ab == "A":
+            FR_vals_sub = np.arange(0, np.max(Cross_sub)+0.5, 0.5)
+            center = 1
+        elif ab == "B":
+            FR_vals_sub = np.arange(0, np.max(Cross_sub)+1, 1)
+            center = 1.*np.mean(FR_vals_sub)
+        elif ab == "D1":
+            FR_vals_sub = np.arange(0, np.max(Cross_sub)+0.5, 0.5)
+            center = 1.*np.mean(FR_vals_sub)
+        else:
+            FR_vals_sub = np.arange(0, np.max(Cross_sub)+1, 1)
+            center = 1.*np.mean(FR_vals_sub)
+        
+        ### show >= ... only if there is enough distance between max and the last FR_vals (otherwise it is crowded)
+        if FR_vals_sub[-1] < np.max(Cross_sub) - 0.1:
+            FR_vals_sub = np.append(FR_vals_sub[:-1], np.max(Cross_sub))
+      
+        #Cross_sub[Cross_sub>=FR_vals_sub[-1]] = FR_vals_sub[-1]
+        
+        ### Put mask only after setting colorbar limits ####
+        Cross_sub = ma.array(Cross_sub, mask = mask_triup)
+
+        Cross_Epitope_Dic["Resistance to %s"%ab] = Cross_sub
+        
+        PreFig(xsize = xysize[0], ysize = xysize[1])
+        fig_fr = plt.figure(figsize = (16, 13))
+        ax_fr = fig_fr.add_subplot(1, 1, 1)
+        
+        dLab = "Cross-Resistance to %s"%ab
+        
+        if ab in list(cmap_dic.keys()):
+            cMap = sns.heatmap(data = Cross_sub,
+                        mask = mask_triup, 
+                        cmap = cmap_dic[ab], 
+                        xticklabels = Pseudo_lab_cross, 
+                        yticklabels = Pseudo_lab_cross, 
+                        cbar = True, 
+                        annot = True, 
+                        #annot = False,
+                        annot_kws = {"size": 30},
+                        fmt = ".2f", ## annotations decimals
+                        cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
+                        center = center,
+                        linewidths = 3,
+                        linecolor = "white")
+        else:
+            cMap = sns.heatmap(data = Cross_sub,
+                        mask = mask_triup, 
+                        xticklabels = Pseudo_lab_cross, 
+                        yticklabels = Pseudo_lab_cross, 
+                        cbar = True, 
+                        annot = True, 
+                        #annot = False,
+                        annot_kws = {"size": 30},
+                        fmt = ".2f", ## annotations decimals
+                        cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
+                        center = center,
+                        linewidths = 3,
+                        linecolor = "white")
+            
+        cbar = cMap.figure.axes[-1] # get colorbar instance
+        cbar.yaxis.label.set_size(cbar_labsize)
+                    
+        cbar.tick_params(labelsize = cbar_labsize)
+        cMap.set_facecolor(facecolor) 
+        plt.title(dLab, fontsize = title_labsize)
+        ax_fr.set_aspect("equal")
+        plt.xticks(fontsize = ticksize[0], rotation = 45, horizontalalignment = "right")
+        plt.yticks(fontsize = ticksize[1], rotation = 0)
+        
+        plt.subplots_adjust(hspace=0.65, wspace=0.5)
+        
+        cbar = ax_fr.collections[0].colorbar
+        cbar.set_ticklabels(["%.1f"%FR_vals_sub[:-1][i] for i in range(len(FR_vals_sub[:-1]))]+["$\geq$"+" %.1f"%FR_vals_sub[-1]])
+        
+        pdf = PdfPages(sys.argv[4]+"/check_Cross_React_AB_%s.pdf"%ab)
+        pdf.savefig(fig_fr, bbox_inches = "tight")
+        fig_fr.savefig(sys.argv[4]+"/check_Cross_React_AB_%s.svg"%ab, bbox_inches = "tight")
+        pdf.close()
+except:
+    pass
 

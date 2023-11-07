@@ -469,7 +469,7 @@ else:
     for i in range(len(SpikeGroups_list)):
         if SpikeGroups_list[i] in variants_in_cross:
             print("Compute E[immunized] for %d out of %d spikegroups"%(i, len(SpikeGroups_list)))
-            status_var.append(ei_util(SpikeGroups_list[i], var_list_index=SpikeGroups_list_index), spikegroups_proportion_adjust=spikegroups_proportion_adjust)
+            status_var.append(ei_util(SpikeGroups_list[i], var_list_index=SpikeGroups_list_index, spikegroups_proportion_adjust=spikegroups_proportion_adjust))
         else:
             status_var.append("Not in cross")
     # Save file as a placeholder for exectuted codes, required for snakemake
