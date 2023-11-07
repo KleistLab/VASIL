@@ -47,7 +47,10 @@ date_start = str(sys.argv[9])
 Population_Data = Population_Data.drop(index = Population_Data.index[:list(Population_Data['date']).index(date_start)])
 
 date_end = sys.argv[10]
-where_last_day = list(Population_Data['date']).index(date_end) + 1
+if date_end in list(Population_Data['date']):
+    where_last_day = list(Population_Data['date']).index(date_end) + 1
+else:
+    where_last_day = len(list(Population_Data['date']))
 
 t = np.arange(1, len(Population_Data['date'][:where_last_day]) + 1, 1)
 infection_data_corrected = Population_Data['minNTrue'].values[:where_last_day]
@@ -380,7 +383,7 @@ spikegroups_proportion = np.divide(prop_rounded, NormProp, out = np.zeros(prop_r
 
 
 ### end of simulation
-def ei_util(Lin_name, save_pneut=None, var_list_index = None):
+def ei_util(Lin_name, save_pneut=None, var_list_index = None, spikegroups_proportion_adjust=None):
     variant_to_sim = [Lin_name]
     EI = {}
     EI["Days"] = days_incidence
@@ -402,9 +405,22 @@ def ei_util(Lin_name, save_pneut=None, var_list_index = None):
     
     try:
         if var_list_index is None:
-            SpikeGroups_list_index = np.array([list(variants_in_cross).index(SpikeGroups_list[j]) for j in range(len(SpikeGroups_list))])
+            SpikeGroups_list_index = []
+            for j in range(len(SpikeGroups_list)):
+                if SpikeGroups_list[j] in variants_in_cross:
+                    SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))
+            SpikeGroups_list_index = np.array(SpikeGroups_list_index)
         else:
             SpikeGroups_list_index = var_list_index
+        
+        if spikegroups_proportion_adjust is None:
+            spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
+            for j in range(len(SpikeGroups_list_index)):
+                w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+                spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
+        else:
+            spikegroups_proportion_adjust = spikegroups_proportion_adjust
+            
         for key in c_dframe_dic.keys():
             PK_dframe = c_dframe_dic[key]
             key_num = np.array(re.findall(r"\d+", key)).astype(int)
@@ -412,7 +428,7 @@ def ei_util(Lin_name, save_pneut=None, var_list_index = None):
                                                          present_variant_index = SpikeGroups_list_index, ### indexes of variant in variant_in_cross
                                                          tested_variant_list =  variant_to_sim, 
                                                          variant_name = variants_in_cross, ### Aligned with Cross_react_dic["variant_list"]
-                                                         variant_proportion =  spikegroups_proportion, ### rows are aligned with present_variant_list
+                                                         variant_proportion =  spikegroups_proportion_adjust, ### rows are aligned with present_variant_list that are present in cross
                                                          Ab_classes = Ab_classes, 
                                                          IC50xx= mean_IC50xx_dic,
                                                          Cross_react_dic = Cross_react_dic, 
@@ -439,10 +455,23 @@ if Lin_name != "ALL":
     
 else:
     status_var = []
-    SpikeGroups_list_index = np.array([list(variants_in_cross).index(SpikeGroups_list[j]) for j in range(len(SpikeGroups_list))])
+    SpikeGroups_list_index = []
+    for j in range(len(SpikeGroups_list)):
+        if SpikeGroups_list[j] in variants_in_cross:
+            SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
+    SpikeGroups_list_index = np.array(SpikeGroups_list_index)
+    
+    spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
+    for j in range(len(SpikeGroups_list_index)):
+        w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+        spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
+        
     for i in range(len(SpikeGroups_list)):
-        print("Compute E[immunized] for %d out of %d spikegroups"%(i, len(SpikeGroups_list)))
-        status_var.append(ei_util(SpikeGroups_list[i], var_list_index=SpikeGroups_list_index))
+        if SpikeGroups_list[i] in variants_in_cross:
+            print("Compute E[immunized] for %d out of %d spikegroups"%(i, len(SpikeGroups_list)))
+            status_var.append(ei_util(SpikeGroups_list[i], var_list_index=SpikeGroups_list_index), spikegroups_proportion_adjust=spikegroups_proportion_adjust)
+        else:
+            status_var.append("Not in cross")
     # Save file as a placeholder for exectuted codes, required for snakemake
     sim_df = pd.DataFrame({"SpikeGroups":SpikeGroups_list, "Simulation status":status_var})
     sim_df.to_csv(sys.argv[12]+"/simulation_status_ALL.csv")

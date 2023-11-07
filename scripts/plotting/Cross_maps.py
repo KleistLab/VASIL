@@ -15,18 +15,39 @@ import pdb
 cross_file = open(sys.argv[1], "rb")
 Cross_Epitope_Dic_orig = pickle.load(cross_file)
 cross_file.close()
-Top_Pseudo = np.array(Cross_Epitope_Dic_orig["variant_list"][:10])
+#Top_Pseudo = np.array(Cross_Epitope_Dic_orig["variant_list"][:10])
+lineages_sim = ["BA.2", "BA.4", "BA.5", "BQ.1.1", "BE.1.1", "CH.1.1", "XBB.1.5"]
+file = open("Spikegroups_membership.pck", "rb")
+Pseudogroup_dic = pickle.load(file)
+file.close()
+Top_Pseudo = []
+Top_lab = []
+Pseudo_done = []
+for spklin in lineages_sim:
+    if Pseudogroup_dic[spklin] not in Pseudo_done:
+        Top_Pseudo.append(Pseudogroup_dic[spklin])
+        Pseudo_done.append(Pseudogroup_dic[spklin])
+        if Pseudogroup_dic[spklin] != spklin:
+            Top_lab.append(Pseudogroup_dic[spklin]+"/"+spklin)
+        else:
+            Top_lab.append(spklin)
+
 if "Wuhan-Hu-1" not in Top_Pseudo:
     Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[:-1])
 else:
     Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[Top_Pseudo!="Wuhan-Hu-1"])
 
+Pseudo_lab_cross = Top_lab
+
+"""
 Pseudo_lab_cross = []
 for i in range(len(Top_Pseudo)):
     if Top_Pseudo[:7] == "Spike. ":
         Pseudo_lab_cross.append(Top_Pseudo[i][7:])
     else:
         Pseudo_lab_cross.append(Top_Pseudo[i])
+"""
+Top_lab = ["Wuhan-Hu-1"]+Top_lab
 
 All_Pseudo = list(Cross_Epitope_Dic_orig["variant_list"])
 Cross_Epitope_Dic_orig.pop("variant_list")
@@ -42,7 +63,8 @@ for ab in choosen_Ab:
             Cross[i,j] = Cross_Epitope_Dic_orig[ab][w_i, w_j]
     Cross_Epitope_Dic[ab] = Cross
         
-
+print(Top_Pseudo)
+print(Top_lab)
 ### Colors picked from figure sketch.pptx 3D structure of epitope classes ### Replace RGBA ####
 #cmap_base = ["Reds", "Blues", "Wistia", "Wistia"]
 from matplotlib.colors import ListedColormap

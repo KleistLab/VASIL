@@ -114,7 +114,7 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     
     return FR_ab, Missed, Greater_one 
 
-def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_variant, EF_func = "MEAN", GM = False, quiet = True):
+def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_variant, EF_func = "MEAN", GM = False, quiet = True, joblib = None):
     FRxy = {}
     Missed = []
     Greater_one = []
@@ -156,7 +156,7 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
         escape_ab_dic["escape_data_ab"] = escape_data[where_ab_group]
         
         for i in range(len(variants_g1)):
-            FR, missed, gOne = FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, mut_sites_per_variant, GM = GM, quiet = quiet)
+            FR, missed, gOne = FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, mut_sites_per_variant, GM = GM, quiet = quiet, joblib = joblib)
             if EF_func == "MEAN":
                 FRxy_ab[i, :] = np.mean(FR, axis = 1)
                 
@@ -285,7 +285,7 @@ elif Lin_name == "ALL":
             Cross_Lin, Missed, Greater_one = cross_reactivity((variant_x_names_cross, variant_x_names_cross), 
                        Escape_Fraction, 
                        [ab],
-                       mut_x_sites_dic)
+                       mut_x_sites_dic, joblib=joblib)
             
             """
             Only the information for the specific lineage studied is required for immunological landscape calculation
@@ -352,8 +352,8 @@ elif Lin_name == "FR_DMS_sites":
         FR, missed, gOne = cross_reactivity((["WT"], One_mut_lin_new),
                                             Escape_Fraction, 
                                             [ab],
-                                            One_mut_dic
-                                            )
+                                            One_mut_dic,
+                                            joblib=joblib)
         
         FR_Sites_Ab[k, :] = FR[ab][0, :]
       

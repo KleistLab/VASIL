@@ -6,6 +6,8 @@ total_population: 84334787
 fit_lineage_focus: TRUE
 # 2.b if above is TRUE Focus lineage name
 lineage_focus: "BA_2_86"
+time_start: "2023-01-01" ### show time range
+time_stop: "2023-04-15"  ### at most one day less than simulation time horizon
 S_linfocus: "path/to/Susceptible_SpikeGroup_BA_2_86_all_PK.csv"
 # 3. Weight threshold spikes-group proportions for predictions
 weight_prop: 0.01

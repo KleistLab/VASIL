@@ -11,9 +11,9 @@ escape_data: "path/to/DMS_Escape_data.csv"
 antibody_mapping: "antibody_classes.csv"
 # 4. Full path to Clinical VE data for delta variant
 VE_delta: "path/to/Clinical_VE_delta.xlsx"
-# 5. Simulation time frame --- must be included the case timeframe and covsonar timeframe
-date_start: "date beginning of simulations"
-date_end: "date end of simulations"
+# 5. Simulation Time frame --- must be included the case timeframe and covsonar timeframe
+date_start: "2023-01-06"
+date_end: "2023-03-31"
 # 6.a OPTIONAL: Get immunological landscape for lineage/spikegroup 
 run_for_lineage_focus: TRUE
 # 6.b if above is TRUE, provide name  --- please replace "." with "_" 
