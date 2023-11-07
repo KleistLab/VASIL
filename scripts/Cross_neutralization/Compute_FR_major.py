@@ -17,6 +17,7 @@ from functools import partial
 import re
 import pickle
 import sys
+import pdb
 
 
 """Load SpikeGroups list"""
@@ -207,9 +208,11 @@ a = 1
 if len(Top_Pseudo)!=0:
     Cross_react_dic = {}
     mut_x_sites_dic_used = mut_x_sites_dic.copy()
-    if Lin_name not in ("ALL", "FR_DMS_sites"):
+    try:
         Top_Pseudo.append(Lin_name)
         mut_x_sites_dic_used[Lin_name] = mut_Lin
+    except:
+        pass
         
     for ab in Ab_classes:
         print("Assess all spikegroups with the NTD-RBD mutation positions ")

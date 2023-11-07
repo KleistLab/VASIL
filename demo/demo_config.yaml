@@ -16,6 +16,7 @@ date_start: "2023-01-06"
 date_end: "2023-03-31"
 # 6.a OPTIONAL: Get immunological landscape for lineage/spikegroup 
 run_for_lineage_focus: TRUE
+run_for_lineage_focus_cross: TRUE # if FALSE you must include file results/Cross_react_dic_spikegroups_*_pck" *lineage_focus
 # 6.b if above is TRUE, provide name  --- please replace "." with "_" 
 lineage_focus: "BA_2_86"
 # 6.c and NTD-RBD mutation positions file (DEL/del are ignored)
@@ -30,3 +31,5 @@ all_il: TRUE # get all immunological landscapes (requiring the cross files above
 FR_DMS_sites: FALSE
 # 9. OPTIONAL:Compute neutralization proba curve for lineage focus
 p_neut: TRUE
+# 10. OPTIONAL:Compute cross_neutralization for major lineages
+Cross_major: TRUE

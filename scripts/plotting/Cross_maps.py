@@ -19,42 +19,42 @@ file = open("Spikegroups_membership.pck", "rb")
 Pseudogroup_dic = pickle.load(file)
 file.close()
 
-
-lineages_sim = ["BA.2", "BA.4", "BA.5", "BQ.1.1", "BE.1.1", "CH.1.1", "XBB.1.5"]
-Top_Pseudo = []
-Top_lab = []
-Pseudo_done = []
-for spklin in lineages_sim:
-    if Pseudogroup_dic[spklin] not in Pseudo_done:
-        Top_Pseudo.append(Pseudogroup_dic[spklin])
-        Pseudo_done.append(Pseudogroup_dic[spklin])
-        if Pseudogroup_dic[spklin] != spklin:
-            Top_lab.append(Pseudogroup_dic[spklin]+"/"+spklin)
+try:
+    lineages_sim = ["BA.2", "BA.4", "BA.5", "BQ.1.1", "BE.1.1", "CH.1.1", "XBB.1.5"]
+    Top_Pseudo = []
+    Top_lab = []
+    Pseudo_done = []
+    for spklin in lineages_sim:
+        if Pseudogroup_dic[spklin] not in Pseudo_done:
+            Top_Pseudo.append(Pseudogroup_dic[spklin])
+            Pseudo_done.append(Pseudogroup_dic[spklin])
+            if Pseudogroup_dic[spklin] != spklin:
+                Top_lab.append(Pseudogroup_dic[spklin]+"/"+spklin)
+            else:
+                Top_lab.append(spklin)
         else:
-            Top_lab.append(spklin)
-    else:
-        ix = Pseudo_done.index(Pseudogroup_dic[spklin])
-        Top_lab[ix] = Top_lab[ix]+"/"+spklin
-       
-
-Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo)
-Top_lab = ["Wuhan-Hu-1"]+Top_lab
-Pseudo_lab_cross = Top_lab
-
-"""
-Top_Pseudo = np.array(Cross_Epitope_Dic_orig["variant_list"][:10])
-if "Wuhan-Hu-1" not in Top_Pseudo:
-    Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[:-1])
-else:
-    Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[Top_Pseudo!="Wuhan-Hu-1"])
+            ix = Pseudo_done.index(Pseudogroup_dic[spklin])
+            Top_lab[ix] = Top_lab[ix]+"/"+spklin
+           
     
-Pseudo_lab_cross = []
-for i in range(len(Top_Pseudo)):
-    if Top_Pseudo[:7] == "Spike. ":
-        Pseudo_lab_cross.append(Top_Pseudo[i][7:])
+    Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo)
+    Top_lab = ["Wuhan-Hu-1"]+Top_lab
+    Pseudo_lab_cross = Top_lab
+
+except:
+    Top_Pseudo = np.array(Cross_Epitope_Dic_orig["variant_list"][:10])
+    if "Wuhan-Hu-1" not in Top_Pseudo:
+        Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[:-1])
     else:
-        Pseudo_lab_cross.append(Top_Pseudo[i])
-"""
+        Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[Top_Pseudo!="Wuhan-Hu-1"])
+        
+    Pseudo_lab_cross = []
+    for i in range(len(Top_Pseudo)):
+        if Top_Pseudo[:7] == "Spike. ":
+            Pseudo_lab_cross.append(Top_Pseudo[i][7:])
+        else:
+            Pseudo_lab_cross.append(Top_Pseudo[i])
+
 
 All_Pseudo = list(Cross_Epitope_Dic_orig["variant_list"])
 Cross_Epitope_Dic_orig.pop("variant_list")
@@ -124,9 +124,11 @@ try:
             FR_lin = np.ones(len(Top_Pseudo)+1)
             for i in range(len(Top_Pseudo)):
                 FR_lin[1+i] = Cross_Epitope_lin[ab][list(var_lin).index(Lin_name), list(var_lin).index(Top_Pseudo[i])]
-            
+                
             Cross_Epitope_Dic[ab] = np.row_stack((Cross_Epitope_Dic[ab], FR_lin[1:]))
-            Cross_Epitope_Dic[ab] = np.column_stack((Cross_Epitope_Dic[ab], FR_lin.T))
+            FR_linT = np.ones(len(Top_Pseudo)+1)
+            FR_linT[:-1] = FR_lin[1:]
+            Cross_Epitope_Dic[ab] = np.column_stack((Cross_Epitope_Dic[ab], FR_linT.T))
         
         Top_Pseudo = list(Top_Pseudo) + [Lin_name] 
         Pseudo_lab_cross = list(Pseudo_lab_cross) + [Lin_name]
@@ -154,19 +156,20 @@ except:
         if Lin_name not in Top_Pseudo:            
             Top_Pseudo = list(Top_Pseudo) + [Lin_name] 
             Pseudo_lab_cross = list(Pseudo_lab_cross) + [Lin_name]
-            for ab in choosen_Ab:
-                Cross = np.ones((len(Top_Pseudo), len(Top_Pseudo)))
-                for i in range(len(Top_Pseudo)):
-                    for j in range(len(Top_Pseudo)):
-                        if (Top_Pseudo[i] != Lin_name)&(Top_Pseudo[j]!= Lin_name):
-                            w_i = list(All_Pseudo).index(Top_Pseudo[i])
-                            w_j = list(All_Pseudo).index(Top_Pseudo[j])
-                            Cross[i, j] = Cross_Epitope_Dic_orig[ab][w_i, w_j]
-                        else:
-                            w_i = list(var_lin).index(Top_Pseudo[i])
-                            w_j = list(var_lin).index(Top_Pseudo[j])
-                            Cross[i, j] = Cross_Epitope_lin[ab][w_i, w_j]
-                Cross_Epitope_Dic[ab] = Cross
+            
+        for ab in choosen_Ab:
+            Cross = np.ones((len(Top_Pseudo), len(Top_Pseudo)))
+            for i in range(len(Top_Pseudo)):
+                for j in range(len(Top_Pseudo)):
+                    if (Top_Pseudo[i] != Lin_name)&(Top_Pseudo[j]!= Lin_name):
+                        w_i = list(All_Pseudo).index(Top_Pseudo[i])
+                        w_j = list(All_Pseudo).index(Top_Pseudo[j])
+                        Cross[i, j] = Cross_Epitope_Dic_orig[ab][w_i, w_j]
+                    else:
+                        w_i = list(var_lin).index(Top_Pseudo[i])
+                        w_j = list(var_lin).index(Top_Pseudo[j])
+                        Cross[i, j] = Cross_Epitope_lin[ab][w_i, w_j]
+            Cross_Epitope_Dic[ab] = Cross
                 
     except:
         pass
@@ -265,7 +268,7 @@ for k in range(len(choosen_Ab)):
  
 ### Always plot Cross reactivity between major variant groups for sanity checks, 
 #only computed when the timeline is wide enough to contain the major variant groups   
-try:     
+try:    
     file0 = open("results/Cross_to_major_variants.pck", "rb") 
     Cross_show=pickle.load(file0)
     file0.close()
@@ -273,20 +276,38 @@ try:
     Top_Pseudo = []
     Top_lab = []
     Pseudo_done = []
+    lineages_sim = lineages_sim + [Lin_name]
     for spklin in lineages_sim:
-        if Pseudogroup_dic[spklin] in Top_Pseudo_var:
-            if Pseudogroup_dic[spklin] not in Pseudo_done:
-                Top_Pseudo.append(Pseudogroup_dic[spklin])
-                Pseudo_done.append(Pseudogroup_dic[spklin])
-                if Pseudogroup_dic[spklin] != spklin:
-                    Top_lab.append(Pseudogroup_dic[spklin]+"/"+spklin)
+        if (spklin != Lin_name):
+            if (Pseudogroup_dic[spklin] in Top_Pseudo_var):
+                if Pseudogroup_dic[spklin] not in Pseudo_done:
+                    Top_Pseudo.append(Pseudogroup_dic[spklin])
+                    Pseudo_done.append(Pseudogroup_dic[spklin])
+                    if Pseudogroup_dic[spklin] != spklin:
+                        Top_lab.append(Pseudogroup_dic[spklin]+"/"+spklin)
+                    else:
+                        Top_lab.append(spklin)
                 else:
-                    Top_lab.append(spklin)
-            else:
-                ix = Pseudo_done.index(Pseudogroup_dic[spklin])
-                Top_lab[ix] = Top_lab[ix]+"/"+spklin
+                    ix = Pseudo_done.index(Pseudogroup_dic[spklin])
+                    Top_lab[ix] = Top_lab[ix]+"/"+spklin
+        else:
+            Top_Pseudo.append(spklin)
+            Top_lab.append(spklin)   
+            
     if "Wuhan-Hu-1" not in Top_Pseudo:
         Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo)
+        Top_lab = ["Wuhan-Hu-1"]+Top_lab
+    Pseudo_lab_cross = Top_lab
+    Cross_Dic = {}
+    
+    for ab in choosen_Ab:
+        Cross = np.ones((len(Top_Pseudo),len(Top_Pseudo)))
+        for i in range(len(Top_Pseudo)):
+            w_i = Top_Pseudo_var.index(Top_Pseudo[i])
+            for j in range(len(Top_Pseudo)):
+                w_j = Top_Pseudo_var.index(Top_Pseudo[j])
+                Cross[i,j] = Cross_show[ab][w_i, w_j]
+        Cross_Dic[ab] = Cross
         
     triup = np.triu_indices(len(Top_Pseudo), k=0)
     mask_triup = np.ones((len(Top_Pseudo), len(Top_Pseudo))).astype(bool)
@@ -295,7 +316,7 @@ try:
 
     for k in range(len(choosen_Ab)):
         ab = choosen_Ab[k]
-        Cross_ab = Cross_show[ab]
+        Cross_ab = Cross_Dic[ab]
         ### Set Colorbar limit ###
         Cross_sub = np.log10(Cross_ab)
         
@@ -361,7 +382,6 @@ try:
             
         cbar = cMap.figure.axes[-1] # get colorbar instance
         cbar.yaxis.label.set_size(cbar_labsize)
-                    
         cbar.tick_params(labelsize = cbar_labsize)
         cMap.set_facecolor(facecolor) 
         plt.title(dLab, fontsize = title_labsize)
@@ -374,9 +394,9 @@ try:
         cbar = ax_fr.collections[0].colorbar
         cbar.set_ticklabels(["%.1f"%FR_vals_sub[:-1][i] for i in range(len(FR_vals_sub[:-1]))]+["$\geq$"+" %.1f"%FR_vals_sub[-1]])
         
-        pdf = PdfPages(sys.argv[4]+"/check_Cross_React_AB_%s.pdf"%ab)
+        pdf = PdfPages(sys.argv[4]+"/major_Cross_React_AB_%s.pdf"%ab)
         pdf.savefig(fig_fr, bbox_inches = "tight")
-        fig_fr.savefig(sys.argv[4]+"/check_Cross_React_AB_%s.svg"%ab, bbox_inches = "tight")
+        fig_fr.savefig(sys.argv[4]+"/major_Cross_React_AB_%s.svg"%ab, bbox_inches = "tight")
         pdf.close()
 except:
     pass
