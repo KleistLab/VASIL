@@ -216,7 +216,7 @@ if len(Top_Pseudo)!=0:
         pass
         
     for ab in Ab_classes:
-        print("Assess all spikegroups with the NTD-RBD mutation positions ")
+        print("Assess major lineages/pseudogroups with the NTD-RBD mutation positions ")
         print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))
         if ab!= "NTD":
             Cross_Lin, Missed, Greater_one = cross_reactivity((Top_Pseudo, Top_Pseudo), 

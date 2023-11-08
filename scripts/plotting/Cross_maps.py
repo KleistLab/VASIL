@@ -120,11 +120,12 @@ try:
         Cross_Epitope_lin = pickle.load(cross_lin)
         var_lin = Cross_Epitope_lin["variant_list"]
         cross_lin.close()
+        
         for ab in choosen_Ab:
             FR_lin = np.ones(len(Top_Pseudo)+1)
             for i in range(len(Top_Pseudo)):
                 FR_lin[1+i] = Cross_Epitope_lin[ab][list(var_lin).index(Lin_name), list(var_lin).index(Top_Pseudo[i])]
-                
+           
             Cross_Epitope_Dic[ab] = np.row_stack((Cross_Epitope_Dic[ab], FR_lin[1:]))
             FR_linT = np.ones(len(Top_Pseudo)+1)
             FR_linT[:-1] = FR_lin[1:]
@@ -156,7 +157,6 @@ except:
         if Lin_name not in Top_Pseudo:            
             Top_Pseudo = list(Top_Pseudo) + [Lin_name] 
             Pseudo_lab_cross = list(Pseudo_lab_cross) + [Lin_name]
-            
         for ab in choosen_Ab:
             Cross = np.ones((len(Top_Pseudo), len(Top_Pseudo)))
             for i in range(len(Top_Pseudo)):
@@ -169,6 +169,7 @@ except:
                         w_i = list(var_lin).index(Top_Pseudo[i])
                         w_j = list(var_lin).index(Top_Pseudo[j])
                         Cross[i, j] = Cross_Epitope_lin[ab][w_i, w_j]
+                        
             Cross_Epitope_Dic[ab] = Cross
                 
     except:
@@ -269,15 +270,20 @@ for k in range(len(choosen_Ab)):
 ### Always plot Cross reactivity between major variant groups for sanity checks, 
 #only computed when the timeline is wide enough to contain the major variant groups   
 try:    
+    
     file0 = open("results/Cross_to_major_variants.pck", "rb") 
     Cross_show=pickle.load(file0)
     file0.close()
     Top_Pseudo_var = Cross_show["variant_list"]
+    Cross_show.pop("variant_list")
+    choosen_Ab = list(Cross_show.keys())
+    
     Top_Pseudo = []
     Top_lab = []
     Pseudo_done = []
     lineages_sim = lineages_sim + [Lin_name]
     for spklin in lineages_sim:
+        
         if (spklin != Lin_name):
             if (Pseudogroup_dic[spklin] in Top_Pseudo_var):
                 if Pseudogroup_dic[spklin] not in Pseudo_done:
@@ -291,6 +297,7 @@ try:
                     ix = Pseudo_done.index(Pseudogroup_dic[spklin])
                     Top_lab[ix] = Top_lab[ix]+"/"+spklin
         else:
+            
             Top_Pseudo.append(spklin)
             Top_lab.append(spklin)   
             
@@ -301,20 +308,24 @@ try:
     Cross_Dic = {}
     
     for ab in choosen_Ab:
+        
         Cross = np.ones((len(Top_Pseudo),len(Top_Pseudo)))
         for i in range(len(Top_Pseudo)):
             w_i = Top_Pseudo_var.index(Top_Pseudo[i])
             for j in range(len(Top_Pseudo)):
                 w_j = Top_Pseudo_var.index(Top_Pseudo[j])
                 Cross[i,j] = Cross_show[ab][w_i, w_j]
-        Cross_Dic[ab] = Cross
         
+        Cross_Dic[ab] = Cross
+    
+    
     triup = np.triu_indices(len(Top_Pseudo), k=0)
     mask_triup = np.ones((len(Top_Pseudo), len(Top_Pseudo))).astype(bool)
     mask_triup[triup] = False
     mask_triup = mask_triup.astype(bool)
 
     for k in range(len(choosen_Ab)):
+        
         ab = choosen_Ab[k]
         Cross_ab = Cross_Dic[ab]
         ### Set Colorbar limit ###
