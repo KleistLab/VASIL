@@ -77,12 +77,12 @@ def plot_fit(ES_df, lineage):
     # change in relative frequency from genomic surveillance data 
     if "Spike. " + lineage in lineage_freq.columns.astype(str):
         Pseudo_Prop = moving_average(lineage_freq["Spike. " + lineage], window = 14)
-        Pseudo_Prop[Pseudo_Prop < threshold] = 0        
-        Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+        #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
+        #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
     elif lineage in lineage_freq.columns.astype(str):
         Pseudo_Prop = moving_average(lineage_freq[lineage], window = 14)
-        Pseudo_Prop[Pseudo_Prop < threshold] = 0
-        Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+        #Pseudo_Prop[Pseudo_Prop < threshold] = 0
+        #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
     else:
         Pseudo_Prop = np.zeros(len(t_dates))
     

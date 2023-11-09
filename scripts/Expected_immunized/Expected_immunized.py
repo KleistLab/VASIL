@@ -414,10 +414,17 @@ def ei_util(Lin_name, save_pneut=None, var_list_index = None, spikegroups_propor
             SpikeGroups_list_index = var_list_index
         
         if spikegroups_proportion_adjust is None:
-            spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
-            for j in range(len(SpikeGroups_list_index)):
-                w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
-                spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
+            if len(SpikeGroups_list_index)!=len(SpikeGroups_list):
+                spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
+                for j in range(len(SpikeGroups_list_index)):
+                    w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+                    spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
+                
+                # renormalization
+                spikegroups_proportion_adjust = spikegroups_proportion_adjust/np.sum(spikegroups_proportion_adjust, axis = 0)
+            else:
+                spikegroups_proportion_adjust = spikegroups_proportion
+
         else:
             spikegroups_proportion_adjust = spikegroups_proportion_adjust
             
@@ -448,11 +455,18 @@ def ei_util(Lin_name, save_pneut=None, var_list_index = None, spikegroups_propor
         return "Error"
 
 if Lin_name != "ALL":
-    status_var = ei_util(Lin_name, str(sys.argv[13])) 
-    # Save file as a placeholder for exectuted codes, required for snakemake
-    sim_df = pd.DataFrame({"SpikeGroups":[Lin_name], "Simulation status":status_var})
-    sim_df.to_csv(sys.argv[12]+"/simulation_status_%s.csv"%Lin_name)
-    
+    if isinstance(Lin_name, str):
+        status_var = ei_util(Lin_name, str(sys.argv[13])) 
+        # Save file as a placeholder for exectuted codes, required for snakemake
+        sim_df = pd.DataFrame({"Lineage":[Lin_name], "Simulation status":status_var})
+        sim_df.to_csv(sys.argv[12]+"/simulation_status_%s.csv"%Lin_name)
+    else: ## can only be a list of variants
+        status_var = []
+        for lin in Lin_name:
+            status_var.append(ei_util(Lin_name, str(sys.argv[13]))) 
+        # Save file as a placeholder for exectuted codes, required for snakemake
+        sim_df = pd.DataFrame({"Lineage":Lin_name, "Simulation status":status_var})
+        sim_df.to_csv(sys.argv[12]+"/simulation_status_groups.csv")
 else:
     status_var = []
     SpikeGroups_list_index = []
@@ -461,11 +475,17 @@ else:
             SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
     SpikeGroups_list_index = np.array(SpikeGroups_list_index)
     
-    spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
-    for j in range(len(SpikeGroups_list_index)):
-        w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
-        spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
+    if len(SpikeGroups_list_index)!=len(SpikeGroups_list):
+        spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
+        for j in range(len(SpikeGroups_list_index)):
+            w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+            spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
         
+        # renormalization
+        spikegroups_proportion_adjust = spikegroups_proportion_adjust/np.sum(spikegroups_proportion_adjust, axis = 0)
+    else:
+        spikegroups_proportion_adjust = spikegroups_proportion
+    
     for i in range(len(SpikeGroups_list)):
         if SpikeGroups_list[i] in variants_in_cross:
             print("Compute E[immunized] for %d out of %d spikegroups"%(i, len(SpikeGroups_list)))

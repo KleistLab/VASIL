@@ -153,20 +153,25 @@ The main pipeline (`config.yaml`) creates a folder *results*, containing all (in
  	|-- Cross_react_dic_spikegroups_ALL.pck	# Pairwise cross reactivity between spikegroups (all_il: TRUE or lineage_focus: "ALL")
 	|-- Cross_react_dic_spikegroups_*.pck   # Cross reactivity between lineage_focuss and spikegroups
 	|-- Cross_with_delta_validation.pck	# Cross reactivity between Delta variant and Wild Type (used of VE fitting)
+	|-- Cross_to_major_variants.pck	# Cross reactivity for major variants
 	|-- Daily_Lineages_Freq.csv		# Daily frequency of specific lineages (in percentage)
 	|-- Daily_SpikeGroups_Freqs.csv 	# Daily frequency of spikegroups (in percentage)
 	|-- Fold_Resistance_DMS_Sites_Epitopes.csv. # Fold resistance of all the sites present in the DMS data (FR_DMS_sites: TRUE)
 	|-- Mutation_Profile.pck	# Mutation profile of each spikegroups 
 	|-- SpikeGroups.pck		# List of all spikegroups names
 	|-- PK_for_all_Epitopes.csv    # Pharmacokynetics for any epitope class with all combinations of PK parameters
-	|-- Immunological_Landscape
+	|-- Immunological_Landscape # for lineage_focus
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized for lineage_focuss with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible for lineage_focuss with all combinations of PK parameters
 		|-- simulation_status_*.csv  	      # Writes if Immunological Landscape "done" or "Error"
 		|-- P_neut_*.csv  	      # Virus neutralization probability 
-	|-- Immunological_Landscape_ALL
-		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized for all spikegroups with all combinations of PK parameters
-		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible for all spikegroupswith all combinations of PK parameters
+	|-- Immunological_Landscape_ALL # for all variants in covsonar data
+		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized with all combinations of PK parameters
+		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible with all combinations of PK parameters
+		|-- simulation_status_*.csv	      # Write if Immunological Landscape "done" or "Error"
+	|-- Immunological_Landscape_group # for compare_groups
+		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized with all combinations of PK parameters
+		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible with combinations of PK parameters
 		|-- simulation_status_*.csv	      # Write if Immunological Landscape "done" or "Error"
 	|-- mutation_data
 		|-- mutationprofile_mutations_spike_lists # Full mutation profile
@@ -186,19 +191,19 @@ The figure pipeline (`config_plots.yaml`) add new data to *results* folder and c
 	|-- Susceptible_weighted_mean_over_spikegroups_all_PK.csv # Mean growth advantage accross  all spikegroups > 1% 
 |-- plots	
 	|-- absolute
-		|-- absolute_estimate.pdf 	# Absolute growth of the epidemics
-		|-- absolute_estimate.svg
+		|-- absolute_estimate.pdf/svg 	# Absolute growth of the epidemics
 	|-- relative
 		|-- plot_status.csv	  	# Writes if plot is "done" or "Error"
-		|-- relative_fitness_*.pdf	# relative growth advantage of lineage_focuss
-		|-- relative_fitness_*.svg
+		|-- relative_fitness_*.pdf/svg # relative growth advantage of lineage_focus
+	|-- grouped_relative
+		|-- relative_fitness_group.pdf/svg # plot relative fitness for chosen variants (compare_groups)
         |-- relative_all
 		|-- plot_status_all.csv	  	# Writes if plot is "done" or "Error"
-		|-- relative_fitness_*.pdf	# relative growth advantage for all spikegroups present in data
-		|-- relative_fitness_*.svg
+		|-- relative_fitness_*.pdf/svg	# relative growth advantage for all spikegroups present in data
 	|-- Cross_spikegroups
-		|-- Cross_React_AB_*.pdf	# Heatmap FR for each epitope classes (max of 10 spikegroups)
-		|-- Corss_React_AB_*.svg		
+		|-- Cross_React_AB_*.pdf/svg	# Heatmap FR for each epitope classes (max of 10 first spikegroups in covsonar data)
+	|-- Cross_Major
+		|-- major_Cross_React_AB_*.svg # Heatmap FR for each epitope classes (for major variant of your choice)		
 	|--- FR_sites
 		|--- foldresistance_DMS_sites_epitopes.pdf # Heatmap Fold resistance of all the sites present in the DMS data (FR_DMS_sites: TRUE)
 	|--- P_neut_PK

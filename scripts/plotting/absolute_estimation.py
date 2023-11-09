@@ -58,18 +58,21 @@ intervals.pop(0)
 
 
 # Fig presettings
-fig, ax = plt.subplots()
+import matplotlib
+def PreFig(xsize = 12, ysize = 12):
+    '''
+    @brief: customize figure parameters
+    '''
+    matplotlib.rc('xtick', labelsize=xsize) 
+    matplotlib.rc('ytick', labelsize=ysize)
+PreFig(xsize = 20, ysize = 20)
+fig = plt.figure(figsize = (15, 7))
+ax = fig.add_subplot(1, 1, 1)
 
 # I plot
 plt.plot(x, infection_data_corrected["minNTrue"], color = "black", label = "Infections", linewidth = 3)
 plt.ylabel("Infections", fontsize = 25)
 
- 
-perday = range(0,len(t_dates), 14)
-
-ax.set_xticks(perday)
-ax.set_xticklabels(t_dates[perday].tolist(),
-    rotation = 45, horizontalalignment = "right")
 # S plot 
 ax2 = ax.twinx()
 for i in range(len(intervals)):
@@ -89,6 +92,51 @@ ax.legend(loc='upper center', bbox_to_anchor=(0.6, -0.2),
           fancybox=True, shadow=True, ncol=5)
 ax2.legend(loc='upper center', bbox_to_anchor=(0.3, -0.2),
           fancybox=True, shadow=True, ncol=5)
+
+try:
+    x_min = list(t_dates).index(str(sys.argv[5]))
+    x_max = list(t_dates).index(str(sys.argv[6]))
+except:
+    x_min = None
+    x_max = None
+
+if (x_min is not None):
+    ax.set_xlim((x_min, x_max))
+    ax2.set_xlim((x_min, x_max))    
+    t_dates_show = np.array(t_dates)[x_min:x_max+1]
+else:
+    t_dates_show = t_dates
+
+if len(t_dates_show)>200:
+    pp = 7*4
+else:
+    pp = min(len(t_dates_show), 14)
+
+perday = np.arange(0,len(t_dates_show), pp)
+date_ticks = t_dates_show[perday].tolist()
+if t_dates[len(t_dates) - 1] not in date_ticks:
+    n=list(t_dates).index(date_ticks[-1])+pp
+    while n<len(t_dates)-1:
+        date_ticks.append(t_dates[n])
+        perday = np.append(perday, n)
+        n += pp
+    date_ticks.append(t_dates[len(t_dates) - 1])
+    perday = np.append(perday, len(t_dates) - 1)
+
+if x_min is not None:
+    perday_orig = []
+    for i in range(len(date_ticks)):
+        perday_orig.append(list(t_dates).index(date_ticks[i]))
+else:
+    perday_orig = perday
+    
+ax.set_xticks(perday_orig)
+ax.set_xticklabels(date_ticks,
+    rotation = 45, horizontalalignment = "right")
+
+ax2.set_xticks(perday_orig)
+ax2.set_xticklabels(date_ticks,
+    rotation = 45, horizontalalignment = "right")
 
 # add vlines
 plt.vlines(x=r.real[abs(r.imag)<1e-5], ymin=min(r_ABS_min), ymax=max(r_ABS_max), colors="black", ls='--', lw=0.5, label='Delta infection')

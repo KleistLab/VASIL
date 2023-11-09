@@ -16,7 +16,7 @@ date_start: "2023-01-06"
 date_end: "2023-03-31"
 # 6.a OPTIONAL: Get immunological landscape for lineage/spikegroup 
 run_for_lineage_focus: TRUE
-run_for_lineage_focus_cross: TRUE # if FALSE you must include file results/Cross_react_dic_spikegroups_*_pck" *lineage_focus
+run_for_lineage_focus_cross: TRUE # if FALSE you must include file results/Cross_react_dic_spikegroups_*_pck" *lineage_focus & results/Cross_with_delta_validation.pck
 # 6.b if above is TRUE, provide name  --- please replace "." with "_" 
 lineage_focus: "BA_2_86"
 # 6.c and NTD-RBD mutation positions file (DEL/del are ignored)

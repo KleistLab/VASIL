@@ -9,7 +9,7 @@ from functools import partial
 import re
 import pickle
 import sys
-
+import pdb
 
 """Load SpikeGroups list"""
 file1 = open(sys.argv[1], "rb") 
@@ -31,30 +31,6 @@ mut_x_sites_dic["Wuhan-Hu-1"] = []
 """Load DMS Escape fraction data"""
 Escape_Fraction = pd.read_csv(sys.argv[3])
 Ab_classes = np.unique(Escape_Fraction["group"].values.astype(str))
-
-"""Load lineage name to assess and it's mutation profile"""
-try:
-    Lin_name = sys.argv[4]
-    mut_file = open(sys.argv[5], "r")
-    mut_lin0 = mut_file.readlines()
-    mut_file.close()
-
-    mut_Lin = []
-    for mut in mut_lin0:
-        if mut[:3] not in ("DEL", "del"):
-            if len(re.findall(r'\d+', mut))>0:
-                mut_Lin.append(re.findall(r'\d+', mut)[0])       
-                mut_Lin = list(np.unique(np.array(mut_Lin).astype(int)))
-
-    """Update mutation profile dictionary"""
-    mut_x_sites_dic_updated = mut_x_sites_dic.copy()
-    if Lin_name not in SpikeGroups_list: ### Keep Lin_name as it is
-        mut_x_sites_dic_updated[Lin_name] = mut_Lin
-    else:
-        Lin_name = Lin_name + "_requested" ### renamed to avoid ambiguities
-        mut_x_sites_dic_updated[Lin_name] = mut_Lin
-except:
-    pass
 
 def sub_Bind(d, tiled_esc, Where_Mut, Where_Cond):
     Inter_Cond_Mut = Where_Mut & Where_Cond[np.newaxis, d, :]
@@ -82,8 +58,7 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     Where_Cond = conditions[:, np.newaxis] == ab_sub_list[np.newaxis, :]
     tiled_mut = ma.array(np.tile(mut_sites, (vars_num, 1)), mask = ~diff_sites)
     Where_Mut = tiled_mut[:, :, np.newaxis] == escape_sites[np.newaxis, np.newaxis,  :]
-    
-    if joblib is not None:
+    if joblib not in (None, "joblib"):
         """Parallel codes --- macOS Monterey 12.5 crashes --- Not used by default """
         pfunc = partial(sub_Bind, tiled_esc = tiled_esc, Where_Mut = Where_Mut, Where_Cond = Where_Cond)
         try:
@@ -226,56 +201,189 @@ try:
     joblib = str(sys.argv[8])
 except:
     joblib = None
-        
-if Lin_name not in ("ALL", "FR_DMS_sites"):
-    for ab in Ab_classes:
-        print("Assess Lineage %s with the NTD-RBD mutation positions "%Lin_name, mut_Lin)
-        print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))    
-        
-        if ab!= "NTD":
-            FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
-            Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_name], variant_x_names_cross), 
-                       Escape_Fraction, 
-                       [ab],
-                       mut_x_sites_dic_updated, joblib=joblib)
-            
-            """
-            Only the information for the specific lineage studied is required for immunological landscape calculation
-            the FRxy_ab matrix is kept only for compatibility with other codes
-            """
-            FRxy_ab[len(variant_x_names_cross), :len(variant_x_names_cross)] = Cross_Lin[ab][0, :]
-            FRxy_ab[:len(variant_x_names_cross), len(variant_x_names_cross)] = Cross_Lin[ab][0, :]
-    
-            Cross_react_dic[ab] = FRxy_ab
-        a +=1
-        
-    Cross_react_dic["variant_list"] = list(variant_x_names_cross)+[Lin_name]
-    """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
-    n = len(Cross_react_dic["variant_list"])
-    FR_NTB = np.ones((n, n))
-    for i in range(n):
-        var_1 = Cross_react_dic["variant_list"][i]
-        for j in range(n):
-            if i > j:
-                var_2 = Cross_react_dic["variant_list"][j]
-    
-                sites_1 = set(np.array(mut_x_sites_dic_updated[var_1]).astype(int))
-                sites_2 = set(np.array(mut_x_sites_dic_updated[var_2]).astype(int))
-    
-                sites = list(sites_1.symmetric_difference(sites_2))
-                FR_sites = 1
-                for s in sites:
-                    s = int(s)
-                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                        FR_sites *= 10
-                FR_NTB[i, j] = FR_sites
-                FR_NTB[j, i] = FR_sites
-        
-    Cross_react_dic["NTD"] = FR_NTB
-    file0 = open(sys.argv[7], "wb") 
-    pickle.dump(Cross_react_dic, file0)
-    file0.close()
 
+"""Load lineage name to assess and it's mutation profile"""
+try:
+    n_groups = int(sys.argv[4]) 
+    Lin_name = "Groups"
+except:
+    Lin_name = sys.argv[4]
+
+if Lin_name not in ("ALL", "FR_DMS_sites"):
+    if Lin_name != "Groups":
+        try:
+            mut_file = open(sys.argv[5], "r")
+            mut_lin0 = mut_file.readlines()
+            mut_file.close()
+
+            mut_Lin = []
+            for mut in mut_lin0:
+                if mut[:3] not in ("DEL", "del"):
+                    if len(re.findall(r'\d+', mut))>0:
+                        mut_Lin.append(re.findall(r'\d+', mut)[0])       
+                        mut_Lin = list(np.unique(np.array(mut_Lin).astype(str)))
+
+            """Update mutation profile dictionary"""
+            mut_x_sites_dic_updated = mut_x_sites_dic.copy()
+            if Lin_name not in SpikeGroups_list: ### Keep Lin_name as it is
+                mut_x_sites_dic_updated[Lin_name] = mut_Lin
+            else:
+                Lin_name = Lin_name + "_requested" ### renamed to avoid ambiguities
+                mut_x_sites_dic_updated[Lin_name] = mut_Lin
+        except:
+            sys.exit("Lineage focus mutation file must be provided")
+        
+        for ab in Ab_classes:
+            print("Assess Lineage %s with the NTD-RBD mutation positions "%Lin_name, mut_Lin)
+            print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))    
+            
+            if ab!= "NTD":
+                FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
+                Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_name], variant_x_names_cross), 
+                           Escape_Fraction, 
+                           [ab],
+                           mut_x_sites_dic_updated)
+                
+                """
+                Only the information for the specific lineage studied is required for immunological landscape calculation
+                the FRxy_ab matrix is kept only for compatibility with other codes
+                """
+                FRxy_ab[len(variant_x_names_cross), :len(variant_x_names_cross)] = Cross_Lin[ab][0, :]
+                FRxy_ab[:len(variant_x_names_cross), len(variant_x_names_cross)] = Cross_Lin[ab][0, :]
+        
+                Cross_react_dic[ab] = FRxy_ab
+            a +=1
+        Cross_react_dic["variant_list"] = list(variant_x_names_cross)+[Lin_name]
+        """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
+        n = len(Cross_react_dic["variant_list"])
+        FR_NTB = np.ones((n, n))
+        for i in range(n):
+            var_1 = Cross_react_dic["variant_list"][i]
+            for j in range(n):
+                if i > j:
+                    var_2 = Cross_react_dic["variant_list"][j]
+        
+                    sites_1 = set(np.array(mut_x_sites_dic_updated[var_1]).astype(int))
+                    sites_2 = set(np.array(mut_x_sites_dic_updated[var_2]).astype(int))
+        
+                    sites = list(sites_1.symmetric_difference(sites_2))
+                    FR_sites = 1
+                    for s in sites:
+                        s = int(s)
+                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                            FR_sites *= 10
+                    FR_NTB[i, j] = FR_sites
+                    FR_NTB[j, i] = FR_sites
+        Cross_react_dic["NTD"] = FR_NTB
+        file0 = open(sys.argv[7], "wb") 
+        pickle.dump(Cross_react_dic, file0)
+        file0.close()
+
+    else: ### must be groups
+        file = open("Spikegroups_membership.pck", "rb")
+        Pseudogroup_dic = pickle.load(file)
+        file.close()
+
+        k = 5
+        Lin_list = []
+        while k<(n_groups+5):
+            Lin_list.append(sys.argv[k])
+            k +=1
+        
+        mut_sim = []
+        while k<(n_groups+5+len(Lin_list)):
+            mut_sim.append(sys.argv[k])
+            k +=1
+        
+        mut_x_sites_dic_updated = mut_x_sites_dic.copy()
+        for j in range(len(Lin_list)):
+            if Lin_list[j] in list(Pseudogroup_dic.keys()):
+                mut_x_sites_dic_updated[Lin_list[j]] = mut_x_sites_dic_updated[Pseudogroup_dic[Lin_list[j]]]
+            else:
+                mut_file = open(mut_sim[j], "r")
+                mut_lin0 = mut_file.readlines()
+                mut_file.close()
+                mut_Lin = []
+                for mut in mut_lin0:
+                    if mut[:3] not in ("DEL", "del"):
+                        if len(re.findall(r'\d+', mut))>0:
+                            mut_Lin.append(re.findall(r'\d+', mut)[0])       
+                            mut_Lin = list(np.unique(np.array(mut_Lin).astype(str)))
+                """Update mutation profile dictionary"""
+                mut_x_sites_dic_updated[Lin_list[j]] = mut_Lin
+            
+        g = []
+        g_var =[]
+        inds = np.arange(0, len(variant_x_names_cross)).astype(int)
+        if len(variant_x_names_cross)>200:
+            cut1 = 0
+            cut2 = 200
+            while cut2<len(variant_x_names_cross):
+                g.append(inds[cut1:cut2])
+                g_var.append(list(np.array(variant_x_names_cross)[cut1:cut2]))
+                cut1=cut2
+                cut2+=min(200, len(variant_x_names_cross)-cut2)
+            g.append(inds[cut1:cut2])
+            g_var.append(list(np.array(variant_x_names_cross)[cut1:cut2]))
+        else:
+            g.append(inds)
+            g_var.append(variant_x_names_cross)
+
+        for i in range(len(Lin_list)):
+            Cross_i = {}
+            Cross_i["variant_list"] = list(variant_x_names_cross)+ [Lin_list[i]]
+            status_sim = []
+            
+            for ab in Ab_classes:  
+                if ab!= "NTD":
+                    FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
+                    print("Assess lineage %s| %d out of %d with the NTD-RBD mutation positions"%(Lin_list[i], i+1,len(Lin_list)), mut_x_sites_dic_updated[Lin_list[i]])
+                    print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes)) 
+                    for s in range(len(g)):
+                        Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_list[i]], g_var[s]), 
+                                   Escape_Fraction, 
+                                   [ab],
+                                   mut_x_sites_dic_updated)
+                        
+                        """
+                        Only the information for the specific lineage studied is required for immunological landscape calculation
+                        the FRxy_ab matrix is kept only for compatibility with other codes
+                        """
+                        FRxy_ab[len(variant_x_names_cross), g[s]] = Cross_Lin[ab][0, :]
+                        FRxy_ab[g[s], len(variant_x_names_cross)] = Cross_Lin[ab][0, :]
+            
+                    Cross_i[ab] = FRxy_ab
+            
+                else:
+                    
+                    """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
+                    n = len(Cross_react_dic["variant_list"])
+                    FR_NTB = np.ones((n, n))
+                    for i in range(n):
+                        var_1 = Cross_i["variant_list"][i]
+                        for j in range(n):
+                            if i > j:
+                                var_2 = Cross_i["variant_list"][j]
+                    
+                                sites_1 = set(np.array(mut_x_sites_dic_updated[var_1]).astype(int))
+                                sites_2 = set(np.array(mut_x_sites_dic_updated[var_2]).astype(int))
+                    
+                                sites = list(sites_1.symmetric_difference(sites_2))
+                                FR_sites = 1
+                                for s in sites:
+                                    s = int(s)
+                                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                                        FR_sites *= 10
+                                FR_NTB[i, j] = FR_sites
+                                FR_NTB[j, i] = FR_sites
+                    Cross_i["NTD"] = FR_NTB
+                a +=1
+                status_sim.append("Done")
+            file0 = open(sys.argv[k]+"/Cross_%s.pck"%Lin_list[i], "wb") 
+            pickle.dump(Cross_i, file0)
+            file0.close()
+        stat_df = pd.DataFrame({"Lineages":Lin_list, "computed_cross":status_sim})
+        stat_df.to_csv(sys.argv[k]+"/computation_status.csv")
 
 elif Lin_name == "ALL":            
     for ab in Ab_classes:

@@ -47,6 +47,8 @@ frequency_spk_df = frequency_spk_df.fillna(0)
 
 pS_all = np.zeros((len(t)-1, len(SpikeGroups_list[SpikeGroups_list!="Wuhan-Hu-1"]), len(pk_cols[pk_cols!="Days"])))
 dprop_all = np.zeros((len(t)-1, len(SpikeGroups_list[SpikeGroups_list!="Wuhan-Hu-1"])))
+p_prop = np.zeros(pS_all.shape)
+
 for x in range(len(SpikeGroups_list)):
     if SpikeGroups_list[x] != "Wuhan-Hu-1":
         try:
@@ -61,23 +63,41 @@ for x in range(len(SpikeGroups_list)):
             
             #Compute timeline prop group (for pseudogroups, this is thee same as loading proportion data)
             Pseudo_Prop = frequency_spk_df["Spike. "+SpikeGroups_list[x]]
-                                           
-            dprop_all[:, x] = np.diff(np.log(Pseudo_Prop[:len(t)]))
+ 
+            gamma_prop = np.zeros(len(Pseudo_Prop[:len(t)-1]))
+            for l in range(len(t)-1):
+                if Pseudo_Prop[l] == 0 or Pseudo_Prop[l+1] == 0:
+                    gamma_prop[l] = float('nan')
+                else:
+                    gamma_prop[l] = Pseudo_Prop[l+1]/Pseudo_Prop[l] -1
+                    
+            dprop_all[:, x] = gamma_prop       
+            #dprop_all[:, x] = np.diff(np.log(Pseudo_Prop[:len(t)][0]))
             #Estimated susceptible
             for i in range(EI_ranges.shape[1]):
                 S_i = (N_pop - EI_ranges[:, i])
+                p_prop[:, x, i] = Pseudo_Prop[:len(t)-1]
                 pS_all[:, x, i] = Pseudo_Prop[:len(t)-1]*S_i[:len(t)-1] ### weighted susceptible, remove the last value to be comparable the prop change timeline
+       
         except:
             a = np.empty(len(dprop_all[:, x]))
             b = np.empty(pS_all[:, x, :].shape)
+            c = np.zeros(p_prop[:, x, :].shape)
             a[:] = np.nan
             b[:] = np.nan
             dprop_all[:, x] = a
             pS_all[:, x, :] = b
+            p_prop[:, x, :] = c
+        
 ### Mean timecourse over the pseudogroups for all 
 import numpy.ma as ma        
 pS_all =  ma.masked_array(pS_all, mask=np.isnan(pS_all))
-pS_all_mean = np.sum(pS_all, axis = 1) ### it's already weighted
+# renormalize prop
+#p_prop = ma.masked_array(p_prop, mask=np.isnan(p_prop))
+#p_prop = p_prop/(np.sum(p_prop, axis = 1)[:, np.newaxis, :])
+#pS_all_mean = np.sum(p_prop*pS_all, axis = 1) ## if not yet weighted
+
+pS_all_mean = np.sum(pS_all, axis = 1) ## if already weighted
 dprop_mean = np.sum(dprop_all[~np.isnan(dprop_all)])
 
 #### save for future runs

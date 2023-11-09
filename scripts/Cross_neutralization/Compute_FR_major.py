@@ -63,7 +63,7 @@ try:
         Lin_name = Lin_name + "_requested" ### renamed to avoid ambiguities
         mut_x_sites_dic_updated[Lin_name] = mut_Lin
 except:
-    pass
+    mut_x_sites_dic_updated = mut_x_sites_dic.copy()
 
 def sub_Bind(d, tiled_esc, Where_Mut, Where_Cond):
     Inter_Cond_Mut = Where_Mut & Where_Cond[np.newaxis, d, :]
@@ -133,7 +133,7 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
     mut_sites = []
     for var in list(mut_sites_per_variant.keys()):
         if (var in variants_g1) or (var in variants_g2):
-            mut_sites += list(np.array(mut_sites_per_variant[var]))
+            mut_sites += list(np.array(mut_sites_per_variant[var]).astype(str))
     
     mut_sites = np.unique(mut_sites).astype(str)
     ### Construct a boolean array for location of mutation for all variants    
@@ -192,23 +192,45 @@ file = open("Spikegroups_membership.pck", "rb")
 Pseudogroup_dic = pickle.load(file)
 file.close()
 
-
-lineages_sim = ["BA.2", "BA.4", "BA.5", "BQ.1.1", "BE.1.1", "CH.1.1", "XBB.1.5"]
+k = 7
+lineages_sim = []
+while k<(int(sys.argv[6])+7):
+    lineages_sim.append(sys.argv[k])
+    k +=1
+    
+mut_sim = []
+while k<(int(sys.argv[6])+7+len(lineages_sim)):
+    mut_sim.append(sys.argv[k])
+    k +=1
+        
 Top_Pseudo = []
 Pseudo_done = []
+Pseudo_keys = list(Pseudogroup_dic.keys())
 for spklin in lineages_sim:
-    try:
+    if spklin in Pseudo_keys:
         if Pseudogroup_dic[spklin] not in Pseudo_done:
             Top_Pseudo.append(Pseudogroup_dic[spklin])
             Pseudo_done.append(Pseudogroup_dic[spklin])
-    except:
-        pass
+    else:
+        Top_Pseudo.append(spklin)
+        mut_file = open(mut_sim[lineages_sim.index(spklin)], "r")
+        mut_lin0 = mut_file.readlines()
+        mut_file.close()
+        mut_maj= []
+        for mut in mut_lin0:
+            if mut[:3] not in ("DEL", "del"):
+                if len(re.findall(r'\d+', mut))>0:
+                    mut_maj.append(re.findall(r'\d+', mut)[0])       
+                    mut_maj = list(np.unique(np.array(mut_maj).astype(str)))
+
+        """Update mutation profile dictionary"""        
+        mut_x_sites_dic_updated[spklin] = mut_maj
         
 Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo)
 a = 1
 if len(Top_Pseudo)!=0:
     Cross_react_dic = {}
-    mut_x_sites_dic_used = mut_x_sites_dic.copy()
+    mut_x_sites_dic_used = mut_x_sites_dic_updated.copy()
     try:
         Top_Pseudo.append(Lin_name)
         mut_x_sites_dic_used[Lin_name] = mut_Lin
@@ -253,6 +275,6 @@ if len(Top_Pseudo)!=0:
                 FR_NTB[j, i] = FR_sites
         
     Cross_react_dic["NTD"] = FR_NTB
-    file0 = open(sys.argv[6], "wb") 
+    file0 = open(sys.argv[k], "wb") 
     pickle.dump(Cross_react_dic, file0)
     file0.close()

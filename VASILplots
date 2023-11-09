@@ -12,8 +12,11 @@ rule_all_common = [
 if config["FR_DMS_sites"]:
     rule_all_common.append("plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf")
 
-if config["Cross_ALL"]:
+if config["cross_spk"]:
     rule_all_common.append("plots/Cross_spikegroups/Cross_React_AB_A.pdf")
+
+if config["cross_major"]:
+    rule_all_common.append("plots/Cross_Major/major_Cross_React_AB_A.pdf")
 
 if config["all_fit"]:
     rule_all_common.append("plots/relative_all/plot_status_all.csv")
@@ -50,12 +53,14 @@ rule get_absolute_advantage:
         mean_trend="results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv",
     params:
         color=config["color"],
+        time_start=config["time_start"],
+        time_stop=config["time_stop"],
     output:
         res_dir=directory("plots/absolute"),
         res1="plots/absolute/absolute_estimate.pdf",
         res2="plots/absolute/absolute_estimate.svg",
     shell:
-        "python {workflow.basedir}/scripts/plotting/absolute_estimation.py {input.cases} {input.mean_trend} {params.color} {output.res_dir}"
+        "python {workflow.basedir}/scripts/plotting/absolute_estimation.py {input.cases} {input.mean_trend} {params.color} {output.res_dir} {params.time_start} {params.time_stop}"
 
 
 if config["fit_lineage_focus"]:
@@ -108,34 +113,36 @@ if config["FR_DMS_sites"]:
             "Rscript {workflow.basedir}/scripts/plotting/FR_sites_landscape.R {input.FR_sites} {output.res_dir}"
 
 
-if config["Cross_ALL"]:
+if config["cross_spk"]:
     if config["added_cross"]:
 
-        rule plot_cross_all:
+        rule plot_cross_spk:
             input:
-                cross_ALL="results/Cross_react_dic_spikegroups_ALL.pck",
+                cross_spk="results/Cross_react_dic_spikegroups_ALL.pck",
                 cross_lin=config["Cross_Lin_file"],
             params:
                 lin_name=config["added_lineage"],
+                plot_major="False",
             output:
                 res_dir=directory("plots/Cross_spikegroups"),
                 res="plots/Cross_spikegroups/Cross_React_AB_A.pdf",
             shell:
-                "python {workflow.basedir}/scripts/plotting/Cross_maps.py {input.cross_ALL} {params.lin_name} {input.cross_lin} {output.res_dir}"
+                "python {workflow.basedir}/scripts/plotting/Cross_maps.py {input.cross_spk} {params.lin_name} {input.cross_lin} {output.res_dir} {params.plot_major}"
 
     else:
 
-        rule plot_cross_all:
+        rule plot_cross_spk:
             input:
-                cross_ALL="results/Cross_react_dic_spikegroups_ALL.pck",
+                cross_spk="results/Cross_react_dic_spikegroups_ALL.pck",
             params:
                 cross_lin="None",
                 lin_name="None",
+                plot_major="False",
             output:
                 res_dir=directory("plots/Cross_spikegroups"),
                 res="plots/Cross_spikegroups/Cross_React_AB_A.pdf",
             shell:
-                "python {workflow.basedir}/scripts/plotting/Cross_maps.py {input.cross_ALL} {params.lin_name} {params.cross_lin} {output.res_dir}"
+                "python {workflow.basedir}/scripts/plotting/Cross_maps.py {input.cross_spk} {params.lin_name} {params.cross_lin} {output.res_dir} {params.plot_major}"
 
 
 if config["p_neut"]:
@@ -152,3 +159,37 @@ if config["p_neut"]:
             res="plots/P_neut_PK/plot_status.csv",
         shell:
             "python {workflow.basedir}/scripts/plotting/P_neut.py {input.pk_file} {input.pneut_file} {params.col_pneut} {params.lin_name} {output.res_dir}"
+
+
+if config["cross_major"]:
+    if config["added_cross"]:
+
+        rule plot_cross_major:
+            input:
+                cross_spk=config["cross_major_file"],
+            params:
+                cross_lin="None",
+                lin_name=config["added_lineage"],
+                add_lin="add",
+                plot_major="True",
+            output:
+                res_dir=directory("plots/Cross_Major"),
+                res="plots/Cross_Major/major_Cross_React_AB_A.pdf",
+            shell:
+                "python {workflow.basedir}/scripts/plotting/Cross_maps.py {input.cross_spk} {params.lin_name} {params.cross_lin} {output.res_dir} {params.plot_major} {params.add_lin}"
+
+    else:
+
+        rule plot_cross_major:
+            input:
+                cross_spk=config["cross_major_file"],
+            params:
+                cross_lin="None",
+                lin_name="None",
+                plot_major="True",
+                not_add="notadd",
+            output:
+                res_dir=directory("plots/Cross_Major"),
+                res="plots/Cross_Major/major_Cross_React_AB_A.pdf",
+            shell:
+                "python {workflow.basedir}/scripts/plotting/Cross_maps.py {input.cross_spk} {params.lin_name} {params.cross_lin} {output.res_dir} {params.plot_major} {params.not_add}"
