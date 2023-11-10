@@ -55,7 +55,7 @@ def Display_Envelope(t, Y, Z, is_log, labels, figsize = (7, 7), xysize = (15,15)
             ax.fill_between(t, Y[i, :], Z[i, :], label = labels[i], alpha = alpha, color = col[i])
         
     if labels is not None:
-        ax.legend(fontsize = labsize)
+        ax.legend(loc = (1.2, 0.) ,fontsize = labsize, ncols = len(labels)//4)
 
     if save_to is not None:
         ### save figure in pdf ###
@@ -113,6 +113,7 @@ k = 5
 status = []
 Lin_list = []
 col_list = []
+Lin_status = []
 
 Lin_i = str(sys.argv[k])
 Pneut_df = pd.read_csv(P_neut_dir+"/P_neut_%s.csv"%Lin_i)
@@ -122,52 +123,64 @@ except:
     pass
 t = Pneut_df["Day since infection"]
 
-Min_list = np.zeros((num_groups, len(t)))
-Max_list = np.zeros((num_groups, len(t)))
+Min_list = []
+Max_list =[]
 xval = "Days since antigen exposure"
 yval = "Virus neutralization\n probability"
 for i in range(num_groups):
-    Lin_i = str(sys.argv[k+i])
-    Pneut_df = pd.read_csv(P_neut_dir+"/P_neut_%s.csv"%Lin_i)
-    try:
-        Pneut_df.drop(columns = "Unnamed: 0", inplace = True)
-    except:
-        pass
-    t = Pneut_df["Day since infection"]
+    Lin_i_list = str(sys.argv[k+i])
+    splited_var = np.array(Lin_i_list.split("/"))
+    splited_var = splited_var[~(splited_var == "")]
+    splited_var = splited_var[~(splited_var == " ")]
+    for Lin_i in splited_var:
+        try:
+            Pneut_df = pd.read_csv(P_neut_dir+"/P_neut_%s.csv"%Lin_i)
+            try:
+                Pneut_df.drop(columns = "Unnamed: 0", inplace = True)
+            except:
+                pass
+            t = Pneut_df["Day since infection"]
+        
+            """Compute PNeut Envelope"""    
+            EnvO_Min, EnvO_Max = Pneut_df["Proba Neut Min"].to_numpy(), Pneut_df["Proba Neut Max"].to_numpy()
+            Min_list.append(EnvO_Min)
+            Max_list.append(EnvO_Max)
+            col_o = str(sys.argv[k+num_groups+i])
+            if col_o in col_list:
+                col_o = sns.color_palette("Spectral", 1)[0]
+            
+            col_list.append(col_o)
+            is_log=False
+            
+            ### save individual plots
+            PreFig(xsize = 20, ysize = 20)
+            figsize = (10,7)
+            fig0 = plt.figure(figsize = figsize)
+            ax0 = fig0.add_subplot(1, 1, 1)
+             
+            fig0, ax0 = Display_Envelope(t, np.array([EnvO_Min]), np.array([EnvO_Max]), 
+                                      is_log, 
+                                      save_to = Res_dir+"/P_Neut_%s"%Lin_i,
+                                      xval = xval, yval = yval,
+                                      linewidth = 4,
+                                      color = [col_o],
+                                      alpha = 0.3,
+                                      fig = fig0,
+                                      ax = ax0,
+                                      labels = [Lin_i]) 
 
-    """Compute PNeut Envelope"""    
-    EnvO_Min, EnvO_Max = Pneut_df["Proba Neut Min"].to_numpy(), Pneut_df["Proba Neut Max"].to_numpy()
-    Min_list[i, :] = EnvO_Min
-    Max_list[i, :] = EnvO_Max
-    col_o = str(sys.argv[k+num_groups+i])
-    col_list.append(col_o)
-    is_log=False
-    
-    ### save individual plots
-    PreFig(xsize = 20, ysize = 20)
-    figsize = (10,7)
-    fig0 = plt.figure(figsize = figsize)
-    ax0 = fig0.add_subplot(1, 1, 1)
-     
-    fig0, ax0 = Display_Envelope(t, np.array([EnvO_Min]), np.array([EnvO_Max]), 
-                              is_log, 
-                              save_to = Res_dir+"/P_Neut_%s"%Lin_i,
-                              xval = xval, yval = yval,
-                              linewidth = 4,
-                              color = [col_o],
-                              alpha = 0.3,
-                              fig = fig0,
-                              ax = ax0,
-                              labels = [Lin_i]) 
-
-    status.append("Done")
-    Lin_list.append(Lin_i)
+            status.append("Done")
+            Lin_list.append(Lin_i)
+        except:
+            status.append("Not avail")
+            
+        Lin_status.append(Lin_i)
 
 PreFig(xsize = 20, ysize = 20)
 figsize = (10,7)
 fig = plt.figure(figsize = figsize)
 ax = fig.add_subplot(1, 1, 1)
-fig, ax = Display_Envelope(t, Min_list, Max_list, 
+fig, ax = Display_Envelope(t, np.array(Min_list), np.array(Max_list), 
                           is_log, 
                           save_to = Res_dir+"/P_Neut_groups",
                           xval = xval, yval = yval,
@@ -178,4 +191,4 @@ fig, ax = Display_Envelope(t, Min_list, Max_list,
                           ax = ax,
                           labels = Lin_list)  
 
-pd.DataFrame({"Lineages":Lin_list, "status":status}).to_csv(Res_dir+"/plot_status.csv")
+pd.DataFrame({"Lineages":Lin_status, "status":status}).to_csv(Res_dir+"/plot_status.csv")

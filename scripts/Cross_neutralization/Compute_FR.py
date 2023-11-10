@@ -249,13 +249,25 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
         else:
             g.append(inds)
             g_var.append(variant_x_names_cross)
+        
+        if Lin_name not in list(variant_x_names_cross):
+            w_lin = len(variant_x_names_cross)
+            Cross_react_dic["variant_list"] = list(variant_x_names_cross)+[Lin_name]
+        else:
+            w_lin = list(variant_x_names_cross).index(Lin_name)
+            Cross_react_dic["variant_list"] = list(variant_x_names_cross)
             
         for ab in Ab_classes:
             print("Assess Lineage %s with the NTD-RBD mutation positions "%Lin_name, mut_Lin)
             print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))    
             
             if ab!= "NTD":
-                FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
+                
+                if Lin_name not in list(variant_x_names_cross):
+                    FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
+                else:
+                    FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
+                    
                 for s in range(len(g)):
                     Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_name], g_var[s]), 
                                Escape_Fraction, 
@@ -265,11 +277,11 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
                     #Only the information for the specific lineage studied is required for immunological landscape calculation
                     #the FRxy_ab matrix is kept only for compatibility with other codes
                     
-                    FRxy_ab[len(variant_x_names_cross), g[s]] = Cross_Lin[ab][0, :]
-                    FRxy_ab[g[s], len(variant_x_names_cross)] = Cross_Lin[ab][0, :]
+                    FRxy_ab[w_lin, g[s]] = Cross_Lin[ab][0, :]
+                    FRxy_ab[g[s], w_lin] = Cross_Lin[ab][0, :]
                 Cross_react_dic[ab] = FRxy_ab
             a +=1
-        Cross_react_dic["variant_list"] = list(variant_x_names_cross)+[Lin_name]
+        
         """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
         n = len(Cross_react_dic["variant_list"])
         FR_NTB = np.ones((n, n))
@@ -328,7 +340,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
             else:
                 if Lin_list[j] not in list(mut_x_sites_dic.keys()):
                     mut_x_sites_dic_updated[Lin_list[j]] = mut_x_sites_dic[Pseudogroup_dic[Lin_list[j]]]
-            
+                
         g = []
         g_var =[]
         inds = np.arange(0, len(variant_x_names_cross)).astype(int)
@@ -351,6 +363,13 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
             Cross_i = {}
             Cross_i["variant_list"] = list(variant_x_names_cross)+ [Lin_list[i]]
             
+            if Lin_list[i] not in list(variant_x_names_cross):
+                w_lin = len(variant_x_names_cross)
+                Cross_i["variant_list"] = list(variant_x_names_cross) + [Lin_list[i]]
+            else:
+                w_lin = list(variant_x_names_cross).index(Lin_list[i])
+                Cross_i["variant_list"] = list(variant_x_names_cross)
+            
             try:
                 file_test = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb")
                 file_test.close()
@@ -362,6 +381,11 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
                 a = 1
                 for ab in Ab_classes:  
                     if ab!= "NTD":
+                        if Lin_list[i] not in list(variant_x_names_cross):
+                            FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
+                        else:
+                            FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
+                            
                         FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
                         print("Assess lineage %s| %d out of %d with the NTD-RBD mutation positions"%(Lin_list[i], i+1,len(Lin_list)), mut_x_sites_dic_updated[Lin_list[i]])
                         print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes)) 
@@ -375,8 +399,8 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
                             #Only the information for the specific lineage studied is required for immunological landscape calculation
                             #the FRxy_ab matrix is kept only for compatibility with other codes
                             
-                            FRxy_ab[len(variant_x_names_cross), g[s]] = Cross_Lin[ab][0, :]
-                            FRxy_ab[g[s], len(variant_x_names_cross)] = Cross_Lin[ab][0, :]
+                            FRxy_ab[w_lin, g[s]] = Cross_Lin[ab][0, :]
+                            FRxy_ab[g[s], w_lin] = Cross_Lin[ab][0, :]
                 
                         Cross_i[ab] = FRxy_ab
                     a +=1 
@@ -413,27 +437,49 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
                 Cross_global.pop("variant_list")
                 Ab_global = Cross_global.keys()
                 file_c.close()
+                if Lin_list[i] not in list(variant_x_names_cross):
+                    w_lin = len(variant_x_names_cross)
+                    Cross_i["variant_list"] = list(variant_x_names_cross) + [Lin_list[i]]
+                else:
+                    w_lin = list(variant_x_names_cross).index(Lin_list[i])
+                    Cross_i["variant_list"] = list(variant_x_names_cross)
+                    
                 for ab in Ab_global:  
-                    FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
+                    if Lin_list[i] not in list(variant_x_names_cross):
+                        FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
+                    else:
+                        FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
+                        
                     for u1 in range(len(variant_x_names_cross)):
                         v_u1 = variant_x_names_cross[u1]
                         if v_u1 in variant_global:
-                            FRxy_ab[-1, u1] = Cross_global[ab][list(variant_global).index(Lin_list[i]), list(variant_global).index(v_u1)]
-                            FRxy_ab[u1, -1] = FRxy_ab[-1, u1]
+                            FRxy_ab[w_lin, u1] = Cross_global[ab][list(variant_global).index(Lin_list[i]), list(variant_global).index(v_u1)]
+                            FRxy_ab[u1, w_lin] = FRxy_ab[w_lin, u1]
                         else:
                             # recompute it, should not happen normaly
                             # usefull when using previously computed cross reactivity file where all covsonar lineages (not only spikegroups) are present (assigned the FR of their spikegroups)
-                            Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_list[i]], [v_u1]), 
-                                       Escape_Fraction, 
-                                       [ab],
-                                       mut_x_sites_dic_updated)
-                            
-                           
-                            #Only the information for the specific lineage studied is required for immunological landscape calculation
-                            #the FRxy_ab matrix is kept only for compatibility with other codes
-                            FRxy_ab[-1, u1] = Cross_Lin[ab][0, 0]
-                            FRxy_ab[u1, -1] = FRxy_ab[-1, u1]
-                            
+                            if ab != "NTD":
+                                Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_list[i]], [v_u1]), 
+                                           Escape_Fraction, 
+                                           [ab],
+                                           mut_x_sites_dic_updated)
+                                
+                               
+                                #Only the information for the specific lineage studied is required for immunological landscape calculation
+                                #the FRxy_ab matrix is kept only for compatibility with other codes
+                                FRxy_ab[w_lin, u1] = Cross_Lin[ab][0, 0]
+                                FRxy_ab[u1, w_lin] = FRxy_ab[w_lin, u1]
+                            else:
+                                sites_1 = set(np.array(mut_x_sites_dic_updated[Lin_list[i]]).astype(int))
+                                sites_2 = set(np.array(mut_x_sites_dic_updated[v_u1]).astype(int))
+                                sites = list(sites_1.symmetric_difference(sites_2))
+                                FR_sites = 1
+                                for s in sites:
+                                    s = int(s)
+                                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                                        FR_sites *= 10
+                                FRxy_ab[w_lin, u1] = FR_sites
+                                FRxy_ab[u1, w_lin] = FR_sites
                     Cross_i[ab] = FRxy_ab
                     a +=1 
                 

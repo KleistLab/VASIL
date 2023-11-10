@@ -42,7 +42,7 @@ try:
 except:
     pass
 
-lineage_freq = lineage_freq[lineage_freq['date'].isin(t_dates)]
+lineage_freq = lineage_freq#[lineage_freq['date'].isin(t_dates)]
 freqs = lineage_freq.loc[:, lineage_freq.columns != 'date']
 
 # imputing frequencies below threshold and normalization
@@ -52,6 +52,8 @@ col_sums = freqs.sum(axis = 1).values
 freqs = freqs.divide(col_sums, axis="rows")
 freqs = freqs.fillna(0)
 lineage_freq.loc[:, lineage_freq.columns != 'date'] = freqs
+day_prop = lineage_freq["date"].tolist()
+t_prop = np.arange(len(day_prop)).astype(int)
 
 import matplotlib
 def PreFig(xsize = 12, ysize = 12):
@@ -61,78 +63,117 @@ def PreFig(xsize = 12, ysize = 12):
     matplotlib.rc('xtick', labelsize=xsize) 
     matplotlib.rc('ytick', labelsize=ysize)
     
-def plot_fit(ES_df_list, lineage_list, color_list, w_save = len(sys.argv)-1):
+def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     # plotting
     PreFig(xsize = 20, ysize = 20)
-    fig = plt.figure(figsize = (15, 7))
+    fig = plt.figure(figsize = (9, 7))
     ax = fig.add_subplot(1, 1, 1)
     ### end of observation line
     ax.axvline(x = len(t_dates) - 1, ymin = -1, ymax = 1, ls = "--", linewidth = 2, color = "grey")
-    #ax.set_ylim((-0.02, 0.02))
 
     # different axis for proportions
     ax_twin = ax.twinx()
+
     status_list = []
-    for k in range(len(ES_df_list)):
-        ES_df = ES_df_list[k]
-        lineage = lineage_list[k]
-        # processing of susceptibles 
-        try:
-            ES_df.drop(columns = "Unnamed: 0", inplace = True)
-        except:
-            pass
-        
-        es_cols = ES_df.columns
-        ES_df = ES_df[ES_df['Days'].isin(t_dates)]
-        ES_ranges = ES_df.to_numpy()[:, es_cols!="Days"].astype(float)
-        
+    
+    for k in range(len(lineage_list)):
+        splited_var = np.array(lineage_list[k].split("/"))
+        splited_var = splited_var[~(splited_var == "")]
+        splited_var = splited_var[~(splited_var == " ")]
+        for x in range(len(splited_var)):
+            lineage = splited_var[x]
+            try:
+                ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+            except:
+                try:
+                    ES_df = pd.read_csv("results/Immunological_Landscape_ALL/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+                except:
+                    print("Computation needed: Excpected Susceptible file is not available for %s"%lineage)
+            # processing of susceptibles 
+            try:
+                ES_df.drop(columns = "Unnamed: 0", inplace = True)
+            except:
+                pass
+            
+            es_cols = ES_df.columns
+            ES_df = ES_df[ES_df['Days'].isin(t_dates)]
+            if x == 0:
+                ES_sum = ES_df.to_numpy()[:, es_cols!="Days"].astype(float)
+            else:
+                ES_sum += ES_df.to_numpy()[:, es_cols!="Days"].astype(float)
+            
+            # change in relative frequency from genomic surveillance data 
+            if "Spike. " + lineage in lineage_freq.columns.astype(str):
+                if x == 0:
+                    Pseudo_Prop = moving_average(lineage_freq["Spike. " + lineage], window = 14)
+                else:
+                    Pseudo_Prop += moving_average(lineage_freq["Spike. " + lineage], window = 14)
+
+                #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
+                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+            elif lineage in lineage_freq.columns.astype(str):
+                if x == 0:
+                    Pseudo_Prop = moving_average(lineage_freq[lineage], window = 14)
+                else:
+                    Pseudo_Prop += moving_average(lineage_freq[lineage], window = 14)
+                #Pseudo_Prop[Pseudo_Prop < threshold] = 0
+                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+            else:
+                if x == 0:
+                    Pseudo_Prop = ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
+                else:
+                    Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
+            
+        ES_ranges = ES_sum/len(splited_var) # compute the mean
+            
+        """
         # calculation of change in relative frequency from model
-        gamma_SI = np.zeros((len(t_dates), ES_ranges.shape[1]))
-        
-        for i in range(ES_ranges.shape[1]):
-            S_x = ES_ranges[:, i]
-            S_mean = S_all_mean[:, i]
-        
-            gamma_SI[:, i] = np.divide(S_x - S_mean, S_mean, out = S_x, where = S_mean != 0)
-        
-        # get min max gamma over PK at each timepoints
-        gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
-        
-        # change in relative frequency from genomic surveillance data 
-        if "Spike. " + lineage in lineage_freq.columns.astype(str):
-            Pseudo_Prop = moving_average(lineage_freq["Spike. " + lineage], window = 14)
-            #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
-            #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
-        elif lineage in lineage_freq.columns.astype(str):
-            Pseudo_Prop = moving_average(lineage_freq[lineage], window = 14)
-            #Pseudo_Prop[Pseudo_Prop < threshold] = 0
-            #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
-        else:
-            Pseudo_Prop = np.zeros(len(t_dates))
-        
         gamma_prop = np.zeros(len(t_dates))
         for l in range(len(t_dates)-1):
             if Pseudo_Prop[l] == 0 or Pseudo_Prop[l+1] == 0:
                 gamma_prop[l] = float('nan')
             else:
                 gamma_prop[l] = Pseudo_Prop[l+1]/Pseudo_Prop[l] -1
-    
-        ax.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lineage)
-        ax_twin.plot(t_dates, gamma_prop, color = color_list[k])
+        ax_twin.plot(t_dates, gamma_prop, color = color_list[k], label = lineage)
+        """   
+        
+        gamma_SI = np.zeros((len(t_dates), ES_ranges.shape[1]))
+        
+        for i in range(ES_ranges.shape[1]):
+            S_x = ES_ranges[:, i]
+            S_mean = S_all_mean[:, i]
+            
+            gamma_SI[:, i] = np.divide(S_x - S_mean, S_mean, out = S_x, where = S_mean != 0)
+        
+        # get min max gamma over PK at each timepoints
+        gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
+        
+        
+        ax.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lineage_list[k])
+        ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lineage_list[k])
         status_list.append("Done")
 
-    #ax.axhline(xmin = 0, xmax = t_dates[-1], ls = "--", linewidth = 2, color = "black")
     ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
+    
+
+    ymin1, ymax1 = ax.get_ylim()
+    ymin2, ymax2 = ax_twin.get_ylim()
+    ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
+    ax.set_ylim((ymin, ymax))
+    ax_twin.set_ylim((ymin, ymax))
     
     try:
         x_min = list(t_dates).index(str(sys.argv[5]))
-        x_max = list(t_dates).index(str(sys.argv[6]))
+        #x_max = list(t_dates).index(str(sys.argv[6]))
+        x_min1 = day_prop.index(str(sys.argv[5]))
+        x_max1 = day_prop.index(str(sys.argv[6]))
+        x_max = x_max1
     except:
         x_min = None
-        x_max = None
-    
+
     if (x_min is not None):
         ax.set_xlim((x_min, x_max))
+        ax_twin.set_xlim((x_min1, x_max1))
         t_dates_show = np.array(t_dates)[x_min:x_max+1]
     else:
         t_dates_show = t_dates
@@ -166,7 +207,10 @@ def plot_fit(ES_df_list, lineage_list, color_list, w_save = len(sys.argv)-1):
 
     #ax_twin.set_ylim((-0.02, 0.02))
     
-    ax.legend(loc = (1.1, 0.75) ,fontsize = 20)
+    ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = len(lineage_list)//4)
+    ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = len(lineage_list)//4)
+    ax.set_ylabel("Relative fitness", fontsize = 20)
+    ax_twin.set_ylabel("Variant abundance", fontsize = 20)
     pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_groups.pdf")
     pdf.savefig(fig, bbox_inches = "tight")
     pdf.close()
@@ -177,15 +221,16 @@ def plot_fit(ES_df_list, lineage_list, color_list, w_save = len(sys.argv)-1):
 num_groups = int(sys.argv[7])
 w_save = 8
 k = 9
-ES_df_list = []
 lineage_list = []
 color_list = []
 for i in range(num_groups):
-    ES_df_list.append(pd.read_csv(ES_lin_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%str(sys.argv[k+i])))    
     lineage_list.append(str(sys.argv[k+i]))
-    color_list.append(str(sys.argv[k+num_groups+i]))
+    try:
+        color_list.append(str(sys.argv[k+num_groups+i]))
+    except:
+        pdb.set_trace()
 
-status_list = plot_fit(ES_df_list, lineage_list, color_list, w_save)
+status_list = plot_fit(ES_lin_dir, lineage_list, color_list, w_save)
     
 status = pd.DataFrame({"lineage":lineage_list, "relative_advantage":status_list})
 status.to_csv(sys.argv[w_save]+"/plot_status.csv")

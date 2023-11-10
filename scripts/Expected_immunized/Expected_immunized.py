@@ -324,7 +324,7 @@ def PNeut_Envelope(t, variants, variant_x_names, Cross_react_dic, c_dframe_dic, 
     res = np.zeros((len(variants), len(list(c_dframe_dic.keys())), len(t)))
     if mean_IC50xx:
         IC50xx = np.mean(list(IC50xx_dic.values()))
-        print("Used mean fitted IC50", IC50xx)
+        print("Computing P_Neut, used mean fitted IC50", IC50xx)
     
     for i in range(len(variants)):
         where_y = list(variant_x_names).index(variants[i])
@@ -388,10 +388,8 @@ def ei_util(Lin_name, Cross_react_dic = None, save_pneut=None, w_save=len(sys.ar
     Susc = {}
     Susc["Days"] = days_incidence
     if save_pneut in ("TRUE", "True"):
-        if Lin_name == "EG.5.1":
-            pdb.set_trace()
         EnvD_Min,EnvD_Max = PNeut_Envelope(t_conc, [Lin_name], variants_in_cross, Cross_react_dic, c_dframe_dic, IC50xx_dic, mean_IC50xx = True)
-        """ Save VE-Delta ranges"""
+        """ Save P_Neut ranges"""
         VE = {}
         VE["Day since infection"] = t_conc
         VE["Proba Neut Min"] = EnvD_Min
@@ -487,16 +485,16 @@ if Lin_name != "ALL":
                 sim_df = pd.DataFrame({"Lineage":[lin_sim], "Simulation status":[status_var]})
                 
             k +=1
-            sim_df.to_csv(sys.argv[w_save]+"/simulation_status_group.csv")
-        
-        
+            sim_df.to_csv(sys.argv[w_save]+"/simulation_status_group.csv")    
 else:
     status_var = []
     SpikeGroups_list_index = []
     try:
         save_pneut = str(sys.argv[13])
+        w_save=len(sys.argv)-2
     except:
         save_pneut = None
+        w_save = len(sys.argv)-1
     for j in range(len(SpikeGroups_list)):
         if SpikeGroups_list[j] in variants_in_cross:
             SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
@@ -516,10 +514,15 @@ else:
     for i in range(len(SpikeGroups_list)):
         if SpikeGroups_list[i] in variants_in_cross:
             print("Compute E[immunized] for %d out of %d spikegroups"%(i, len(SpikeGroups_list)))
-            status_var.append(ei_util(SpikeGroups_list[i], Cross_react_dic = Cross_react_dic, save_pneut = save_pneut, var_list_index=SpikeGroups_list_index, spikegroups_proportion_adjust=spikegroups_proportion_adjust))
+            status_var.append(ei_util(SpikeGroups_list[i], 
+                                      Cross_react_dic = Cross_react_dic,
+                                      save_pneut = save_pneut, 
+                                      var_list_index=SpikeGroups_list_index, 
+                                      spikegroups_proportion_adjust=spikegroups_proportion_adjust, 
+                                      w_save = w_save))
         else:
             status_var.append("Not in cross")
     # Save file as a placeholder for exectuted codes, required for snakemake
     sim_df = pd.DataFrame({"SpikeGroups":SpikeGroups_list, "Simulation status":status_var})
-    sim_df.to_csv(sys.argv[12]+"/simulation_status_ALL.csv")
+    sim_df.to_csv(sys.argv[w_save]+"/simulation_status_ALL.csv")
     
