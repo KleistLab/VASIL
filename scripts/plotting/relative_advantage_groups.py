@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import sys
 import pdb
+import seaborn as sns
 
 def moving_average(X, window = 7):
     u = np.zeros(len(X))
@@ -81,7 +82,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         splited_var = splited_var[~(splited_var == "")]
         splited_var = splited_var[~(splited_var == " ")]
         num_avail = 0
-
+        
         for x in range(len(splited_var)):
             lineage = splited_var[x]
             try:
@@ -128,10 +129,11 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                 else:
                     Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
         
+        
         if num_avail !=0:
             ES_ranges = ES_sum/num_avail# compute the mean
         else:
-            print("Error: There are no E[Susceptible] files for any lineage in compare_groups")
+            print("Error: There are no E[Susceptible] files for any lineage in %s"%lineage)
             
         """
         # calculation of change in relative frequency from model
@@ -155,20 +157,18 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         # get min max gamma over PK at each timepoints
         gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
         
-        
-        ax.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lineage_list[k])
+        inds_dates = np.arange(0,len(t_dates),1)
+        ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lineage_list[k])
         ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lineage_list[k])
         status_list.append("Done")
 
     ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
     
-
     ymin1, ymax1 = ax.get_ylim()
     ymin2, ymax2 = ax_twin.get_ylim()
     ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
     ax.set_ylim((ymin, ymax))
     ax_twin.set_ylim((ymin, ymax))
-    
     try:
         x_min = list(t_dates).index(str(sys.argv[5]))
         #x_max = list(t_dates).index(str(sys.argv[6]))
@@ -230,8 +230,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
 
     #ax_twin.set_ylim((-0.02, 0.02))
     
-    ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = len(lineage_list)//4)
-    ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = len(lineage_list)//4)
+    ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+    ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
     ax.set_ylabel("Relative fitness", fontsize = 20)
     ax_twin.set_ylabel("Variant abundance", fontsize = 20)
     pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_groups.pdf")
@@ -246,12 +246,19 @@ w_save = 8
 k = 9
 lineage_list = []
 color_list = []
+custom_col = sns.color_palette("Set2", 100) 
+s = 0
 for i in range(num_groups):
     lineage_list.append(str(sys.argv[k+i]))
     try:
         color_list.append(str(sys.argv[k+num_groups+i]))
     except:
-        pdb.set_trace()
+        rand_num = np.random.choice(1, 100)
+        if s<len(custom_col):
+            color_list.append(custom_col[s])
+        else:
+            color_list.append(sns.color_palette("rocked", rand_num)[0])
+        s +=1
 
 status_list = plot_fit(ES_lin_dir, lineage_list, color_list, w_save)
     

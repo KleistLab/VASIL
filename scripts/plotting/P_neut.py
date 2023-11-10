@@ -49,15 +49,24 @@ def Display_Envelope(t, Y, Z, is_log, labels, figsize = (7, 7), xysize = (15,15)
         plt.ylabel("%s"%yval, fontsize = labsize)  
     
     plt.xlabel(xval, fontsize = labsize)
-    plt.legend(fontsize = labsize)
     
-    if save_to[-3:] == "pdf":
+    if labels != [""]:
+        ax.legend(loc = (1.2, 0.) ,fontsize = labsize, ncols = np.ceil(len(labels)/4))
+    
+    if save_to is not None:
         ### save figure in pdf ###
-        pdf = PdfPages(save_to)
+        if is_log:
+             ax.set_ylabel("$\ln$ %s"%yval, fontsize = labsize)
+        else:
+             ax.set_ylabel("%s"%yval, fontsize = labsize)
+        ax.set_xlabel(xval, fontsize = labsize)
+        ax.set_title("Wuhan-Hu-1 antigen", fontsize = labsize)
+        pdf = PdfPages(save_to+".pdf")
         pdf.savefig(fig, bbox_inches = "tight")
         pdf.close()
-    else:
-        plt.savefig(save_to)
+        
+        ### save figure as svg
+        fig.savefig(save_to+".svg", bbox_inches = "tight")
     
     return fig, ax
 
@@ -107,8 +116,8 @@ is_log=False
 xval = "Days since antigen exposure"
 yval = "Virus neutralization\n probability"
 fig, ax = Display_Envelope(t, np.array([EnvO_Min]), np.array([EnvO_Max]), 
-                          is_log, [""], 
-                          save_to = sys.argv[5]+"/P_Neut_"+str(sys.argv[4])+".pdf",
+                          is_log, [""],
+                          save_to = sys.argv[5]+"/P_Neut_"+str(sys.argv[4]),
                           xval = xval, yval = yval,
                           linewidth = 4,
                           color = [col_o],

@@ -154,9 +154,15 @@ if plot_major not in ("True"):
     
         Cross_Epitope_Dic["Resistance to %s"%ab] = Cross_sub
         
+        u = np.ceil(len(Top_Pseudo)/10)
+
+        xysize = (15*(u), 15*u) # size of xy ticks
+
         PreFig(xsize = xysize[0], ysize = xysize[1])
-        fig_fr = plt.figure(figsize = (16, 13))
+        
+        fig_fr = plt.figure(figsize = (16*u, 13*u))
         ax_fr = fig_fr.add_subplot(1, 1, 1)
+        
         
         dLab = "Cross-Resistance to %s"%ab
         
@@ -169,7 +175,7 @@ if plot_major not in ("True"):
                         cbar = True, 
                         annot = True, 
                         #annot = False,
-                        annot_kws = {"size": 30},
+                        annot_kws = {"size": 25*u},
                         fmt = ".2f", ## annotations decimals
                         cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
                         center = center,
@@ -183,7 +189,7 @@ if plot_major not in ("True"):
                         cbar = True, 
                         annot = True, 
                         #annot = False,
-                        annot_kws = {"size": 30},
+                        annot_kws = {"size": 25*u},
                         fmt = ".2f", ## annotations decimals
                         cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
                         center = center,

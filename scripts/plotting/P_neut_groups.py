@@ -54,9 +54,9 @@ def Display_Envelope(t, Y, Z, is_log, labels, figsize = (7, 7), xysize = (15,15)
         for i in range(Y.shape[0]):
             ax.fill_between(t, Y[i, :], Z[i, :], label = labels[i], alpha = alpha, color = col[i])
         
-    if labels is not None:
-        ax.legend(loc = (1.2, 0.) ,fontsize = labsize, ncols = len(labels)//4)
-
+    if labels != [""]:
+       ax.legend(loc = (1.2, 0.) ,fontsize = labsize, ncols = np.ceil(len(labels)/4))
+    
     if save_to is not None:
         ### save figure in pdf ###
         if is_log:
@@ -64,13 +64,14 @@ def Display_Envelope(t, Y, Z, is_log, labels, figsize = (7, 7), xysize = (15,15)
         else:
              ax.set_ylabel("%s"%yval, fontsize = labsize)
         ax.set_xlabel(xval, fontsize = labsize)
+        ax.set_title("Wuhan-Hu-1 antigen", fontsize = labsize)
         pdf = PdfPages(save_to+".pdf")
         pdf.savefig(fig, bbox_inches = "tight")
         pdf.close()
         
         ### save figure as svg
         fig.savefig(save_to+".svg", bbox_inches = "tight")
-
+        
     
     return fig, ax
 
@@ -115,21 +116,31 @@ Lin_list = []
 col_list = []
 Lin_status = []
 
-Lin_i = str(sys.argv[k])
-Pneut_df = pd.read_csv(P_neut_dir+"/P_neut_%s.csv"%Lin_i)
+
+Lin_i_list = str(sys.argv[k])
+splited_var = np.array(Lin_i_list.split("/"))
+splited_var = splited_var[~(splited_var == "")]
+splited_var = splited_var[~(splited_var == " ")]
+"""
+try:
+    Pneut_df = pd.read_csv(P_neut_dir+"/P_neut_%s.csv"%splited_var[0])
+except:
+    try:
+        Pneut_df = pd.read_csv("results/Immunological_Landscape_ALL/P_neut_%s.csv"%splited_var[0])
+    except:
+        print("Computation needed: P_neut file is not available for %s"%splited_var[0])
 try:
     Pneut_df.drop(columns = "Unnamed: 0", inplace = True)
 except:
     pass
 t = Pneut_df["Day since infection"]
-
+"""
 Min_list = []
 Max_list =[]
 xval = "Days since antigen exposure"
 yval = "Virus neutralization\n probability"
 s = 0
 custom_col = sns.color_palette("Set2", 100) 
-
 for i in range(num_groups):
     Lin_i_list = str(sys.argv[k+i])
     splited_var = np.array(Lin_i_list.split("/"))
@@ -150,7 +161,7 @@ for i in range(num_groups):
             except:
                 pass
             t = Pneut_df["Day since infection"]
-        
+
             """Compute PNeut Envelope"""    
             EnvO_Min, EnvO_Max = Pneut_df["Proba Neut Min"].to_numpy(), Pneut_df["Proba Neut Max"].to_numpy()
             Min_list.append(EnvO_Min)
