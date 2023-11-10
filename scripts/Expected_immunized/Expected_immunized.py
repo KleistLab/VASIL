@@ -8,25 +8,26 @@ import joblib as jb
 import sys
 import warnings
 import pdb
-
 """Load Infection Data"""
 Population_Data = pd.read_csv(sys.argv[1])
 
-"""Load relevant cross_neutralization files"""
+"""Load delta relevant cross_neutralization files"""
 file1 = open(sys.argv[2], "rb") # premade simulations
 Cross_with_delta_validation = pickle.load(file1)
 variants_x_names_show = Cross_with_delta_validation["variant_list"]
 Cross_with_delta_validation.pop("variant_list")
 file1.close()
-
-file1 = open(sys.argv[3], "rb") # Check that this is the file you want to load
-Cross_react_dic = pickle.load(file1)
-variants_in_cross = Cross_react_dic["variant_list"]
-Cross_react_dic.pop("variant_list")
-file1.close()
-
-Ab_classes = list(Cross_react_dic.keys())
-#Ab_classes.remove("variant_list")
+Ab_classes = list(Cross_with_delta_validation.keys()) ### the same for all cross reactivity files computed in the pipeline
+try:
+    file1 = open(sys.argv[3], "rb") # Check that this is the file you want to load
+    Cross_react_dic = pickle.load(file1)
+    variants_in_cross = Cross_react_dic["variant_list"]
+    Cross_react_dic.pop("variant_list")
+    file1.close()
+    run_group=False
+except:
+    # result directory is instead provided
+    run_group = True
 
 """Spike groups and frequencies"""
 file1 = open(sys.argv[4], "rb") 
@@ -56,11 +57,6 @@ t = np.arange(1, len(Population_Data['date'][:where_last_day]) + 1, 1)
 infection_data_corrected = Population_Data['minNTrue'].values[:where_last_day]
 t_dates = Population_Data['date'].values[:where_last_day]
 days_incidence = list(Population_Data['date'][:where_last_day]) 
-"""Load Lineage to assess """
-Lin_name = sys.argv[11]
-"""Update name if necessary -- this is the same update as in Compute_FR"""
-if Lin_name in SpikeGroups_list: 
-    Lin_name = Lin_name + "_requested" ### renamed to avoid ambiguities
         
 def Antibody_ranges(thalf_vec, tmax_vec, t, Ab_classes):
     N = len(Ab_classes) # number of antibody classes
@@ -169,6 +165,7 @@ def sqrt_diff_FR(ic50, days_list, FR, ve_data, n, c_dframe):
             ve_estimate[i] = efficacy_n_antibodies(antibody_level, np.array(FR)*ic50)
         res += np.linalg.norm(data-ve_estimate[0:len(data)])
     return(res)
+
 
 """Compute fold change deviation for mean IC50"""
 IC50_group = Escape_Fraction.groupby('condition', as_index=False).first()[['condition', 'IC50', 'group']]
@@ -383,7 +380,7 @@ spikegroups_proportion = np.divide(prop_rounded, NormProp, out = np.zeros(prop_r
 
 
 ### end of simulation
-def ei_util(Lin_name, save_pneut=None, var_list_index = None, spikegroups_proportion_adjust=None):
+def ei_util(Lin_name, Cross_react_dic = None, save_pneut=None, w_save=len(sys.argv)-1, var_list_index = None, spikegroups_proportion_adjust=None):
     variant_to_sim = [Lin_name]
     EI = {}
     EI["Days"] = days_incidence
@@ -391,6 +388,8 @@ def ei_util(Lin_name, save_pneut=None, var_list_index = None, spikegroups_propor
     Susc = {}
     Susc["Days"] = days_incidence
     if save_pneut in ("TRUE", "True"):
+        if Lin_name == "EG.5.1":
+            pdb.set_trace()
         EnvD_Min,EnvD_Max = PNeut_Envelope(t_conc, [Lin_name], variants_in_cross, Cross_react_dic, c_dframe_dic, IC50xx_dic, mean_IC50xx = True)
         """ Save VE-Delta ranges"""
         VE = {}
@@ -399,7 +398,7 @@ def ei_util(Lin_name, save_pneut=None, var_list_index = None, spikegroups_propor
         VE["Proba Neut Max"] = EnvD_Max
         
         VE_df = pd.DataFrame(VE)
-        VE_df.to_csv(sys.argv[12]+"/P_neut_"+Lin_name+".csv")
+        VE_df.to_csv(sys.argv[w_save]+"/P_neut_"+Lin_name+".csv")
     else:
         pass
     
@@ -444,32 +443,60 @@ def ei_util(Lin_name, save_pneut=None, var_list_index = None, spikegroups_propor
             Susc["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = total_population - Res_sub_0
         """ Save Dynamics Without Vaccination """
         EI_df = pd.DataFrame(EI)
-        EI_df.to_csv(sys.argv[12]+"/Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
+        EI_df.to_csv(sys.argv[w_save]+"/Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
         
         Susc_df = pd.DataFrame(Susc)
-        Susc_df.to_csv(sys.argv[12]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
+        Susc_df.to_csv(sys.argv[w_save]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
         return "Done"
         
     except:
         
         return "Error"
+"""Load Lineage to assess """
+Lin_name = str(sys.argv[11])
+"""Update name if necessary -- this is the same update as in Compute_FR"""
 
 if Lin_name != "ALL":
-    if isinstance(Lin_name, str):
-        status_var = ei_util(Lin_name, str(sys.argv[13])) 
+    if not run_group:
+        try:
+            save_pneut = str(sys.argv[13])
+        except:
+            save_pneut = None
+        status_var = ei_util(Lin_name, Cross_react_dic, save_pneut=save_pneut) 
         # Save file as a placeholder for exectuted codes, required for snakemake
-        sim_df = pd.DataFrame({"Lineage":[Lin_name], "Simulation status":status_var})
+        sim_df = pd.DataFrame({"Lineage":[Lin_name], "Simulation status":[status_var]})
         sim_df.to_csv(sys.argv[12]+"/simulation_status_%s.csv"%Lin_name)
-    else: ## can only be a list of variants
-        status_var = []
-        for lin in Lin_name:
-            status_var.append(ei_util(Lin_name, str(sys.argv[13]))) 
-        # Save file as a placeholder for exectuted codes, required for snakemake
-        sim_df = pd.DataFrame({"Lineage":Lin_name, "Simulation status":status_var})
-        sim_df.to_csv(sys.argv[12]+"/simulation_status_groups.csv")
+    else:
+        k = 11
+        while k!=len(sys.argv)-2:
+            lin_sim = str(sys.argv[k])
+            file1 = open(sys.argv[3]+"/Cross_%s.pck"%lin_sim, "rb") # Check that this is the file you want to load
+            Cross_react_dic = pickle.load(file1)
+            file1.close()
+            variants_in_cross = Cross_react_dic["variant_list"]
+            Cross_react_dic.pop("variant_list")
+            w_save=len(sys.argv)-2
+            status_var = ei_util(lin_sim, Cross_react_dic, save_pneut = str(sys.argv[len(sys.argv)-1]), w_save = w_save) 
+            # Save file as a placeholder for exectuted codes, required for snakemake
+            if k>11:
+                sim_df = pd.read_csv(sys.argv[w_save]+"/simulation_status_group.csv")
+                Lin_List = sim_df["Lineage"].tolist() + [lin_sim]
+                status_var_list = sim_df["Simulation status"].tolist() + [status_var]
+                sim_df = pd.DataFrame({"Lineage":Lin_List, "Simulation status":status_var_list})
+            else:    
+                sim_df = pd.DataFrame({"Lineage":[lin_sim], "Simulation status":[status_var]})
+                
+            k +=1
+            sim_df.to_csv(sys.argv[w_save]+"/simulation_status_group.csv")
+        
+        
 else:
     status_var = []
     SpikeGroups_list_index = []
+    try:
+        save_pneut = str(sys.argv[13])
+    except:
+        save_pneut = None
     for j in range(len(SpikeGroups_list)):
         if SpikeGroups_list[j] in variants_in_cross:
             SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
@@ -489,7 +516,7 @@ else:
     for i in range(len(SpikeGroups_list)):
         if SpikeGroups_list[i] in variants_in_cross:
             print("Compute E[immunized] for %d out of %d spikegroups"%(i, len(SpikeGroups_list)))
-            status_var.append(ei_util(SpikeGroups_list[i], var_list_index=SpikeGroups_list_index, spikegroups_proportion_adjust=spikegroups_proportion_adjust))
+            status_var.append(ei_util(SpikeGroups_list[i], Cross_react_dic = Cross_react_dic, save_pneut = save_pneut, var_list_index=SpikeGroups_list_index, spikegroups_proportion_adjust=spikegroups_proportion_adjust))
         else:
             status_var.append("Not in cross")
     # Save file as a placeholder for exectuted codes, required for snakemake

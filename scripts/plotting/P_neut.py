@@ -101,7 +101,7 @@ fig = plt.figure(figsize = figsize)
 ax = fig.add_subplot(1, 1, 1)
 
 """Compute PNeut Envelope"""    
-EnvO_Min, EnvO_Max = Pneut_df["Proba Neut Min"], Pneut_df["Proba Neut Max"]
+EnvO_Min, EnvO_Max = Pneut_df["Proba Neut Min"].to_numpy(), Pneut_df["Proba Neut Max"].to_numpy()
 col_o = str(sys.argv[3])
 is_log=False
 xval = "Days since antigen exposure"

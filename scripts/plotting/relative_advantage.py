@@ -55,7 +55,7 @@ def PreFig(xsize = 12, ysize = 12):
     matplotlib.rc('xtick', labelsize=xsize) 
     matplotlib.rc('ytick', labelsize=ysize)
     
-def plot_fit(ES_df, lineage):
+def plot_fit(ES_df, lineage, w_save = len(sys.argv)-1):
     # processing of susceptibles 
     ES_df.drop(columns = "Unnamed: 0", inplace = True)
     es_cols = ES_df.columns
@@ -145,12 +145,11 @@ def plot_fit(ES_df, lineage):
         rotation = 45, horizontalalignment = "right")
     
     
-    pdf = PdfPages(sys.argv[6]+"/relative_fitness_%s.pdf"%lineage)
+    pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lineage)
     pdf.savefig(fig, bbox_inches = "tight")
     pdf.close()
  
-    fig.savefig(sys.argv[6]+"/relative_fitness_%s.svg"%lineage, bbox_inches = "tight")
-
+    fig.savefig(sys.argv[w_save]+"/relative_fitness_%s.svg"%lineage, bbox_inches = "tight")
 
 if variant != "ALL":
     ES_df = pd.read_csv(sys.argv[1])
