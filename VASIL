@@ -225,7 +225,7 @@ if config["all_il"]:
             date_start=config["date_start"],
             date_end=config["date_end"],
             lineage_focus="ALL",
-            save_neut=config["p_neut"],
+            save_neut=config["p_neut_all"],
         output:
             resultdir=directory("results/Immunological_Landscape_ALL"),
             results_done="results/Immunological_Landscape_ALL/simulation_status_ALL.csv",

@@ -513,7 +513,7 @@ else:
     
     for i in range(len(SpikeGroups_list)):
         if SpikeGroups_list[i] in variants_in_cross:
-            print("Compute E[immunized] for %d out of %d spikegroups"%(i, len(SpikeGroups_list)))
+            print("Compute E[immunized] for %d out of %d spikegroups + Wuhan-Hu-1"%(i, len(SpikeGroups_list)-1))
             status_var.append(ei_util(SpikeGroups_list[i], 
                                       Cross_react_dic = Cross_react_dic,
                                       save_pneut = save_pneut, 

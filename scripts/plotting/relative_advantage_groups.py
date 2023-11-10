@@ -80,13 +80,17 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         splited_var = np.array(lineage_list[k].split("/"))
         splited_var = splited_var[~(splited_var == "")]
         splited_var = splited_var[~(splited_var == " ")]
+        num_avail = 0
+
         for x in range(len(splited_var)):
             lineage = splited_var[x]
             try:
                 ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+                num_avail +=1
             except:
                 try:
                     ES_df = pd.read_csv("results/Immunological_Landscape_ALL/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+                    num_avail +=1
                 except:
                     print("Computation needed: Excpected Susceptible file is not available for %s"%lineage)
             # processing of susceptibles 
@@ -123,8 +127,11 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                     Pseudo_Prop = ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
                 else:
                     Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
-            
-        ES_ranges = ES_sum/len(splited_var) # compute the mean
+        
+        if num_avail !=0:
+            ES_ranges = ES_sum/num_avail# compute the mean
+        else:
+            print("Error: There are no E[Susceptible] files for any lineage in compare_groups")
             
         """
         # calculation of change in relative frequency from model
@@ -194,10 +201,26 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         date_ticks.append(t_dates[len(t_dates) - 1])
         perday = np.append(perday, len(t_dates) - 1)
     
+    change = len(date_ticks)
+    
+    if day_prop[len(day_prop) - 1] not in date_ticks:
+        n=list(day_prop).index(date_ticks[-1])+pp
+        while n<len(day_prop)-1:
+            date_ticks.append(day_prop[n])
+            perday = np.append(perday, n)
+            n += pp
+        date_ticks.append(day_prop[len(t_prop) - 1])
+        perday = np.append(perday, len(t_prop) - 1)
+
     if x_min is not None:
         perday_orig = []
-        for i in range(len(date_ticks)):
+        for i in range(len(np.array(date_ticks)[:change])):
             perday_orig.append(list(t_dates).index(date_ticks[i]))
+        try:
+            for j in range(len(np.array(date_ticks[change:]))):
+                perday_orig.append(list(day_prop).index(date_ticks[change+j]))
+        except:
+            pass
     else:
         perday_orig = perday
         

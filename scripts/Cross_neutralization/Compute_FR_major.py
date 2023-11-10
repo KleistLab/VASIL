@@ -204,13 +204,12 @@ while k<(int(sys.argv[6])+7+len(lineages_sim)):
     k +=1
         
 Top_Pseudo = []
-Pseudo_done = []
 Pseudo_keys = list(Pseudogroup_dic.keys())
+
 for spklin in lineages_sim:
     if spklin in Pseudo_keys:
-        if Pseudogroup_dic[spklin] not in Pseudo_done:
-            Top_Pseudo.append(Pseudogroup_dic[spklin])
-            Pseudo_done.append(Pseudogroup_dic[spklin])
+        Top_Pseudo.append(spklin)
+        mut_maj = mut_x_sites_dic[Pseudogroup_dic[spklin]]
     else:
         Top_Pseudo.append(spklin)
         mut_file = open(mut_sim[lineages_sim.index(spklin)], "r")
@@ -223,9 +222,9 @@ for spklin in lineages_sim:
                     mut_maj.append(re.findall(r'\d+', mut)[0])       
                     mut_maj = list(np.unique(np.array(mut_maj).astype(str)))
 
-        """Update mutation profile dictionary"""        
-        mut_x_sites_dic_updated[spklin] = mut_maj
-        
+    """Update mutation profile dictionary"""        
+    mut_x_sites_dic_updated[spklin] = mut_maj
+      
 Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo)
 a = 1
 if len(Top_Pseudo)!=0:

@@ -127,6 +127,9 @@ Min_list = []
 Max_list =[]
 xval = "Days since antigen exposure"
 yval = "Virus neutralization\n probability"
+s = 0
+custom_col = sns.color_palette("Set2", 100) 
+
 for i in range(num_groups):
     Lin_i_list = str(sys.argv[k+i])
     splited_var = np.array(Lin_i_list.split("/"))
@@ -134,7 +137,14 @@ for i in range(num_groups):
     splited_var = splited_var[~(splited_var == " ")]
     for Lin_i in splited_var:
         try:
-            Pneut_df = pd.read_csv(P_neut_dir+"/P_neut_%s.csv"%Lin_i)
+            try:
+                Pneut_df = pd.read_csv(P_neut_dir+"/P_neut_%s.csv"%Lin_i)
+            except:
+                try:
+                    Pneut_df = pd.read_csv("results/Immunological_Landscape_ALL/P_neut_%s.csv"%Lin_i)
+                except:
+                    print("Computation needed: P_neut file is not available for %s"%Lin_i)
+            
             try:
                 Pneut_df.drop(columns = "Unnamed: 0", inplace = True)
             except:
@@ -147,7 +157,13 @@ for i in range(num_groups):
             Max_list.append(EnvO_Max)
             col_o = str(sys.argv[k+num_groups+i])
             if col_o in col_list:
-                col_o = sns.color_palette("Spectral", 1)[0]
+                if s<len(custom_col):
+                    col_o = custom_col[s]
+                else:
+                    rand_num = np.random.choice(1, 100)
+                    col_o = sns.color_palette("rocked", rand_num)[0] 
+                s +=1
+                
             
             col_list.append(col_o)
             is_log=False
