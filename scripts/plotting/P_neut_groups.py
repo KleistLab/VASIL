@@ -31,7 +31,7 @@ def PreFig(xsize = 12, ysize = 12):
 
 
 def Display_Envelope(t, Y, Z, is_log, labels, figsize = (7, 7), xysize = (15,15), labsize = 20, save_to = "test", xval = "x", yval = "f(x)", 
-                    linewidth = 3, palette = None, linestyle = None, color = None, alpha = 0.5, ax = None, fig = None):
+                    linewidth = 3, palette = None, linestyle = None, color = None, alpha = 0.5, ax = None, fig = None, antigen = "(Not specified)"):
     if fig == None:
         PreFig(xsize = xysize[0], ysize = xysize[1])
         fig = plt.figure(figsize = figsize)
@@ -64,7 +64,8 @@ def Display_Envelope(t, Y, Z, is_log, labels, figsize = (7, 7), xysize = (15,15)
         else:
              ax.set_ylabel("%s"%yval, fontsize = labsize)
         ax.set_xlabel(xval, fontsize = labsize)
-        ax.set_title("Wuhan-Hu-1 antigen", fontsize = labsize)
+        if antigen != "irrelevant":
+            ax.set_title("%s antigen"%antigen, fontsize = labsize)
         pdf = PdfPages(save_to+".pdf")
         pdf.savefig(fig, bbox_inches = "tight")
         pdf.close()
@@ -101,16 +102,18 @@ fig, ax = Display_Envelope(pk_t, np.array([PK_min]), np.array([PK_max]),
                           palette = "Greens",
                           alpha = 0.3,
                           fig = fig,
-                          ax = ax)
+                          ax = ax,
+                          antigen = "irrelevant")
 
 
 fig.savefig(Res_dir+"/PK_Epitopes_ranges.svg", bbox_inches = "tight")
-status = {"PK":"done"}
 
 ### Load P_Neut Data already pre-made ####
 P_neut_dir = sys.argv[2]
 num_groups = int(sys.argv[4])
 k = 5
+antigen = str(sys.arg[num_groups+k+1])
+
 status = []
 Lin_list = []
 col_list = []
@@ -153,7 +156,7 @@ for i in range(num_groups):
             t = Pneut_df["Day since infection"] ### must be the same in all the Pneut files (which is the case in our pipeline)
 
             """Compute PNeut Envelope"""    
-            EnvO_Min, EnvO_Max = Pneut_df["Proba Neut Min"].to_numpy(), Pneut_df["Proba Neut Max"].to_numpy()
+            EnvO_Min, EnvO_Max = Pneut_df["Proba Neut Min\n vs. %s antigen"%antigen].to_numpy(), Pneut_df["Proba Neut Max\n vs. %s antigen"%antigen].to_numpy()
             Min_list.append(EnvO_Min)
             Max_list.append(EnvO_Max)
             col_o = str(sys.argv[k+num_groups+i])
@@ -184,7 +187,8 @@ for i in range(num_groups):
                                       alpha = 0.3,
                                       fig = fig0,
                                       ax = ax0,
-                                      labels = [Lin_i]) 
+                                      labels = [Lin_i],
+                                      antigen = antigen) 
 
             status.append("Done")
             Lin_list.append(Lin_i)
@@ -206,6 +210,7 @@ fig, ax = Display_Envelope(t, np.array(Min_list), np.array(Max_list),
                           alpha = 0.3,
                           fig = fig,
                           ax = ax,
-                          labels = Lin_list)  
+                          labels = Lin_list,
+                          antigen = antigen)  
 
 pd.DataFrame({"Lineages":Lin_status, "status":status}).to_csv(Res_dir+"/plot_status.csv")

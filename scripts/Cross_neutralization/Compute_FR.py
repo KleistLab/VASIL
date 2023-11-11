@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Created on Sat Nov 11 21:19:00 2023
+
+@author: raharinirina
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import numpy as np
 import pandas as pd
@@ -58,17 +66,35 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     Where_Cond = conditions[:, np.newaxis] == ab_sub_list[np.newaxis, :]
     tiled_mut = ma.array(np.tile(mut_sites, (vars_num, 1)), mask = ~diff_sites)
     Where_Mut = tiled_mut[:, :, np.newaxis] == escape_sites[np.newaxis, np.newaxis,  :]
-    if joblib not in (None, "joblib"):
+    if joblib in (True, "joblib"):
         """Parallel codes --- macOS Monterey 12.5 crashes --- Not used by default """
         pfunc = partial(sub_Bind, tiled_esc = tiled_esc, Where_Mut = Where_Mut, Where_Cond = Where_Cond)
+        status = False
         try:
-            jb_res = list(jb.Parallel(n_jobs = -1)(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+            jb_res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+            status = True
+            print("run joblib.Parallel")
         except:
-            jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+            try:
+                jb_res = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+                status=True
+                print("run joblib.Parallel")
+            except:
+                jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+                status=True
+                print("run joblib.Parallel")
         
-        for d in range(len(conditions)):
-            Bind_list[:, d]   = np.array(jb_res[d][0])
-            Missing_cond_data[:, d] = np.array(jb_res[d][1])
+        if status:
+            for d in range(len(conditions)):
+                Bind_list[:, d]   = np.array(jb_res[d][0])
+                Missing_cond_data[:, d] = np.array(jb_res[d][1])
+        else:
+            """ Brute force method """
+            for d in range(len(conditions)):
+                #print(d+1, len(conditions))
+                Inter_Cond_Mut = Where_Mut & Where_Cond[np.newaxis, d, :]
+                Bind_list[:, d] = np.prod(1 - tiled_esc[:, np.newaxis, :]*Inter_Cond_Mut, axis = (1,2))  
+                Missing_cond_data[:, d] = ~np.any(np.any(Where_Mut & Where_Cond[np.newaxis, d, :], axis = 2), axis = 1)
     else:
         """ Brute force method """
         for d in range(len(conditions)):
@@ -162,9 +188,9 @@ Cross_with_delta_validation, Missed, Greater_one = cross_reactivity((variant_x_n
 															 Escape_Fraction, Ab_classes, 
                                                         	 mut_dic_show)
 
-"""Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
+"""Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""  
 n = len(variant_x_names_show)
-FR_NTB = np.ones((n, n))
+FR_NTD = np.ones((n, n))
 for i in range(n):
     var_1 = variant_x_names_show[i]
     for j in range(n):
@@ -180,10 +206,10 @@ for i in range(n):
                 s = int(s)
                 if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                     FR_sites *= 10
-            FR_NTB[i, j] = FR_sites
-            FR_NTB[j, i] = FR_sites
+            FR_NTD[i, j] = FR_sites
+            FR_NTD[j, i] = FR_sites
 
-Cross_with_delta_validation["NTD"] = FR_NTB
+Cross_with_delta_validation["NTD"] = FR_NTD
 Cross_with_delta_validation["variant_list"] = variant_x_names_show
 try:
     file0 = open(sys.argv[len(sys.argv)-2], "wb") 
@@ -209,7 +235,7 @@ try:
 except:
     Lin_name = sys.argv[4]
 
-if Lin_name not in ("ALL", "FR_DMS_sites"):
+if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
     if Lin_name != "Groups":
         try:
             mut_file = open(sys.argv[5], "r")
@@ -225,7 +251,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
 
             """Update mutation profile dictionary"""
             mut_x_sites_dic_updated = mut_x_sites_dic.copy()
-            if Lin_name not in SpikeGroups_list: ### Keep Lin_name as it is
+            if Lin_name not in variant_x_names_cross: ### Keep Lin_name as it is
                 mut_x_sites_dic_updated[Lin_name] = mut_Lin
             else:
                 mut_x_sites_dic_updated[Lin_name] = mut_Lin
@@ -235,14 +261,15 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
         g = []
         g_var =[]
         inds = np.arange(0, len(variant_x_names_cross)).astype(int)
-        if len(variant_x_names_cross)>200:
+        cut_step = 300
+        if len(variant_x_names_cross)>cut_step:
             cut1 = 0
-            cut2 = 200
+            cut2 = cut_step
             while cut2<len(variant_x_names_cross):
                 g.append(inds[cut1:cut2])
                 g_var.append(list(np.array(variant_x_names_cross)[cut1:cut2]))
                 cut1=cut2
-                cut2+=min(200, len(variant_x_names_cross)-cut2)
+                cut2+=min(cut_step, len(variant_x_names_cross)-cut2)
             g.append(inds[cut1:cut2])
             g_var.append(list(np.array(variant_x_names_cross)[cut1:cut2]))
         else:
@@ -258,7 +285,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
             
         for ab in Ab_classes:
             print("Assess Lineage %s with the NTD-RBD mutation positions "%Lin_name, mut_Lin)
-            print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))    
+            print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes))    
             
             if ab!= "NTD":
                 
@@ -282,8 +309,9 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
             a +=1
         
         """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
+        print("Cross reactivity Epitope NTD")
         n = len(Cross_react_dic["variant_list"])
-        FR_NTB = np.ones((n, n))
+        FR_NTD = np.ones((n, n))
         for i in range(n):
             var_1 = Cross_react_dic["variant_list"][i]
             for j in range(n):
@@ -299,9 +327,9 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
                         s = int(s)
                         if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                             FR_sites *= 10
-                    FR_NTB[i, j] = FR_sites
-                    FR_NTB[j, i] = FR_sites
-        Cross_react_dic["NTD"] = FR_NTB
+                    FR_NTD[i, j] = FR_sites
+                    FR_NTD[j, i] = FR_sites
+        Cross_react_dic["NTD"] = FR_NTD
         file0 = open(sys.argv[7], "wb") 
         pickle.dump(Cross_react_dic, file0)
         file0.close()
@@ -343,14 +371,15 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
         g = []
         g_var =[]
         inds = np.arange(0, len(variant_x_names_cross)).astype(int)
-        if len(variant_x_names_cross)>200:
+        cut_step = 300
+        if len(variant_x_names_cross)>cut_step:
             cut1 = 0
-            cut2 = 200
+            cut2 = cut_step
             while cut2<len(variant_x_names_cross):
                 g.append(inds[cut1:cut2])
                 g_var.append(list(np.array(variant_x_names_cross)[cut1:cut2]))
                 cut1=cut2
-                cut2+=min(200, len(variant_x_names_cross)-cut2)
+                cut2+=min(cut_step, len(variant_x_names_cross)-cut2)
             g.append(inds[cut1:cut2])
             g_var.append(list(np.array(variant_x_names_cross)[cut1:cut2]))
         else:
@@ -387,7 +416,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
                             
                         FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
                         print("Assess lineage %s| %d out of %d with the NTD-RBD mutation positions"%(Lin_list[i], i+1,len(Lin_list)), mut_x_sites_dic_updated[Lin_list[i]])
-                        print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes)) 
+                        print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes)) 
                         for s in range(len(g)):
                             Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_list[i]], g_var[s]), 
                                        Escape_Fraction, 
@@ -404,9 +433,10 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
                         Cross_i[ab] = FRxy_ab
                     a +=1 
                 
-                """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
+                """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""
+                print("Cross reactivity Epitope NTD")
                 n = len(Cross_i["variant_list"])
-                FR_NTB = np.ones((n, n))
+                FR_NTD = np.ones((n, n))
                 for i1 in range(n):
                     var_1 = Cross_i["variant_list"][i1]
                     for j1 in range(n):
@@ -422,9 +452,9 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
                                 s = int(s)
                                 if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                                     FR_sites *= 10
-                            FR_NTB[i1, j1] = FR_sites
-                            FR_NTB[j1, i1] = FR_sites
-                Cross_i["NTD"] = FR_NTB
+                            FR_NTD[i1, j1] = FR_sites
+                            FR_NTD[j1, i1] = FR_sites
+                Cross_i["NTD"] = FR_NTD
             else:
                 ### open global cross_reactivity file which must be present
                 a = 1  
@@ -492,7 +522,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
 elif Lin_name == "ALL":            
     for ab in Ab_classes:
         print("Assess all spikegroups with the NTD-RBD mutation positions ")
-        print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))
+        print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes))
         if ab!= "NTD":
             Cross_Lin, Missed, Greater_one = cross_reactivity((variant_x_names_cross, variant_x_names_cross), 
                        Escape_Fraction, 
@@ -506,9 +536,10 @@ elif Lin_name == "ALL":
     
     Cross_react_dic["variant_list"] = list(variant_x_names_cross)
     
-    """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
+    """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""  
+    print("Cross reactivity Epitope NTD")
     n = len(Cross_react_dic["variant_list"])
-    FR_NTB = np.ones((n, n))
+    FR_NTD = np.ones((n, n))
     for i in range(n):
         var_1 = Cross_react_dic["variant_list"][i]
         for j in range(n):
@@ -524,14 +555,112 @@ elif Lin_name == "ALL":
                     s = int(s)
                     if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                         FR_sites *= 10
-                FR_NTB[i, j] = FR_sites
-                FR_NTB[j, i] = FR_sites
+                FR_NTD[i, j] = FR_sites
+                FR_NTD[j, i] = FR_sites
         
-    Cross_react_dic["NTD"] = FR_NTB
+    Cross_react_dic["NTD"] = FR_NTD
     file0 = open(sys.argv[7], "wb") 
     pickle.dump(Cross_react_dic, file0)
     file0.close()
+
+elif Lin_name == "missing":
+    file_c = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") 
+    Cross_global = pickle.load(file_c)
+    variant_global = list(Cross_global["variant_list"])
+    Cross_global.pop("variant_list")
+    Ab_global = Cross_global.keys()
+    file_c.close()
     
+    """Find indexes of missing and not missing variants"""
+    Lin_miss = []
+    loc_not_miss = []
+    loc_in_cross = []
+    for lin in variant_x_names_cross:
+        if lin not in variant_global:
+            Lin_miss.append(lin)
+        else:
+            loc_in_cross.append(list(variant_x_names_cross).index(lin))
+            loc_not_miss.append(list(variant_global).index(lin))
+            
+    if len(Lin_miss) == 0:
+        Cross_react_dic = Cross_global.copy()
+    else:
+        w_in_cross = np.arange(0, len(variant_x_names_cross)).astype(int)[np.array(loc_in_cross)]
+        variants_in_global = np.array(variant_x_names_cross)[w_in_cross]
+        Cross_react_dic["variant_list"] = list(variants_in_global) + Lin_miss
+        a = 1
+        g = []
+        g_var =[]
+        inds = np.arange(0, len(variants_in_global)).astype(int)
+        cut_step = 100
+        if len(variants_in_global)>cut_step:
+            cut1 = 0
+            cut2 = cut_step
+            while cut2<len(variants_in_global):
+                g.append(inds[cut1:cut2])
+                g_var.append(list(np.array(variants_in_global)[cut1:cut2]))
+                cut1=cut2
+                cut2+=min(cut_step, len(variants_in_global)-cut2)
+            g.append(inds[cut1:cut2])
+            g_var.append(list(np.array(variants_in_global)[cut1:cut2]))
+        else:
+            g.append(inds)
+            g_var.append(variants_in_global)
+
+        w_global = np.arange(0, len(variant_global)).astype(int)[np.array(loc_not_miss)] ## location of variant_x_names cross in global file
+        for ab in Ab_global:
+            Cross_react_dic[ab] = np.ones((len(variants_in_global)+len(Lin_miss), len(variants_in_global)+len(Lin_miss)))
+            if ab != "NTD":
+                w_miss = len(variants_in_global)
+                for s in range(len(g)):
+                    print("Assess missing | num %d vs (%d, %d (max %d)) with the NTD-RBD mutation positions"%(len(Lin_miss), s*cut_step, min((s+1)*cut_step, len(variants_in_global)),len(variants_in_global)))
+                    print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_global)) 
+                    Cross_Lin, Missed, Greater_one = cross_reactivity((Lin_miss, g_var[s]), 
+                               Escape_Fraction, 
+                               [ab],
+                               mut_x_sites_dic,
+                               joblib = True)
+                    
+                    Cross_react_dic[ab][w_miss:, :w_miss][:, g[s]] = Cross_Lin[ab]
+                    Cross_react_dic[ab][:w_miss, w_miss:][g[s], :] = Cross_Lin[ab].T
+                
+                print("Assess %d missing vs. %d missing with the NTD-RBD mutation positions"%(len(Lin_miss), len(Lin_miss)))
+                Cross_Lin, Missed, Greater_one = cross_reactivity((Lin_miss, Lin_miss), 
+                           Escape_Fraction, 
+                           [ab],
+                           mut_x_sites_dic,
+                           joblib = True)
+                
+                Cross_react_dic[ab][w_miss:, w_miss:] = Cross_Lin[ab]
+            else:
+                n = len(Cross_react_dic["variant_list"])
+                FR_NTD = np.ones((n, n))
+                for i in range(len(variants_in_global), n):
+                    var_1 = Cross_react_dic["variant_list"][i]
+                    for j in range(n):
+                        var_2 = Cross_react_dic["variant_list"][j]
+            
+                        sites_1 = set(np.array(mut_x_sites_dic[var_1]).astype(int))
+                        sites_2 = set(np.array(mut_x_sites_dic[var_2]).astype(int))
+            
+                        sites = list(sites_1.symmetric_difference(sites_2))
+                        FR_sites = 1
+                        for s in sites:
+                            s = int(s)
+                            if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                                FR_sites *= 10
+                        FR_NTD[i, j] = FR_sites
+                        FR_NTD[j, i] = FR_sites
+                    
+                Cross_react_dic[ab] = FR_NTD
+            
+            Cross_react_dic[ab][:len(variants_in_global), :len(variants_in_global)] = Cross_global[ab][w_global, :][:, w_global]
+            a +=1 
+    
+    file0 = open(sys.argv[7], "wb") 
+    pickle.dump(Cross_react_dic, file0)
+    file0.close()
+
 elif Lin_name == "FR_DMS_sites":
     """ Compute FR sites DMS """
     One_mut_lin = np.unique(Escape_Fraction["site"].values.astype(str))
@@ -574,7 +703,7 @@ elif Lin_name == "FR_DMS_sites":
     """   
     idx_WT = list(One_mut_lin_new).index("WT")
     n = len(One_mut_lin_new)
-    FR_NTB = np.ones(n)
+    FR_NTD = np.ones(n)
     for i in range(n):
         var_1 = One_mut_lin_new[i]
         if i > idx_WT:
@@ -589,9 +718,9 @@ elif Lin_name == "FR_DMS_sites":
                 s = int(s)
                 if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)): ### Antigenic supersites
                     FR_sites *= 10
-            FR_NTB[i] = FR_sites
+            FR_NTD[i] = FR_sites
     
-    FR_Sites_Ab = np.row_stack((FR_Sites_Ab, FR_NTB)) 
+    FR_Sites_Ab = np.row_stack((FR_Sites_Ab, FR_NTD)) 
     
     
     ### Saving file
@@ -603,4 +732,6 @@ elif Lin_name == "FR_DMS_sites":
             
     FR_df = pd.DataFrame(FR_dic)
     FR_df.to_csv(sys.argv[7]) 
+
+    
     

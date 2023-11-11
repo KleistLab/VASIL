@@ -224,7 +224,7 @@ for spklin in lineages_sim:
 
     """Update mutation profile dictionary"""        
     mut_x_sites_dic_updated[spklin] = mut_maj
-      
+
 Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo)
 a = 1
 if len(Top_Pseudo)!=0:
@@ -246,8 +246,8 @@ if len(Top_Pseudo)!=0:
                        mut_x_sites_dic_used)
             
             FRxy_ab = Cross_Lin[ab]
-    
             Cross_react_dic[ab] = FRxy_ab
+            
         a +=1
     
     Cross_react_dic["variant_list"] = list(Top_Pseudo)

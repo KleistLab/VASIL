@@ -5,6 +5,7 @@ import pandas as pd
 import pickle
 import re
 import joblib as jb
+from functools import partial
 import sys
 import warnings
 import pdb
@@ -19,7 +20,7 @@ Cross_with_delta_validation.pop("variant_list")
 file1.close()
 Ab_classes = list(Cross_with_delta_validation.keys()) ### the same for all cross reactivity files computed in the pipeline
 try:
-    file1 = open(sys.argv[3], "rb") # Check that this is the file you want to load
+    file1 = open(sys.argv[3], "rb") # load cross reactivity if parameter is not a directory
     Cross_react_dic = pickle.load(file1)
     variants_in_cross = Cross_react_dic["variant_list"]
     Cross_react_dic.pop("variant_list")
@@ -304,12 +305,6 @@ def Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data, present_variant_
     
     Prob_Neut = P_Neut(t, present_variant_index, PK_dframe, tested_variant_list, variant_name, Ab_classes, IC50xx, Cross_react_dic)
     
-    """
-    Conv_Mat = np.zeros(Prob_Neut.shape)
-    for i in range(Conv_Mat.shape[0]):
-        Conv_Mat[i, :] = signal.fftconvolve(Infected_l_vect[i, :], Prob_Neut[i])[:len(t)]
-    """   
-    
     Conv_Mat = signal.fftconvolve(Infected_l_vect, Prob_Neut, axes = 1)[:, :len(t)]
     
     # No normalization
@@ -320,15 +315,23 @@ def Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data, present_variant_
     return Expected_Immuned
 
 
-def PNeut_Envelope(t, variants, variant_x_names, Cross_react_dic, c_dframe_dic, IC50xx_dic, mean_IC50xx = True):
+def PNeut_Envelope(i, t, variants, variant_x_names, Cross_react_dic, c_dframe_dic, IC50xx_dic, antigen_list = ["Wuhan-Hu-1"],mean_IC50xx = True):
     res = np.zeros((len(variants), len(list(c_dframe_dic.keys())), len(t)))
     if mean_IC50xx:
         IC50xx = np.mean(list(IC50xx_dic.values()))
-        print("Computing P_Neut, used mean fitted IC50", IC50xx)
+        to_print = "Computing P_Neut, used mean fitted IC50 %.5f"%IC50xx
+    else:
+        to_print = "Compute P_Neut, used fitted IC5 for each PK paramteters"
     
+    to_print = to_print + " for %s vs. %s antigen"%("/".join(variants), antigen_list[i])
+    
+    num = "%d/%d"%(i+1, len(antigen_list))
+    to_print = to_print + "(%s)"%num
+        
+    print(to_print)
+    where_x = list(variant_x_names).index(antigen_list[i])
     for i in range(len(variants)):
         where_y = list(variant_x_names).index(variants[i])
-        where_x = list(variant_x_names).index("Wuhan-Hu-1")
     
         for j in range(len(list(c_dframe_dic.keys()))):
             if not mean_IC50xx:
@@ -388,13 +391,44 @@ def ei_util(Lin_name, Cross_react_dic = None, save_pneut=None, w_save=len(sys.ar
     Susc = {}
     Susc["Days"] = days_incidence
     if save_pneut in ("TRUE", "True"):
-        EnvD_Min,EnvD_Max = PNeut_Envelope(t_conc, [Lin_name], variants_in_cross, Cross_react_dic, c_dframe_dic, IC50xx_dic, mean_IC50xx = True)
-        """ Save P_Neut ranges"""
         VE = {}
-        VE["Day since infection"] = t_conc
-        VE["Proba Neut Min"] = EnvD_Min
-        VE["Proba Neut Max"] = EnvD_Max
+        pfunc = partial(PNeut_Envelope, t=t_conc, 
+                            variants=[Lin_name], variant_x_names = variants_in_cross, 
+                            Cross_react_dic = Cross_react_dic,
+                            c_dframe_dic = c_dframe_dic, 
+                            IC50xx_dic = IC50xx_dic, 
+                            antigen = variants_in_cross, 
+                            mean_IC50xx = True, 
+                            ) 
+        status = False
+        try:
+            jb_res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(variants_in_cross))))
+            status = True
+            print("run joblib.Parallel")
+        except:
+            try:
+                jb_res = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc)(d) for d in range(len(variants_in_cross))))
+                status=True
+                print("run joblib.Parallel")
+            except:
+                jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(variants_in_cross))))
+                status=True
+                print("run joblib.Parallel")
+        if status:
+             for i in range(len(variants_in_cross)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
+                 antigen = variants_in_cross[i]
+                 EnvD_Min,EnvD_Max = jb_res[i]
+                 VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
+                 VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
+        else:
+            for i in range(len(variants_in_cross)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
+                antigen = variants_in_cross[i]
+                EnvD_Min,EnvD_Max = PNeut_Envelope(t_conc, [Lin_name], variants_in_cross, Cross_react_dic, c_dframe_dic, IC50xx_dic, antigen = antigen, mean_IC50xx = True)
+                VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
+                VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
         
+        """ Save P_Neut ranges"""
+        VE["Day since infection"] = t_conc
         VE_df = pd.DataFrame(VE)
         VE_df.to_csv(sys.argv[w_save]+"/P_neut_"+Lin_name+".csv")
     else:
@@ -420,7 +454,7 @@ def ei_util(Lin_name, Cross_react_dic = None, save_pneut=None, w_save=len(sys.ar
                 # renormalization
                 spikegroups_proportion_adjust = spikegroups_proportion_adjust/np.sum(spikegroups_proportion_adjust, axis = 0)
             else:
-                spikegroups_proportion_adjust = spikegroups_proportion
+                spikegroups_proportion_adjust = spikegroups_proportion.copy()
 
         else:
             spikegroups_proportion_adjust = spikegroups_proportion_adjust
@@ -504,21 +538,35 @@ else:
     except:
         save_pneut = None
         w_save = len(sys.argv)-1
+    
     for j in range(len(SpikeGroups_list)):
         if SpikeGroups_list[j] in variants_in_cross:
             SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
     SpikeGroups_list_index = np.array(SpikeGroups_list_index)
     
     if len(SpikeGroups_list_index)!=len(SpikeGroups_list):
-        spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
-        for j in range(len(SpikeGroups_list_index)):
-            w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
-            spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
-        
-        # renormalization
-        spikegroups_proportion_adjust = spikegroups_proportion_adjust/np.sum(spikegroups_proportion_adjust, axis = 0)
+        try: ### use updated cross ALL including missing if it was computed
+            file1 = open("results/Cross_react_dic_spikegroups_present.pck", "rb") 
+            Cross_react_dic = pickle.load(file1)
+            variants_in_cross = Cross_react_dic["variant_list"]
+            Cross_react_dic.pop("variant_list")
+            file1.close()
+            spikegroups_proportion_adjust = spikegroups_proportion.copy()
+            # regenerage the indexes
+            for j in range(len(SpikeGroups_list)):
+                if SpikeGroups_list[j] in variants_in_cross:
+                    SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
+            SpikeGroups_list_index = np.array(SpikeGroups_list_index)
+        except:
+            spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
+            for j in range(len(SpikeGroups_list_index)):
+                w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+                spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
+            
+            # renormalization
+            spikegroups_proportion_adjust = spikegroups_proportion_adjust/np.sum(spikegroups_proportion_adjust, axis = 0)
     else:
-        spikegroups_proportion_adjust = spikegroups_proportion
+        spikegroups_proportion_adjust = spikegroups_proportion.copy()
     
     for i in range(len(SpikeGroups_list)):
         if SpikeGroups_list[i] in variants_in_cross:

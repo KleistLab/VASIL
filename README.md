@@ -152,7 +152,8 @@ The main pipeline (`config.yaml`) creates a folder *results*, containing all (in
 ```
 |-- Spikegroups_membership.pck # pickle python dictionary with lineages as keys, indicating the spikegroups of each lineages were assigned to
 |-- results
- 	|-- Cross_react_dic_spikegroups_ALL.pck	# Pairwise cross reactivity between spikegroups (all_il: TRUE or lineage_focus: "ALL")
+ 	|-- Cross_react_dic_spikegroups_ALL.pck	# Pairwise cross reactivity between spikegroups (can be provided as input, see config.yaml)
+	|-- Cross_react_dic_spikegroups_plus_missing.pck	# Pairwise cross reactivity between spikegroups (see config.yaml)
 	|-- Cross_react_dic_spikegroups_*.pck   # Cross reactivity between lineage_focuss and spikegroups
 	|-- Cross_with_delta_validation.pck	# Cross reactivity between Delta variant and Wild Type (used of VE fitting)
 	|-- Cross_to_major_variants.pck	# Cross reactivity for major variants
@@ -166,17 +167,17 @@ The main pipeline (`config.yaml`) creates a folder *results*, containing all (in
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized for lineage_focuss with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible for lineage_focuss with all combinations of PK parameters
 		|-- simulation_status_*.csv  	      # Writes if Immunological Landscape "done" or "Error"
-		|-- P_neut_*.csv  	      # Virus neutralization probability if requested
+		|-- P_neut_*.csv  	      # Virus neutralization probability against antigen from each spikegroup present in covsonar data (if requested)
 	|-- Immunological_Landscape_ALL # for all variants in covsonar data
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible with all combinations of PK parameters
 		|-- simulation_status_*.csv	      # Write if Immunological Landscape "done" or "Error"
-		|-- P_neut_*.csv  	      # Virus neutralization probability 
+		|-- P_neut_*.csv  	      # Virus neutralization probability against antigen from each spikegroup present in covsonar data (if requested) 
 	|-- Immunological_Landscape_group # for compare_groups
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible with combinations of PK parameters
 		|-- simulation_status_*.csv	      # Write if Immunological Landscape "done" or "Error"
-                 |-- P_neut_*.csv  	      # Virus neutralization probability 
+                 |-- P_neut_*.csv  	      # Virus neutralization probability against antigen from each spikegroup present in covsonar data (if requested)
 	|-- mutation_data # Cross reactivity files generated for each variants in compare_groups
 		|-- cross_status_*.csv	      # Write if cross "done" 
 		|-- Cross_*.csv	      # Cross react files	
@@ -215,13 +216,13 @@ The figure pipeline (`config_plots.yaml`) add new data to *results* folder and c
 		|--- foldresistance_DMS_sites_epitopes.pdf # Heatmap Fold resistance of all the sites present in the DMS data (FR_DMS_sites: TRUE)
 	|--- P_neut_PK
 		|--- PK_Epitope_ranges.pdf/svg# Pharmacokynetics of for any epitope class
-		|--- P_Neut_*.pdf/svg # Virus neutralization probability
+		|--- P_Neut_*.pdf/svg # Virus neutralization probability against specific antigen (if requested)
 	|--- P_neut_PK_lineage_focuss
 		|--- PK_Epitope_ranges.pdf/svg# Pharmacokynetics of for any epitope class
 		|--- P_Neut_*.pdf/svg # Virus neutralization probability
 	|--- P_neut_PK_groups
 		|--- PK_Epitope_ranges.pdf/svg# Pharmacokynetics of for any epitope class
-		|--- P_Neut_*.pdf/svg # Virus neutralization probability
+		|--- P_Neut_*.pdf/svg # Virus neutralization probability against specific antigen (if requested)
 ```
 ## Demo
 Demo datasets are provided in the repository folder [`demo`](https://github.com/KleistLab/VASIL/tree/main/demo)

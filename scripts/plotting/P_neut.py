@@ -22,7 +22,7 @@ def PreFig(xsize = 12, ysize = 12):
 
 
 def Display_Envelope(t, Y, Z, is_log, labels, figsize = (7, 7), xysize = (15,15), labsize = 20, save_to = "test", xval = "x", yval = "f(x)", 
-                    linewidth = 3, palette = None, linestyle = None, color = None, alpha = 0.5, ax = None, fig = None):
+                    linewidth = 3, palette = None, linestyle = None, color = None, alpha = 0.5, ax = None, fig = None, antigen = "(Not specified)"):
     if fig == None:
         PreFig(xsize = xysize[0], ysize = xysize[1])
         fig = plt.figure(figsize = figsize)
@@ -60,7 +60,9 @@ def Display_Envelope(t, Y, Z, is_log, labels, figsize = (7, 7), xysize = (15,15)
         else:
              ax.set_ylabel("%s"%yval, fontsize = labsize)
         ax.set_xlabel(xval, fontsize = labsize)
-        ax.set_title("Wuhan-Hu-1 antigen", fontsize = labsize)
+        if antigen != "irrelevant":
+            ax.set_title("%s antigen"%antigen, fontsize = labsize)
+            
         pdf = PdfPages(save_to+".pdf")
         pdf.savefig(fig, bbox_inches = "tight")
         pdf.close()
@@ -88,16 +90,17 @@ xval = "Days since antigen exposure"
 yval = "Virus neutralization\n probability"
 fig, ax = Display_Envelope(pk_t, np.array([PK_min]), np.array([PK_max]), 
                           is_log, ["Epitopes PK (ranges)"], 
-                          save_to = sys.argv[5]+"/PK_Epitopes_ranges.pdf",
+                          save_to = sys.argv[5]+"/PK_Epitopes_ranges",
                           xval = xval, yval = yval,
                           linewidth = 4,
                           palette = "Greens",
                           alpha = 0.3,
                           fig = fig,
-                          ax = ax)
+                          ax = ax,
+                          antigen = "irrelevant")
 
 fig.savefig(sys.argv[5]+"/PK_Epitopes_ranges.svg", bbox_inches = "tight")
-status = {"PK":"done"}
+status = {"PK":["done"]}
 
 ### Load P_Neut Data already pre-made ####
 Pneut_df = pd.read_csv(sys.argv[2])
@@ -109,8 +112,9 @@ figsize = (10,7)
 fig = plt.figure(figsize = figsize)
 ax = fig.add_subplot(1, 1, 1)
 
-"""Compute PNeut Envelope"""    
-EnvO_Min, EnvO_Max = Pneut_df["Proba Neut Min"].to_numpy(), Pneut_df["Proba Neut Max"].to_numpy()
+"""Compute PNeut Envelope"""
+antigen = str(sys.argv[6])    
+EnvO_Min, EnvO_Max = Pneut_df["Proba Neut Min\n vs. %s antigen"%antigen].to_numpy(), Pneut_df["Proba Neut Max\n vs. %s antigen"%antigen].to_numpy()
 col_o = str(sys.argv[3])
 is_log=False
 xval = "Days since antigen exposure"
@@ -123,8 +127,9 @@ fig, ax = Display_Envelope(t, np.array([EnvO_Min]), np.array([EnvO_Max]),
                           color = [col_o],
                           alpha = 0.3,
                           fig = fig,
-                          ax = ax) 
+                          ax = ax,
+                          antigen = antigen) 
 
-status["P_neut"] = "done"
+status["P_neut"] = ["done"]
 fig.savefig(sys.argv[5]+"/P_Neut_"+str(sys.argv[4])+".svg", bbox_inches = "tight")
-(pd.DataFrame(status, index=[1,2])).to_csv(sys.argv[5]+"/plot_status.csv")
+(pd.DataFrame(status)).to_csv(sys.argv[5]+"/plot_status.csv")

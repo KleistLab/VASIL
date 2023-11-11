@@ -95,11 +95,12 @@ if config["p_neut"]:
         params:
             lin_name=config["lineage_focus"],
             col_pneut=config["color_pneut"],
+            antigen=config["antigen"]
         output:
             res_dir=directory("plots/P_neut_PK_lineage_focus/"),
             res="plots/P_neut_PK_lineage_focus/plot_status.csv",
         shell:
-            "python {workflow.basedir}/scripts/plotting/P_neut.py {input.pk_file} {input.pneut_file} {params.col_pneut} {params.lin_name} {output.res_dir}"
+            "python {workflow.basedir}/scripts/plotting/P_neut.py {input.pk_file} {input.pneut_file} {params.col_pneut} {params.lin_name} {output.res_dir} {params.antigen}"
 
 if config["plot_groups"]:
 
@@ -131,11 +132,12 @@ if config["p_neut_groups"]:
             lin_name=config["compare_groups"],
             col_pneut=config["color_groups"],
             len_groups=len(config["compare_groups"]),
+            antigen=config["antigen_groups"],
         output:
             res_dir=directory("plots/P_neut_PK_groups/"),
             res="plots/P_neut_PK_groups/plot_status.csv",
         shell:
-            "python {workflow.basedir}/scripts/plotting/P_neut_groups.py {input.pk_file} {input.pneut_dir} {output.res_dir} {params.len_groups} {params.lin_name} {params.col_pneut}"
+            "python {workflow.basedir}/scripts/plotting/P_neut_groups.py {input.pk_file} {input.pneut_dir} {output.res_dir} {params.len_groups} {params.lin_name} {params.col_pneut} {params.antigen}"
 
 if config["all_fit"]:
 

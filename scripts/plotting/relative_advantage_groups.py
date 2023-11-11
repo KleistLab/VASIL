@@ -243,6 +243,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     pdf.close()
  
     fig.savefig(sys.argv[w_save]+"/relative_fitness_groups.svg", bbox_inches = "tight")
+    plt.close()
     return status_list
 
 num_groups = int(sys.argv[7])

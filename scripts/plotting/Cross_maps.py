@@ -235,16 +235,17 @@ else:
         if str(sys.argv[6]) == "add":
             if Lin_name not in Top_Pseudo_var:
                 print("%s is not cross major file"%Lin_name)
-                lineages_sim = Top_Pseudo_var
             else:
                 lineages_sim = Top_Pseudo_var
                 
         else:
             if Lin_name in Top_Pseudo_var:
                 lineages_sim = list(np.array(Top_Pseudo_var)[np.array(Top_Pseudo_var)!=Lin_name])
+            else:
+                lineages_sim =Top_Pseudo_var                
     else:
         lineages_sim = Top_Pseudo_var
-            
+    
     for spklin in lineages_sim:
         if (spklin != Lin_name):
             if (spklin in list(Pseudogroup_dic.keys())):
@@ -258,15 +259,18 @@ else:
                             Top_lab.append(spklin)
                     else:
                         ix = Pseudo_done.index(Pseudogroup_dic[spklin])
-                        Top_lab[ix] = Top_lab[ix]+"/"+spklin    
+                        Top_lab[ix] = Top_lab[ix]+"/"+spklin
+                else:
+                    Top_Pseudo.append(spklin)
+                    Top_lab.append(spklin) 
             else:
                 Top_Pseudo.append(spklin)
                 Top_lab.append(spklin) 
         else:
             if spklin not in Top_Pseudo:
                 Top_Pseudo.append(spklin)
-                Top_lab.append(spklin)  
-    
+                Top_lab.append(spklin)
+            
     Pseudo_lab_cross = Top_lab
     Cross_Dic = {}
     

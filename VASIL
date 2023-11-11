@@ -18,6 +18,8 @@ if config["all_il"]:
         "results/Immunological_Landscape_ALL/simulation_status_ALL.csv"
     )
 
+if config["cross_missing"]:
+    rule_all_common.append("results/Cross_react_dic_spikegroups_present.pck")
 
 if config["FR_DMS_sites"]:
     rule_all_common.append("results/Fold_Resistance_DMS_Sites_Epitopes.csv")
@@ -41,7 +43,6 @@ if config["group_run"]:
     rule_all_common.append(
         "results/Immunological_Landscape_groups/simulation_status_group.csv"
     ),
-
 
 if config["Cross_major"]:
     rule_all_common.append("results/Cross_to_major_variants.pck"),
@@ -169,8 +170,26 @@ if config["cross_all"]:
             "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {output.cross_spk}"
 
 
+if config["cross_missing"]:
+
+    rule get_cross_neutralization_missing:
+        input:
+            spikes_dic="results/SpikeGroups.pck",
+            mutations_dic="results/Mutation_Profiles.pck",
+            dms_data_regrouped="results/epitope_data/dms_per_ab_per_site.csv",
+        params:
+            lineage_focus="missing",
+            mutation_focus="None",
+        output:
+            cross_delta="results/Cross_with_delta_validation_recomputed_again.pck",
+            cross_spk="results/Cross_react_dic_spikegroups_present.pck",
+        shell:
+            "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {output.cross_spk}"
+
+
 if config["group_run"]:
     if config["cross_group"]:
+
         rule get_cross_groups:
             input:
                 spikes_dic="results/SpikeGroups.pck",
@@ -183,11 +202,10 @@ if config["group_run"]:
             output:
                 cross_delta="results/Cross_with_delta_validation_again.pck",
                 cross_spkdir=directory("results/Cross_react_dic_groups"),
-	        res="results/Cross_react_dic_groups/cross_status.csv",
+                res="results/Cross_react_dic_groups/cross_status.csv",
             shell:
                 "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.len_groups} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {output.cross_spkdir}"
-	        
-    
+
     rule get_EI_groups:
         input:
             cases=config["cases"],
@@ -208,6 +226,7 @@ if config["group_run"]:
             results_done="results/Immunological_Landscape_groups/simulation_status_group.csv",
         shell:
             "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk_dir} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {params.lineage_focus} {output.resultdir} {params.save_neut}"
+
 
 if config["all_il"]:
 

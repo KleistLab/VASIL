@@ -55,7 +55,7 @@ def PreFig(xsize = 12, ysize = 12):
     matplotlib.rc('xtick', labelsize=xsize) 
     matplotlib.rc('ytick', labelsize=ysize)
     
-def plot_fit(ES_df, lineage, w_save = len(sys.argv)-1):
+def plot_fit(ES_df, lineage, w_save = 6):
     # processing of susceptibles 
     ES_df.drop(columns = "Unnamed: 0", inplace = True)
     es_cols = ES_df.columns
@@ -98,15 +98,18 @@ def plot_fit(ES_df, lineage, w_save = len(sys.argv)-1):
     fig = plt.figure(figsize = (15, 7))
     ax = fig.add_subplot(1, 1, 1)
     
-    plt.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3)
-    plt.plot(t_dates, gamma_prop, color = "orange")
+    plt.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = "$\gamma_{%s}$"%lineage)
+    plt.plot(t_dates, gamma_prop, color = "orange", label="$\gamma_prop$ %s"%lineage)
     
     #ax.axhline(xmin = 0, xmax = t_dates[-1], ls = "--", linewidth = 2, color = "black")
     ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
     
     try:
         x_min = list(t_dates).index(str(sys.argv[7]))
-        x_max = list(t_dates).index(str(sys.argv[8]))
+        if str(sys.argv[8]) in t_dates:
+            x_max = list(t_dates).index(str(sys.argv[8]))
+        else:
+            x_max = len(t_dates) - 1
     except:
         x_min = None
         x_max = None
@@ -150,23 +153,37 @@ def plot_fit(ES_df, lineage, w_save = len(sys.argv)-1):
     pdf.close()
  
     fig.savefig(sys.argv[w_save]+"/relative_fitness_%s.svg"%lineage, bbox_inches = "tight")
-
+    plt.close()
+    
 if variant != "ALL":
-    ES_df = pd.read_csv(sys.argv[1])
-    plot_fit(ES_df, variant)
+    try:
+        ES_df = pd.read_csv(sys.argv[1])
+    except:
+        try:
+            ES_df = pd.read_csv(sys.argv[1]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant)
+        except:
+            print("Computation needed: Excpected Susceptible file is not available for %s"%variant)
+    w_save = 6
+    plot_fit(ES_df, variant, w_save = w_save)
     status = pd.DataFrame({"lineage":variant, "relative_advantage":"Done"}, index = [1])
     status.to_csv(sys.argv[6]+"/plot_status.csv")
 
 else:
     status_list = []
     lineage_freq.drop(columns = "date", inplace = True)
+    w_save = 6
+    num = 1
     for variant in lineage_freq.columns.astype(str):
-        ES_df = pd.read_csv(sys.argv[1]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant[7:])
-        plot_fit(ES_df, variant)
-        status_list.append("Done")
-        
+        try:
+            ES_df = pd.read_csv(sys.argv[1]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant[7:])
+            plot_fit(ES_df, variant, w_save = w_save)
+            status_list.append("Done")
+        except:
+            print(num, "Was not computed: %s Not present in file Cross_react_dic_spikegroups_ALL.pck"%variant[7:])
+            num +=1
+            status_list.append("Not computed: %s Not present in file Cross_react_dic_spikegroups_ALL.pck"%variant[7:])
     
     status = pd.DataFrame({"lineage":lineage_freq.columns.astype(str), "relative_advantage":status_list})
-    status.to_csv(sys.argv[6]+"/plot_status_all.csv")
+    status.to_csv(sys.argv[w_save]+"/plot_status_all.csv")
         
 
