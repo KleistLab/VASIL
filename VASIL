@@ -37,7 +37,7 @@ if config["run_for_lineage_focus"]:
 
 if config["group_run"]:
     if config["cross_group"]:
-        rule_all_common.append("results/Cross_react_dic_groups/computation_status.csv"),
+        rule_all_common.append("results/Cross_react_dic_groups/cross_status.csv"),
     rule_all_common.append(
         "results/Immunological_Landscape_groups/simulation_status_group.csv"
     ),
@@ -183,7 +183,7 @@ if config["group_run"]:
             output:
                 cross_delta="results/Cross_with_delta_validation_again.pck",
                 cross_spkdir=directory("results/Cross_react_dic_groups"),
-	        res="results/Cross_react_dic_groups/computation_status.csv",
+	        res="results/Cross_react_dic_groups/cross_status.csv",
             shell:
                 "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.len_groups} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {output.cross_spkdir}"
 	        

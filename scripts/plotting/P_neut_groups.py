@@ -116,25 +116,11 @@ Lin_list = []
 col_list = []
 Lin_status = []
 
-
 Lin_i_list = str(sys.argv[k])
 splited_var = np.array(Lin_i_list.split("/"))
 splited_var = splited_var[~(splited_var == "")]
 splited_var = splited_var[~(splited_var == " ")]
-"""
-try:
-    Pneut_df = pd.read_csv(P_neut_dir+"/P_neut_%s.csv"%splited_var[0])
-except:
-    try:
-        Pneut_df = pd.read_csv("results/Immunological_Landscape_ALL/P_neut_%s.csv"%splited_var[0])
-    except:
-        print("Computation needed: P_neut file is not available for %s"%splited_var[0])
-try:
-    Pneut_df.drop(columns = "Unnamed: 0", inplace = True)
-except:
-    pass
-t = Pneut_df["Day since infection"]
-"""
+
 Min_list = []
 Max_list =[]
 xval = "Days since antigen exposure"
@@ -154,13 +140,17 @@ for i in range(num_groups):
                 try:
                     Pneut_df = pd.read_csv("results/Immunological_Landscape_ALL/P_neut_%s.csv"%Lin_i)
                 except:
-                    print("Computation needed: P_neut file is not available for %s"%Lin_i)
+                    try:
+                        Pneut_df = pd.read_csv("results/Immunological_Landscape/P_neut_%s.csv"%Lin_i)
+                    except:
+                        print("Computation needed: P_neut file is not available for %s"%Lin_i)
             
             try:
                 Pneut_df.drop(columns = "Unnamed: 0", inplace = True)
             except:
                 pass
-            t = Pneut_df["Day since infection"]
+            
+            t = Pneut_df["Day since infection"] ### must be the same in all the Pneut files (which is the case in our pipeline)
 
             """Compute PNeut Envelope"""    
             EnvO_Min, EnvO_Max = Pneut_df["Proba Neut Min"].to_numpy(), Pneut_df["Proba Neut Max"].to_numpy()

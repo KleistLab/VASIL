@@ -143,6 +143,8 @@ After generating the main results, our manuscripts figures are obtained by runni
 snakemake --snakefile VASILplots --configfile path/to/config_plots.yaml -j -d path/to/workdir
 
 ```
+### Further figure improvement
+The scripts in `scripts/plotting/` folder can be modified for further figure improvements.
 
 ## Output
 The main pipeline (`config.yaml`) creates a folder *results*, containing all (intermediate) output, with the following structure:
@@ -164,15 +166,20 @@ The main pipeline (`config.yaml`) creates a folder *results*, containing all (in
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized for lineage_focuss with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible for lineage_focuss with all combinations of PK parameters
 		|-- simulation_status_*.csv  	      # Writes if Immunological Landscape "done" or "Error"
-		|-- P_neut_*.csv  	      # Virus neutralization probability 
+		|-- P_neut_*.csv  	      # Virus neutralization probability if requested
 	|-- Immunological_Landscape_ALL # for all variants in covsonar data
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible with all combinations of PK parameters
 		|-- simulation_status_*.csv	      # Write if Immunological Landscape "done" or "Error"
+		|-- P_neut_*.csv  	      # Virus neutralization probability 
 	|-- Immunological_Landscape_group # for compare_groups
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible with combinations of PK parameters
 		|-- simulation_status_*.csv	      # Write if Immunological Landscape "done" or "Error"
+                 |-- P_neut_*.csv  	      # Virus neutralization probability 
+	|-- mutation_data # Cross reactivity files generated for each variants in compare_groups
+		|-- cross_status_*.csv	      # Write if cross "done" 
+		|-- Cross_*.csv	      # Cross react files	
 	|-- mutation_data
 		|-- mutationprofile_mutations_spike_lists # Full mutation profile
 		|-- mutationprofile_mutations_spike	  # Mutation status for each spike
@@ -192,12 +199,12 @@ The figure pipeline (`config_plots.yaml`) add new data to *results* folder and c
 |-- plots	
 	|-- absolute
 		|-- absolute_estimate.pdf/svg 	# Absolute growth of the epidemics
-	|-- relative
+	|-- relative           # Relative fitness for lineage focus
 		|-- plot_status.csv	  	# Writes if plot is "done" or "Error"
 		|-- relative_fitness_*.pdf/svg # relative growth advantage of lineage_focus
-	|-- grouped_relative
+	|-- relative_groups      # Relative fitness for compare_groups
 		|-- relative_fitness_group.pdf/svg # plot relative fitness for chosen variants (compare_groups)
-        |-- relative_all
+        |-- relative_all # relative fitness for all spikegroups
 		|-- plot_status_all.csv	  	# Writes if plot is "done" or "Error"
 		|-- relative_fitness_*.pdf/svg	# relative growth advantage for all spikegroups present in data
 	|-- Cross_spikegroups
@@ -209,8 +216,13 @@ The figure pipeline (`config_plots.yaml`) add new data to *results* folder and c
 	|--- P_neut_PK
 		|--- PK_Epitope_ranges.pdf/svg# Pharmacokynetics of for any epitope class
 		|--- P_Neut_*.pdf/svg # Virus neutralization probability
+	|--- P_neut_PK_lineage_focuss
+		|--- PK_Epitope_ranges.pdf/svg# Pharmacokynetics of for any epitope class
+		|--- P_Neut_*.pdf/svg # Virus neutralization probability
+	|--- P_neut_PK_groups
+		|--- PK_Epitope_ranges.pdf/svg# Pharmacokynetics of for any epitope class
+		|--- P_Neut_*.pdf/svg # Virus neutralization probability
 ```
-
 ## Demo
 Demo datasets are provided in the repository folder [`demo`](https://github.com/KleistLab/VASIL/tree/main/demo)
 

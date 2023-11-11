@@ -93,7 +93,11 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                     ES_df = pd.read_csv("results/Immunological_Landscape_ALL/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
                     num_avail +=1
                 except:
-                    print("Computation needed: Excpected Susceptible file is not available for %s"%lineage)
+                    try:
+                        ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+                        num_avail +=1
+                    except:
+                        print("Computation needed: Excpected Susceptible file is not available for %s"%lineage)
             # processing of susceptibles 
             try:
                 ES_df.drop(columns = "Unnamed: 0", inplace = True)

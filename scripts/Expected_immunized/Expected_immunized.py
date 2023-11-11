@@ -458,13 +458,23 @@ if Lin_name != "ALL":
     if not run_group:
         try:
             save_pneut = str(sys.argv[13])
+            w_save = len(sys.argv)-2
         except:
             save_pneut = None
-        status_var = ei_util(Lin_name, Cross_react_dic, save_pneut=save_pneut) 
+            w_save = len(sys.argv)-1
+
+        status_var = ei_util(Lin_name, Cross_react_dic, save_pneut=save_pneut, w_save = w_save) 
         # Save file as a placeholder for exectuted codes, required for snakemake
         sim_df = pd.DataFrame({"Lineage":[Lin_name], "Simulation status":[status_var]})
-        sim_df.to_csv(sys.argv[12]+"/simulation_status_%s.csv"%Lin_name)
+        sim_df.to_csv(sys.argv[w_save]+"/simulation_status_%s.csv"%Lin_name)
     else:
+        try:
+            save_pneut = str(sys.argv[13])
+            w_save = len(sys.argv)-2
+        except:
+            save_pneut = None
+            w_save = len(sys.argv)-1
+            
         k = 11
         while k!=len(sys.argv)-2:
             lin_sim = str(sys.argv[k])
@@ -473,8 +483,7 @@ if Lin_name != "ALL":
             file1.close()
             variants_in_cross = Cross_react_dic["variant_list"]
             Cross_react_dic.pop("variant_list")
-            w_save=len(sys.argv)-2
-            status_var = ei_util(lin_sim, Cross_react_dic, save_pneut = str(sys.argv[len(sys.argv)-1]), w_save = w_save) 
+            status_var = ei_util(lin_sim, Cross_react_dic, save_pneut = save_pneut, w_save = w_save) 
             # Save file as a placeholder for exectuted codes, required for snakemake
             if k>11:
                 sim_df = pd.read_csv(sys.argv[w_save]+"/simulation_status_group.csv")

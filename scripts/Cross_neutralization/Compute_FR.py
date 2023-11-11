@@ -228,7 +228,6 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
             if Lin_name not in SpikeGroups_list: ### Keep Lin_name as it is
                 mut_x_sites_dic_updated[Lin_name] = mut_Lin
             else:
-                Lin_name = Lin_name + "_requested" ### renamed to avoid ambiguities
                 mut_x_sites_dic_updated[Lin_name] = mut_Lin
         except:
             sys.exit("Lineage focus mutation file must be provided")
@@ -488,7 +487,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites"):
             pickle.dump(Cross_i, file0)
             file0.close()
         stat_df = pd.DataFrame({"Lineages":Lin_list, "computed_cross":status_sim})
-        stat_df.to_csv(sys.argv[k+1]+"/computation_status.csv")
+        stat_df.to_csv(sys.argv[k+1]+"/cross_status.csv")
 
 elif Lin_name == "ALL":            
     for ab in Ab_classes:
