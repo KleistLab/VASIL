@@ -173,7 +173,9 @@ else:
     lineage_freq.drop(columns = "date", inplace = True)
     w_save = 6
     num = 1
-    for variant in lineage_freq.columns.astype(str):
+    for i in range(len(lineage_freq.columns.astype(str))):
+        variant = lineage_freq.columns.astype(str)[i]
+        print("Plot relative fitness of %s (%d/%d)"%(variant, i+1, len(lineage_freq.columns.astype(str))))
         try:
             ES_df = pd.read_csv(sys.argv[1]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant[7:])
             plot_fit(ES_df, variant, w_save = w_save)
