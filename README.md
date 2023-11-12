@@ -167,17 +167,17 @@ The main pipeline (`config.yaml`) creates a folder *results*, containing all (in
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized for lineage_focuss with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible for lineage_focuss with all combinations of PK parameters
 		|-- simulation_status_*.csv  	      # Writes if Immunological Landscape "done" or "Error"
-		|-- P_neut_*.csv  	      # Virus neutralization probability against antigen from each spikegroup present in covsonar data (if requested)
+		|-- P_neut_*.csv  	      # Virus neutralization probability against selected antigen present in covsonar data (if requested)
 	|-- Immunological_Landscape_ALL # for all variants in covsonar data
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible with all combinations of PK parameters
 		|-- simulation_status_*.csv	      # Write if Immunological Landscape "done" or "Error"
-		|-- P_neut_*.csv  	      # Virus neutralization probability against antigen from each spikegroup present in covsonar data (if requested) 
+		|-- P_neut_*.csv  	      # Virus neutralization probability against selected antigen present in covsonar data (if requested) 
 	|-- Immunological_Landscape_group # for compare_groups
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible with combinations of PK parameters
 		|-- simulation_status_*.csv	      # Write if Immunological Landscape "done" or "Error"
-                 |-- P_neut_*.csv  	      # Virus neutralization probability against antigen from each spikegroup present in covsonar data (if requested)
+                 |-- P_neut_*.csv  	      # Virus neutralization probability against selected antigen present in covsonar data (if requested)
 	|-- mutation_data # Cross reactivity files generated for each variants in compare_groups
 		|-- cross_status_*.csv	      # Write if cross "done" 
 		|-- Cross_*.csv	      # Cross react files	
@@ -264,7 +264,7 @@ The plot for the estimation of change in relative fitness of the demo sample sho
 ![alt text](https://github.com/KleistLab/VASIL/blob/main/demo/plots/relative/relative_fitness_BA_2_86.svg)
 
 The plot for the cross reactivity the demo sample should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/demo/plots/Cross_spikegroups/Cross_React_AB_A.svg)
+![alt text](https://github.com/KleistLab/VASIL/blob/main/demo/plots/Cross_spikegroups/major_Cross_React_AB_A.svg)
 
 ## Caution
 Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present (unless an input file is updated by another rule), remove older files from the *results* folder when needed.

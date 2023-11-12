@@ -54,6 +54,7 @@ def Display_Envelope(t, Y, Z, is_log, labels, figsize = (7, 7), xysize = (15,15)
         for i in range(Y.shape[0]):
             ax.fill_between(t, Y[i, :], Z[i, :], label = labels[i], alpha = alpha, color = col[i])
         
+    plt.xlabel(xval, fontsize = labsize)
     if labels != [""]:
        ax.legend(loc = (1.2, 0.) ,fontsize = labsize, ncols = np.ceil(len(labels)/4))
     
@@ -95,7 +96,7 @@ is_log=False
 xval = "Days since antigen exposure"
 yval = "Virus neutralization\n probability"
 fig, ax = Display_Envelope(pk_t, np.array([PK_min]), np.array([PK_max]), 
-                          is_log, ["Epitopes PK (ranges)"], 
+                          is_log, labels = ["Epitopes PK (ranges)"], 
                           save_to = Res_dir+"/PK_Epitopes_ranges",
                           xval = xval, yval = yval,
                           linewidth = 4,
@@ -112,7 +113,7 @@ fig.savefig(Res_dir+"/PK_Epitopes_ranges.svg", bbox_inches = "tight")
 P_neut_dir = sys.argv[2]
 num_groups = int(sys.argv[4])
 k = 5
-antigen = str(sys.arg[num_groups+k+1])
+antigen = str(sys.argv[len(sys.argv)-1])
 
 status = []
 Lin_list = []

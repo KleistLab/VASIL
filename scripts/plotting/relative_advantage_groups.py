@@ -13,6 +13,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import sys
 import pdb
 import seaborn as sns
+import pickle
 
 def moving_average(X, window = 7):
     u = np.zeros(len(X))
@@ -63,7 +64,10 @@ def PreFig(xsize = 12, ysize = 12):
     '''
     matplotlib.rc('xtick', labelsize=xsize) 
     matplotlib.rc('ytick', labelsize=ysize)
-    
+
+file = open("Spikegroups_membership.pck", "rb")
+Pseudogroup_dic = pickle.load(file)
+file.close()    
 def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     # plotting
     PreFig(xsize = 20, ysize = 20)
@@ -77,11 +81,22 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
 
     status_list = []
     
+    Pseudo_prop = np.zeros((len(t_prop)))
     for k in range(len(lineage_list)):
         splited_var = np.array(lineage_list[k].split("/"))
         splited_var = splited_var[~(splited_var == "")]
         splited_var = splited_var[~(splited_var == " ")]
         num_avail = 0
+        
+        # plotting
+        PreFig(xsize = 20, ysize = 20)
+        fig_k = plt.figure(figsize = (9, 7))
+        ax_k = fig_k.add_subplot(1, 1, 1)
+        ### end of observation line
+        ax_k.axvline(x = len(t_dates) - 1, ymin = -1, ymax = 1, ls = "--", linewidth = 2, color = "grey")
+
+        # different axis for proportions
+        ax_k_twin = ax_k.twinx()
         
         for x in range(len(splited_var)):
             lineage = splited_var[x]
@@ -112,21 +127,23 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                 ES_sum += ES_df.to_numpy()[:, es_cols!="Days"].astype(float)
             
             # change in relative frequency from genomic surveillance data 
-            if "Spike. " + lineage in lineage_freq.columns.astype(str):
-                if x == 0:
-                    Pseudo_Prop = moving_average(lineage_freq["Spike. " + lineage], window = 14)
-                else:
-                    Pseudo_Prop += moving_average(lineage_freq["Spike. " + lineage], window = 14)
-
-                #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
-                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
-            elif lineage in lineage_freq.columns.astype(str):
-                if x == 0:
-                    Pseudo_Prop = moving_average(lineage_freq[lineage], window = 14)
-                else:
-                    Pseudo_Prop += moving_average(lineage_freq[lineage], window = 14)
-                #Pseudo_Prop[Pseudo_Prop < threshold] = 0
-                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+            Pseudo_prop = np.zeros((len(t_prop)))
+            if lineage in list(Pseudogroup_dic.keys()):
+                if "Spike. " + Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
+                    if x == 0:
+                        Pseudo_Prop = moving_average(lineage_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)
+                    else:
+                        Pseudo_Prop += moving_average(lineage_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)
+    
+                    #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
+                    #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+                elif lineage in lineage_freq.columns.astype(str):
+                    if x == 0:
+                        Pseudo_Prop = moving_average(lineage_freq[lineage], window = 14)
+                    else:
+                        Pseudo_Prop += moving_average(lineage_freq[lineage], window = 14)
+                    #Pseudo_Prop[Pseudo_Prop < threshold] = 0
+                    #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
             else:
                 if x == 0:
                     Pseudo_Prop = ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
@@ -136,6 +153,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         
         if num_avail !=0:
             ES_ranges = ES_sum/num_avail# compute the mean
+            Pseudo_prop = Pseudo_prop/num_avail 
         else:
             print("Error: There are no E[Susceptible] files for any lineage in %s"%lineage)
             
@@ -165,7 +183,88 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lineage_list[k])
         ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lineage_list[k])
         status_list.append("Done")
-
+        
+        ax_k.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lineage_list[k])
+        ax_k_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lineage_list[k])
+        ax_k.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
+        
+        ymin1, ymax1 = ax_k.get_ylim()
+        ymin2, ymax2 = ax_k_twin.get_ylim()
+        ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
+        ax_k.set_ylim((ymin, ymax))
+        ax_k_twin.set_ylim((ymin, ymax))
+        try:
+            x_min = list(t_dates).index(str(sys.argv[5]))
+            #x_max = list(t_dates).index(str(sys.argv[6]))
+            x_min1 = day_prop.index(str(sys.argv[5]))
+            x_max1 = day_prop.index(str(sys.argv[6]))
+            x_max = x_max1
+        except:
+            x_min = None
+    
+        if (x_min is not None):
+            ax_k.set_xlim((x_min, x_max))
+            ax_k_twin.set_xlim((x_min1, x_max1))
+            t_dates_show = np.array(t_dates)[x_min:x_max+1]
+        else:
+            t_dates_show = t_dates
+    
+        if len(t_dates_show)>200:
+            pp = 7*4
+        else:
+            pp = min(len(t_dates_show), 14)
+        
+        perday = np.arange(0,len(t_dates_show), pp)
+        date_ticks = t_dates_show[perday].tolist()
+        if t_dates[len(t_dates) - 1] not in date_ticks:
+            n=list(t_dates).index(date_ticks[-1])+pp
+            while n<len(t_dates)-1:
+                date_ticks.append(t_dates[n])
+                perday = np.append(perday, n)
+                n += pp
+            date_ticks.append(t_dates[len(t_dates) - 1])
+            perday = np.append(perday, len(t_dates) - 1)
+        
+        change = len(date_ticks)
+        
+        if day_prop[len(day_prop) - 1] not in date_ticks:
+            n=list(day_prop).index(date_ticks[-1])+pp
+            while n<len(day_prop)-1:
+                date_ticks.append(day_prop[n])
+                perday = np.append(perday, n)
+                n += pp
+            date_ticks.append(day_prop[len(t_prop) - 1])
+            perday = np.append(perday, len(t_prop) - 1)
+    
+        if x_min is not None:
+            perday_orig = []
+            for i in range(len(np.array(date_ticks)[:change])):
+                perday_orig.append(list(t_dates).index(date_ticks[i]))
+            try:
+                for j in range(len(np.array(date_ticks[change:]))):
+                    perday_orig.append(list(day_prop).index(date_ticks[change+j]))
+            except:
+                pass
+        else:
+            perday_orig = perday
+            
+        ax_k.set_xticks(perday_orig)
+        ax_k.set_xticklabels(date_ticks,
+            rotation = 45, horizontalalignment = "right")
+    
+        #ax_twin.set_ylim((-0.02, 0.02))
+        
+        ax_k.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+        ax_k_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+        ax_k.set_ylabel("Relative fitness", fontsize = 20)
+        ax_k_twin.set_ylabel("Variant abundance", fontsize = 20)
+        pdf_k = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lineage_list[k].replace("/", "_"))
+        pdf_k.savefig(fig_k, bbox_inches = "tight")
+        pdf_k.close()
+ 
+        fig_k.savefig(sys.argv[w_save]+"/relative_fitness_%s.svg"%(lineage_list[k].replace("/", "_")), bbox_inches = "tight")
+        plt.close()
+        
     ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
     
     ymin1, ymax1 = ax.get_ylim()

@@ -59,6 +59,7 @@ def Display_Envelope(t, Y, Z, is_log, labels, figsize = (7, 7), xysize = (15,15)
              ax.set_ylabel("$\ln$ %s"%yval, fontsize = labsize)
         else:
              ax.set_ylabel("%s"%yval, fontsize = labsize)
+             
         ax.set_xlabel(xval, fontsize = labsize)
         if antigen != "irrelevant":
             ax.set_title("%s antigen"%antigen, fontsize = labsize)
@@ -89,7 +90,7 @@ is_log=False
 xval = "Days since antigen exposure"
 yval = "Virus neutralization\n probability"
 fig, ax = Display_Envelope(pk_t, np.array([PK_min]), np.array([PK_max]), 
-                          is_log, ["Epitopes PK (ranges)"], 
+                          is_log, labels=["Epitopes PK (ranges)"], 
                           save_to = sys.argv[5]+"/PK_Epitopes_ranges",
                           xval = xval, yval = yval,
                           linewidth = 4,
@@ -119,9 +120,10 @@ col_o = str(sys.argv[3])
 is_log=False
 xval = "Days since antigen exposure"
 yval = "Virus neutralization\n probability"
+Lin = str(sys.argv[4])
 fig, ax = Display_Envelope(t, np.array([EnvO_Min]), np.array([EnvO_Max]), 
-                          is_log, [""],
-                          save_to = sys.argv[5]+"/P_Neut_"+str(sys.argv[4]),
+                          is_log, labels = [Lin],
+                          save_to = sys.argv[5]+"/P_Neut_"+Lin,
                           xval = xval, yval = yval,
                           linewidth = 4,
                           color = [col_o],

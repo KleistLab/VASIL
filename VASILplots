@@ -228,7 +228,7 @@ if config["cross_major"]:
                 cross_lin="None",
                 lin_name="None",
                 plot_major="True",
-                not_add="notadd",
+                not_add="not_add",
             output:
                 res_dir=directory("plots/Cross_Major"),
                 res="plots/Cross_Major/major_Cross_React_AB_A.pdf",

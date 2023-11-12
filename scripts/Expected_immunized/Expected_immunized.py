@@ -314,7 +314,10 @@ def Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data, present_variant_
     """
     return Expected_Immuned
 
-
+### Load spikegroups membership file
+file = open("Spikegroups_membership.pck", "rb")
+Pseudogroup_dic = pickle.load(file)
+file.close()
 def PNeut_Envelope(s, t, variants, variant_x_names, Cross_react_dic, c_dframe_dic, IC50xx_dic, antigen_list = ["Wuhan-Hu-1"],mean_IC50xx = True):
     
     if mean_IC50xx:
@@ -334,11 +337,30 @@ def PNeut_Envelope(s, t, variants, variant_x_names, Cross_react_dic, c_dframe_di
     splited_var = splited_var[~(splited_var == " ")]
     
     res = np.zeros((len(variants), len(list(c_dframe_dic.keys())), len(t)))
+    
     for j in range(len(splited_var)):
-        where_x = list(variant_x_names).index(splited_var[j])
+        spl_sub = np.array(splited_var[j].split("="))
+        spl_sub = spl_sub[~(spl_sub == "")]
+        spl_sub = spl_sub[~(spl_sub == " ")]
+
+        lin = spl_sub[0]
+        try:
+            where_x = list(variant_x_names).index(lin)
+        except:
+            try:
+                where_x = list(variant_x_names).index(Pseudogroup_dic[lin])
+            except:
+                print("Error in antigen parameter: %s is not present in covsonar data"%lin)
+
+        if len(spl_sub)==1:
+            prop_lin = 1/len(splited_var)
+        else:
+            prop_0 = re.findall(r"[-+]?(?:\d*\.*\d+)", spl_sub[1])[0] ### anything else is error
+            prop_lin = float(prop_0)
+        
         for i in range(len(variants)):
             where_y = list(variant_x_names).index(variants[i])
-        
+            
             for j in range(len(list(c_dframe_dic.keys()))):
                 if not mean_IC50xx:
                     IC50xx = IC50xx_dic[list(c_dframe_dic.keys())[j]]
@@ -348,9 +370,8 @@ def PNeut_Envelope(s, t, variants, variant_x_names, Cross_react_dic, c_dframe_di
                 c_dframe = c_dframe_dic[list(c_dframe_dic.keys())[j]]
                 for l in range(len(t)): 
                     antibody_level = c_dframe.loc[l][1:]
-                    res[i, j, l] += efficacy_n_antibodies(antibody_level, IC50xy) 
+                    res[i, j, l] += prop_lin*efficacy_n_antibodies(antibody_level, IC50xy) 
     
-    res = res/len(splited_var) ### average over the lineages in antigen string that where separated by "/"
     return np.min(res, axis = (0, 1)), np.max(res, axis = (0, 1))
 
 """Compute Antibody concentration over time for a range of t_half and t_max"""
@@ -434,13 +455,15 @@ def ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic = None, s
                  EnvD_Min,EnvD_Max = jb_res[i]
                  VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
                  VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
+        
         else:
+           
             for i in range(len(antigen_list)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
                 antigen = antigen_list[i]
-                EnvD_Min,EnvD_Max = PNeut_Envelope(t_conc, [Lin_name], variants_in_cross, Cross_react_dic, c_dframe_dic, IC50xx_dic, antigen = antigen, mean_IC50xx = True)
+                EnvD_Min,EnvD_Max = PNeut_Envelope(1, t_conc, [Lin_name], variants_in_cross, Cross_react_dic, c_dframe_dic, IC50xx_dic, antigen_list = antigen_list, mean_IC50xx = True)
                 VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
                 VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
-        
+            
         """ Save P_Neut ranges"""
         VE_df = pd.DataFrame(VE)
         VE_df.to_csv(sys.argv[w_save]+"/P_neut_"+Lin_name+".csv")
@@ -505,6 +528,10 @@ Lin_name = str(sys.argv[13])
 """Update name if necessary -- this is the same update as in Compute_FR"""
 
 if Lin_name != "ALL":
+    ### Load spikegroups membership file
+    file = open("Spikegroups_membership.pck", "rb")
+    Pseudogroup_dic = pickle.load(file)
+    file.close()
     if not run_group:
         num_antigen = int(sys.argv[14])
         k=15
@@ -513,8 +540,29 @@ if Lin_name != "ALL":
             antigen = str(sys.argv[k])
             antigen_list.append(antigen)
             k+=1
-            
-        status_var = ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save) 
+        
+        if Lin_name not in Pseudogroup_dic.keys():
+            status_var = ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save) 
+        else:
+            try:
+                file1 = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") # Check that this is the file you want to load
+                Cross_react_dic = pickle.load(file1)
+                variants_cross = list(Cross_react_dic["variant_list"])
+                ### insert lin_sim in the position of it's Pseudogroup
+                Cross_react_dic["variant_list"][variants_cross.index(Pseudogroup_dic[Lin_name])] = Lin_name
+                file1.close()
+                status_var = ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save) 
+            except:
+                try:
+                    file1 = open("results/Cross_react_dic_spikegroups_present.pck", "rb") # Check that this is the file you want to load
+                    Cross_react_dic = pickle.load(file1)
+                    variants_cross = list(Cross_react_dic["variant_list"])
+                    ### insert lin_sim in the position of it's Pseudogroup
+                    Cross_react_dic["variant_list"][variants_cross.index(Pseudogroup_dic[Lin_name])] = Lin_name
+                    file1.close()
+                    status_var = ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save) 
+                except:
+                    pass
         # Save file as a placeholder for exectuted codes, required for snakemake
         sim_df = pd.DataFrame({"Lineage":[Lin_name], "Simulation status":[status_var]})
         sim_df.to_csv(sys.argv[w_save]+"/simulation_status_%s.csv"%Lin_name)
@@ -523,22 +571,63 @@ if Lin_name != "ALL":
         cross_list = []
         k = 13
         run_k = True
+        not_pres = []
         while k<len(sys.argv) and run_k:
+            lin_sim = str(sys.argv[k])                
             try:
-                lin_sim = str(sys.argv[k])
-                file1 = open(sys.argv[3]+"/Cross_%s.pck"%lin_sim, "rb") # Check that this is the file you want to load
-                cross_list.append(pickle.load(file1))
-                file1.close()
-                Lin_list.append(lin_sim)
-                k +=1
-            except:
-                # will stop at num_antigen because num_antigen is an int
+                # will not give any error at num_antigen because num_antigen is an int
+                num_antigen = int(sys.argv[k])
+                loc_num_anti = k
                 run_k = False
-
-        num_antigen = int(sys.argv[k])
+            except:
+                run_k = True
+            
+            if run_k:
+                try:
+                    file1 = open(sys.argv[3]+"/Cross_%s.pck"%lin_sim, "rb") # Check that this is the file you want to load
+                    cross_list.append(pickle.load(file1))
+                    file1.close()
+                    Lin_list.append(lin_sim)
+                    k +=1
+                except:
+                    try:
+                        file1 = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") # Check that this is the file you want to load
+                        Cross_dic = pickle.load(file1)
+                        variants_cross = list(Cross_dic["variant_list"])
+                        if lin_sim in Pseudogroup_dic.keys():
+                            ### insert lin_sim in the position of it's Pseudogroup
+                            Cross_dic["variant_list"][variants_cross.index(Pseudogroup_dic[lin_sim])] = lin_sim
+                        else:
+                            not_pres.append(lin_sim)
+                            cross_list.append(Cross_dic)
+                            file1.close()
+                            Lin_list.append(lin_sim)
+                        k +=1
+                    except:
+                        try:
+                            file1 = open("results/Cross_react_dic_spikegroups_present.pck", "rb") # Check that this is the file you want to load
+                            Cross_dic = pickle.load(file1)
+                            variants_cross = list(Cross_dic["variant_list"])
+                            if lin_sim in Pseudogroup_dic.keys():
+                                ### insert lin_sim in the position of it's Pseudogroup
+                                Cross_dic["variant_list"][variants_cross.index(Pseudogroup_dic[lin_sim])] = lin_sim
+                                cross_list.append(Cross_dic)
+                                file1.close()
+                                Lin_list.append(lin_sim)
+                            else:
+                                not_pres.append(lin_sim)
+                            
+                            k +=1
+                        except:
+                            pass                         
+                    
+        if len(not_pres)!=0:
+            to_print = "Some Lineage in group do not have a cross reactivity file and are not present in covsonar data:" + " ".join(["%s"%var for var in not_pres])
+            sys.exit(to_print)
+            
         antigen_list = []
-        k = k+1
-        while k<14+len(Lin_list)+num_antigen:
+        k = loc_num_anti + 1
+        while k<13+len(Lin_list)+num_antigen:
             antigen = str(sys.argv[k])
             antigen_list.append(antigen)
             k +=1
