@@ -251,7 +251,7 @@ The folder `MS_data` can be used to reproduce or find the non-conceptual figures
 
 First Download large files [Cross_react_dic_spikegroups_ALL.pck](https://drive.google.com/file/d/1miylCMI_azWmOFJmBgH2b5KbgkVaC3fQ/view?usp=sharing) and place it in the folder `MS_data/results` otherwise it will take a while to recomputed it for all the spikegroups
 ```
-snakemake --snakefile VASILplots --configfile demo/ms_fig.yaml -j -d MS_data
+snakemake --snakefile VASILplots --configfile MS_data/ms_fig.yaml -j -d MS_data
 
 ```
 The figures are located as follows
