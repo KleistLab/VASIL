@@ -99,6 +99,8 @@ def plot_fit(ES_df, lineage, w_save = 6):
     ax = fig.add_subplot(1, 1, 1)
     
     plt.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = "$\gamma_{%s}$"%lineage)
+    #more smoothing
+    gamma_prop = moving_average(gamma_prop, window = 14)
     plt.plot(t_dates, gamma_prop, color = "orange", label="$\gamma_prop$ %s"%lineage)
     
     #ax.axhline(xmin = 0, xmax = t_dates[-1], ls = "--", linewidth = 2, color = "black")
@@ -147,6 +149,9 @@ def plot_fit(ES_df, lineage, w_save = 6):
     ax.set_xticklabels(date_ticks,
         rotation = 45, horizontalalignment = "right")
     
+    
+    ymin, ymax = ax.get_ylim()
+    ax.set_ylim((ymin, ymax))
     
     pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lineage)
     pdf.savefig(fig, bbox_inches = "tight")

@@ -23,10 +23,10 @@ lineage_focus: "BA_2_86"
 mutation_focus: "BA.2.86_mutationsprofile_outbreak.info_28-8-23.txt"
 # 6.d OPTIONAL:Compute neutralization proba for lineage_focus for a desired antigen list
 p_neut: TRUE
-antigen: ["Wuhan-Hu-1", "XBB.1.5", "Wuhan-Hu-1=0.75/EG.5.1=0.25", "Wuhan-Hu-1/EG.5.1"] ### if not "Wuhan-Hu-1", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used)
+antigen: ["Wuhan-Hu-1", "XBB.1.5", "Wuhan-Hu-1=0.75/XBB.1.5=0.25", "Wuhan-Hu-1/XBB.1.5"] ### if not "Wuhan-Hu-1", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used)
 # set antigen to ["ALL"] you need the p_neut for all spikegroups of covsonar data (might take a while)
 # 7. OPTIONAL: Get Immunological landscape for all spikegroups in simulation timeframe TRUE/FALSE
-cross_all: FALSE
+cross_all: TRUE
 # if cross_all is FALSE, you must include the precomputed files:
 # results/Cross_with_delta_validation_recomputed.pck & results/Cross_react_dic_spikegroups_ALL.pck (just rename previous file) 
 # 7.a In case one is using a premade cross_all file (for example computed for shorter timeframe), there might be some variants missing 
@@ -40,15 +40,15 @@ antigen_all: ["Wuhan-Hu-1", "XBB.1.5", "Wuhan-Hu-1=0.75/EG.5.1=0.25", "Wuhan-Hu-
 FR_DMS_sites: TRUE
 # 10. OPTIONAL:Compute cross_neutralization for major lineages
 Cross_major: TRUE
-major_lineages: ["BA.2", "BA.4", "BA.5", "BQ.1.1", "BE.1.1", "CH.1.1", "XBB.1.5", "EG.5.1", "HK.3", "JN.1"]
+major_lineages: ["BA.2", "BQ.1", "EF.1", "XBB.1.5", "BA_2_86"]
 # you must include the mutation profiles files of any lineages that are not available in covsonar data, use a placeholder e.g.:"avail" if it is there
-mut_major: ["avail", "avail", "avail", "avail", "avail", "avail", "avail", "avail", "HK.3_mutationsprofile_outbreak.info_6-11-23.txt", "JN.1_mutationsprofile_outbreak.info_6-11-23.txt"]
+mut_major: ["avail", "avail", "avail", "avail", "BA.2.86_mutationsprofile_outbreak.info_28-8-23.txt"]
 # 11.OPTIONAL:Compute Immunological landscape for chosen variant groups for prediction comparison
 groups_il: TRUE
-compare_groups: ["EG.5.1", "HK.3", "JN.1", "XBB.1.5"] ### can only be a list of lineages list this
+compare_groups: ["BA.2", "BQ.1", "EF.1", "XBB.1.5", "BA_2_86"] ### can only be a list of lineages list this
 cross_group: FALSE ### in FALSE, we need the files results/Cross_react_dic_groups/Cross_*.pck" *=lineage & results/Cross_with_delta_validation_again.pck (just rename previous file) or if they are present in covsonar data, it is extracted from there
 # if cross_group is TRUE, the mutation profiles files of any lineages that are not available in covsonar data, use a placeholder e.g.:"avail" otherwise 
 # cross is recomputed or directly extracted from results/Cross_react_dic_spikegroups_ALL.pck if it exists
-mut_groups: ["avail", "HK.3_mutationsprofile_outbreak.info_6-11-23.txt", "JN.1_mutationsprofile_outbreak.info_6-11-23.txt"]
+mut_groups: ["avail", "avail", "avail", "avail", "BA.2.86_mutationsprofile_outbreak.info_28-8-23.txt"]
 p_neut_groups: TRUE ### Compute Neut proba for each lineages in groups
 antigen_groups: ["Wuhan-Hu-1", "XBB.1.5", "Wuhan-Hu-1=0.75/EG.5.1=0.25", "Wuhan-Hu-1/EG.5.1"] ### if not "Wuhan-Hu-1", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used)
