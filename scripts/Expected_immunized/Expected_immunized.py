@@ -315,35 +315,42 @@ def Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data, present_variant_
     return Expected_Immuned
 
 
-def PNeut_Envelope(i, t, variants, variant_x_names, Cross_react_dic, c_dframe_dic, IC50xx_dic, antigen_list = ["Wuhan-Hu-1"],mean_IC50xx = True):
-    res = np.zeros((len(variants), len(list(c_dframe_dic.keys())), len(t)))
+def PNeut_Envelope(s, t, variants, variant_x_names, Cross_react_dic, c_dframe_dic, IC50xx_dic, antigen_list = ["Wuhan-Hu-1"],mean_IC50xx = True):
+    
     if mean_IC50xx:
         IC50xx = np.mean(list(IC50xx_dic.values()))
         to_print = "Computing P_Neut, used mean fitted IC50 %.5f"%IC50xx
     else:
         to_print = "Compute P_Neut, used fitted IC5 for each PK paramteters"
     
-    to_print = to_print + " for %s vs. %s antigen"%("/".join(variants), antigen_list[i])
+    to_print = to_print + " for %s vs. %s antigen"%("/".join(variants), antigen_list[s])
     
-    num = "%d/%d"%(i+1, len(antigen_list))
-    to_print = to_print + "(%s)"%num
-        
+    num = "%d/%d"%(s+1, len(antigen_list))
+    to_print = to_print + " (%s)"%num
     print(to_print)
-    where_x = list(variant_x_names).index(antigen_list[i])
-    for i in range(len(variants)):
-        where_y = list(variant_x_names).index(variants[i])
     
-        for j in range(len(list(c_dframe_dic.keys()))):
-            if not mean_IC50xx:
-                IC50xx = IC50xx_dic[list(c_dframe_dic.keys())[j]]
-            
-            IC50xy = [Cross_react_dic[Ab_classes[i]][where_x, where_y]*IC50xx*FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))]
+    splited_var = np.array(antigen_list[s].split("/"))
+    splited_var = splited_var[~(splited_var == "")]
+    splited_var = splited_var[~(splited_var == " ")]
+    
+    res = np.zeros((len(variants), len(list(c_dframe_dic.keys())), len(t)))
+    for j in range(len(splited_var)):
+        where_x = list(variant_x_names).index(splited_var[j])
+        for i in range(len(variants)):
+            where_y = list(variant_x_names).index(variants[i])
+        
+            for j in range(len(list(c_dframe_dic.keys()))):
+                if not mean_IC50xx:
+                    IC50xx = IC50xx_dic[list(c_dframe_dic.keys())[j]]
                 
-            c_dframe = c_dframe_dic[list(c_dframe_dic.keys())[j]]
-            for l in range(len(t)): 
-                antibody_level = c_dframe.loc[l][1:]
-                res[i, j, l] = efficacy_n_antibodies(antibody_level, IC50xy) 
+                IC50xy = [Cross_react_dic[Ab_classes[i]][where_x, where_y]*IC50xx*FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))]
+                    
+                c_dframe = c_dframe_dic[list(c_dframe_dic.keys())[j]]
+                for l in range(len(t)): 
+                    antibody_level = c_dframe.loc[l][1:]
+                    res[i, j, l] += efficacy_n_antibodies(antibody_level, IC50xy) 
     
+    res = res/len(splited_var) ### average over the lineages in antigen string that where separated by "/"
     return np.min(res, axis = (0, 1)), np.max(res, axis = (0, 1))
 
 """Compute Antibody concentration over time for a range of t_half and t_max"""
@@ -383,52 +390,58 @@ spikegroups_proportion = np.divide(prop_rounded, NormProp, out = np.zeros(prop_r
 
 
 ### end of simulation
-def ei_util(Lin_name, Cross_react_dic = None, save_pneut=None, w_save=len(sys.argv)-1, var_list_index = None, spikegroups_proportion_adjust=None):
+def ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic = None, save_pneut=None, w_save=len(sys.argv)-1, var_list_index = None, spikegroups_proportion_adjust=None):
     variant_to_sim = [Lin_name]
     EI = {}
     EI["Days"] = days_incidence
     
     Susc = {}
     Susc["Days"] = days_incidence
+    
+    if antigen_list == ["ALL"]:
+        antigen_list = np.array(SpikeGroups_list[var_list_index])
+    
     if save_pneut in ("TRUE", "True"):
         VE = {}
+        VE["Day since infection"] = t_conc
         pfunc = partial(PNeut_Envelope, t=t_conc, 
-                            variants=[Lin_name], variant_x_names = variants_in_cross, 
+                            variants=[Lin_name], 
+                            variant_x_names = variants_in_cross, 
                             Cross_react_dic = Cross_react_dic,
                             c_dframe_dic = c_dframe_dic, 
                             IC50xx_dic = IC50xx_dic, 
-                            antigen = variants_in_cross, 
+                            antigen_list = antigen_list, 
                             mean_IC50xx = True, 
                             ) 
         status = False
         try:
-            jb_res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(variants_in_cross))))
+            jb_res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(antigen_list))))
             status = True
             print("run joblib.Parallel")
         except:
             try:
-                jb_res = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc)(d) for d in range(len(variants_in_cross))))
+                jb_res = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc)(d) for d in range(len(antigen_list))))
                 status=True
                 print("run joblib.Parallel")
             except:
-                jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(variants_in_cross))))
+                jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(antigen_list))))
                 status=True
                 print("run joblib.Parallel")
+        
         if status:
-             for i in range(len(variants_in_cross)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
-                 antigen = variants_in_cross[i]
+             for i in range(len(antigen_list)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
+                 antigen = antigen_list[i]
                  EnvD_Min,EnvD_Max = jb_res[i]
                  VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
                  VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
         else:
-            for i in range(len(variants_in_cross)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
-                antigen = variants_in_cross[i]
+            for i in range(len(antigen_list)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
+                antigen = antigen_list[i]
                 EnvD_Min,EnvD_Max = PNeut_Envelope(t_conc, [Lin_name], variants_in_cross, Cross_react_dic, c_dframe_dic, IC50xx_dic, antigen = antigen, mean_IC50xx = True)
                 VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
                 VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
         
         """ Save P_Neut ranges"""
-        VE["Day since infection"] = t_conc
         VE_df = pd.DataFrame(VE)
         VE_df.to_csv(sys.argv[w_save]+"/P_neut_"+Lin_name+".csv")
     else:
@@ -484,42 +497,59 @@ def ei_util(Lin_name, Cross_react_dic = None, save_pneut=None, w_save=len(sys.ar
     except:
         
         return "Error"
+    
+w_save = 11 # index of resdir
+save_pneut = str(sys.argv[12])
 """Load Lineage to assess """
-Lin_name = str(sys.argv[11])
+Lin_name = str(sys.argv[13])
 """Update name if necessary -- this is the same update as in Compute_FR"""
 
 if Lin_name != "ALL":
     if not run_group:
-        try:
-            save_pneut = str(sys.argv[13])
-            w_save = len(sys.argv)-2
-        except:
-            save_pneut = None
-            w_save = len(sys.argv)-1
-
-        status_var = ei_util(Lin_name, Cross_react_dic, save_pneut=save_pneut, w_save = w_save) 
+        num_antigen = int(sys.argv[14])
+        k=15
+        antigen_list = []
+        while k<15+num_antigen:
+            antigen = str(sys.argv[k])
+            antigen_list.append(antigen)
+            k+=1
+            
+        status_var = ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save) 
         # Save file as a placeholder for exectuted codes, required for snakemake
         sim_df = pd.DataFrame({"Lineage":[Lin_name], "Simulation status":[status_var]})
         sim_df.to_csv(sys.argv[w_save]+"/simulation_status_%s.csv"%Lin_name)
     else:
-        try:
-            save_pneut = str(sys.argv[13])
-            w_save = len(sys.argv)-2
-        except:
-            save_pneut = None
-            w_save = len(sys.argv)-1
-            
-        k = 11
-        while k!=len(sys.argv)-2:
-            lin_sim = str(sys.argv[k])
-            file1 = open(sys.argv[3]+"/Cross_%s.pck"%lin_sim, "rb") # Check that this is the file you want to load
-            Cross_react_dic = pickle.load(file1)
-            file1.close()
+        Lin_list = []
+        cross_list = []
+        k = 13
+        run_k = True
+        while k<len(sys.argv) and run_k:
+            try:
+                lin_sim = str(sys.argv[k])
+                file1 = open(sys.argv[3]+"/Cross_%s.pck"%lin_sim, "rb") # Check that this is the file you want to load
+                cross_list.append(pickle.load(file1))
+                file1.close()
+                Lin_list.append(lin_sim)
+                k +=1
+            except:
+                # will stop at num_antigen because num_antigen is an int
+                run_k = False
+
+        num_antigen = int(sys.argv[k])
+        antigen_list = []
+        k = k+1
+        while k<14+len(Lin_list)+num_antigen:
+            antigen = str(sys.argv[k])
+            antigen_list.append(antigen)
+            k +=1
+        for i in range(len(Lin_list)):
+            lin_sim = Lin_list[i]
+            Cross_react_dic = cross_list[i]
             variants_in_cross = Cross_react_dic["variant_list"]
             Cross_react_dic.pop("variant_list")
-            status_var = ei_util(lin_sim, Cross_react_dic, save_pneut = save_pneut, w_save = w_save) 
+            status_var = ei_util(lin_sim, variants_in_cross, antigen_list, Cross_react_dic, save_pneut = save_pneut, w_save = w_save) 
             # Save file as a placeholder for exectuted codes, required for snakemake
-            if k>11:
+            if i != 0:
                 sim_df = pd.read_csv(sys.argv[w_save]+"/simulation_status_group.csv")
                 Lin_List = sim_df["Lineage"].tolist() + [lin_sim]
                 status_var_list = sim_df["Simulation status"].tolist() + [status_var]
@@ -527,17 +557,19 @@ if Lin_name != "ALL":
             else:    
                 sim_df = pd.DataFrame({"Lineage":[lin_sim], "Simulation status":[status_var]})
                 
-            k +=1
             sim_df.to_csv(sys.argv[w_save]+"/simulation_status_group.csv")    
+
 else:
     status_var = []
     SpikeGroups_list_index = []
-    try:
-        save_pneut = str(sys.argv[13])
-        w_save=len(sys.argv)-2
-    except:
-        save_pneut = None
-        w_save = len(sys.argv)-1
+    
+    num_antigen = int(sys.argv[14])
+    k=15
+    antigen_list = []
+    while k<15+num_antigen:
+        antigen = str(sys.argv[k])
+        antigen_list.append(antigen)
+        k+=1
     
     for j in range(len(SpikeGroups_list)):
         if SpikeGroups_list[j] in variants_in_cross:
@@ -553,11 +585,14 @@ else:
             file1.close()
             spikegroups_proportion_adjust = spikegroups_proportion.copy()
             # regenerage the indexes
+            SpikeGroups_list_index = []
             for j in range(len(SpikeGroups_list)):
                 if SpikeGroups_list[j] in variants_in_cross:
                     SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
             SpikeGroups_list_index = np.array(SpikeGroups_list_index)
+        
         except:
+            # readjust variant proportions to spikegroups available in cross react
             spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
             for j in range(len(SpikeGroups_list_index)):
                 w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
@@ -572,6 +607,8 @@ else:
         if SpikeGroups_list[i] in variants_in_cross:
             print("Compute E[immunized] for %d out of %d spikegroups + Wuhan-Hu-1"%(i, len(SpikeGroups_list)-1))
             status_var.append(ei_util(SpikeGroups_list[i], 
+                                      variants_in_cross = variants_in_cross,
+                                      antigen_list = antigen_list,
                                       Cross_react_dic = Cross_react_dic,
                                       save_pneut = save_pneut, 
                                       var_list_index=SpikeGroups_list_index, 

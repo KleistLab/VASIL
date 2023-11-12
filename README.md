@@ -153,7 +153,7 @@ The main pipeline (`config.yaml`) creates a folder *results*, containing all (in
 |-- Spikegroups_membership.pck # pickle python dictionary with lineages as keys, indicating the spikegroups of each lineages were assigned to
 |-- results
  	|-- Cross_react_dic_spikegroups_ALL.pck	# Pairwise cross reactivity between spikegroups (can be provided as input, see config.yaml)
-	|-- Cross_react_dic_spikegroups_plus_missing.pck	# Pairwise cross reactivity between spikegroups (see config.yaml)
+	|-- Cross_react_dic_spikegroups_present.pck	# Pairwise cross reactivity between spikegroups (see config.yaml)
 	|-- Cross_react_dic_spikegroups_*.pck   # Cross reactivity between lineage_focuss and spikegroups
 	|-- Cross_with_delta_validation.pck	# Cross reactivity between Delta variant and Wild Type (used of VE fitting)
 	|-- Cross_to_major_variants.pck	# Cross reactivity for major variants

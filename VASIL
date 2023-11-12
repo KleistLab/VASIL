@@ -24,12 +24,12 @@ if config["cross_missing"]:
 if config["FR_DMS_sites"]:
     rule_all_common.append("results/Fold_Resistance_DMS_Sites_Epitopes.csv")
 
-if config["run_for_lineage_focus_cross"]:
+if config["cross_focus"]:
     rule_all_common.append(
         "results/Cross_react_dic_spikegroups_" + config["lineage_focus"] + ".pck"
     )
 
-if config["run_for_lineage_focus"]:
+if config["focus_il"]:
     rule_all_common.append(
         "results/Immunological_Landscape/simulation_status_"
         + config["lineage_focus"]
@@ -37,7 +37,7 @@ if config["run_for_lineage_focus"]:
     ),
     rule_all_common.append("results/Cross_with_delta_validation.pck"),
 
-if config["group_run"]:
+if config["groups_il"]:
     if config["cross_group"]:
         rule_all_common.append("results/Cross_react_dic_groups/cross_status.csv"),
     rule_all_common.append(
@@ -106,7 +106,7 @@ rule get_spikegroups_frequencies:
         "python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.spk_profiles} {input.spike_groups} {output.spikes_freqs} {output.spikes_dic} {output.mutations_dic}"
 
 
-if config["run_for_lineage_focus_cross"]:
+if config["cross_focus"]:
 
     rule get_cross_neutralization:
         input:
@@ -125,7 +125,7 @@ if config["run_for_lineage_focus_cross"]:
             "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {output.cross_spk}"
 
 
-if config["run_for_lineage_focus"]:
+if config["focus_il"]:
 
     rule get_Immunological_Landscape:
         input:
@@ -144,13 +144,15 @@ if config["run_for_lineage_focus"]:
             date_end=config["date_end"],
             lineage_focus=config["lineage_focus"],
             save_neut=config["p_neut"],
+            antigen=config["antigen"],
+            num_antigen=len(config["antigen"]),
         output:
             resultdir=directory("results/Immunological_Landscape"),
             results_done="results/Immunological_Landscape/simulation_status_"
             + config["lineage_focus"]
             + ".csv",
         shell:
-            "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {params.lineage_focus} {output.resultdir} {params.save_neut}"
+            "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {output.resultdir} {params.save_neut} {params.lineage_focus} {params.num_antigen} {params.antigen}"
 
 
 if config["cross_all"]:
@@ -187,7 +189,7 @@ if config["cross_missing"]:
             "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {output.cross_spk}"
 
 
-if config["group_run"]:
+if config["groups_il"]:
     if config["cross_group"]:
 
         rule get_cross_groups:
@@ -220,12 +222,14 @@ if config["group_run"]:
             date_start=config["date_start"],
             date_end=config["date_end"],
             lineage_focus=config["compare_groups"],
-            save_neut=config["p_neut"],
+            save_neut=config["p_neut_groups"],
+            antigen=config["antigen_groups"],
+            num_antigen=len(config["antigen_groups"]),
         output:
             resultdir=directory("results/Immunological_Landscape_groups"),
             results_done="results/Immunological_Landscape_groups/simulation_status_group.csv",
         shell:
-            "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk_dir} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {params.lineage_focus} {output.resultdir} {params.save_neut}"
+            "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk_dir} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {output.resultdir} {params.save_neut} {params.lineage_focus} {params.num_antigen} {params.antigen}"
 
 
 if config["all_il"]:
@@ -245,11 +249,13 @@ if config["all_il"]:
             date_end=config["date_end"],
             lineage_focus="ALL",
             save_neut=config["p_neut_all"],
+            antigen=config["antigen_all"],
+            num_antigen=len(config["antigen_all"]),
         output:
             resultdir=directory("results/Immunological_Landscape_ALL"),
             results_done="results/Immunological_Landscape_ALL/simulation_status_ALL.csv",
         shell:
-            "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {params.lineage_focus} {output.resultdir} {params.save_neut}"
+            "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {output.resultdir} {params.save_neut} {params.lineage_focus} {params.num_antigen} {params.antigen}"
 
 
 if config["Cross_major"]:

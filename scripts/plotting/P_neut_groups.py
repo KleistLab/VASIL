@@ -119,11 +119,6 @@ Lin_list = []
 col_list = []
 Lin_status = []
 
-Lin_i_list = str(sys.argv[k])
-splited_var = np.array(Lin_i_list.split("/"))
-splited_var = splited_var[~(splited_var == "")]
-splited_var = splited_var[~(splited_var == " ")]
-
 Min_list = []
 Max_list =[]
 xval = "Days since antigen exposure"

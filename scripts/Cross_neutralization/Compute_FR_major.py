@@ -235,7 +235,7 @@ if len(Top_Pseudo)!=0:
         mut_x_sites_dic_used[Lin_name] = mut_Lin
     except:
         pass
-        
+      
     for ab in Ab_classes:
         print("Assess major lineages/pseudogroups with the NTD-RBD mutation positions ")
         print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))
@@ -276,4 +276,4 @@ if len(Top_Pseudo)!=0:
     Cross_react_dic["NTD"] = FR_NTB
     file0 = open(sys.argv[k], "wb") 
     pickle.dump(Cross_react_dic, file0)
-    file0.close()
+    file0.close()    
