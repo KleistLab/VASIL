@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Sun Nov 12 19:35:51 2023
+
+@author: raharinirina
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Created on Fri Nov 10 12:53:58 2023
 
 @author: raharinirina
@@ -87,6 +95,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         splited_var = splited_var[~(splited_var == "")]
         splited_var = splited_var[~(splited_var == " ")]
         num_avail = 0
+        num_pseudo = 1
         
         # plotting
         PreFig(xsize = 20, ysize = 20)
@@ -98,6 +107,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         # different axis for proportions
         ax_k_twin = ax_k.twinx()
         
+        Pseudo_done = []
         for x in range(len(splited_var)):
             lineage = splited_var[x]
             try:
@@ -134,7 +144,11 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                         Pseudo_Prop = moving_average(lineage_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)
                     else:
                         Pseudo_Prop += moving_average(lineage_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)
-    
+                    
+                    if Pseudogroup_dic[lineage] not in Pseudo_done:
+                        Pseudo_done.append(Pseudogroup_dic[lineage])
+                        num_pseudo +=1
+                        
                     #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
                     #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
                 elif lineage in lineage_freq.columns.astype(str):
@@ -144,16 +158,29 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                         Pseudo_Prop += moving_average(lineage_freq[lineage], window = 14)
                     #Pseudo_Prop[Pseudo_Prop < threshold] = 0
                     #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+                    if "Placeholder"+ lineage not in Pseudo_done:
+                        Pseudo_done.append("Placeholder"+ lineage)
+                        num_pseudo +=1
             else:
-                if x == 0:
-                    Pseudo_Prop = ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
+                if lineage in lineage_freq.columns.astype(str):
+                    if x == 0:
+                        Pseudo_Prop = moving_average(lineage_freq[lineage], window = 14)
+                    else:
+                        Pseudo_Prop += moving_average(lineage_freq[lineage], window = 14)
+                    #Pseudo_Prop[Pseudo_Prop < threshold] = 0
+                    #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+                    if "Placeholder"+lineage not in Pseudo_done:
+                        Pseudo_done.append("Placeholder"+ lineage)
+                        num_pseudo +=1
                 else:
-                    Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
-        
+                    if x == 0:
+                        Pseudo_Prop = ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
+                    else:
+                        Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
         
         if num_avail !=0:
             ES_ranges = ES_sum/num_avail# compute the mean
-            Pseudo_prop = Pseudo_prop/num_avail 
+            Pseudo_prop = Pseudo_prop/num_pseudo 
         else:
             print("Error: There are no E[Susceptible] files for any lineage in %s"%lineage)
             
