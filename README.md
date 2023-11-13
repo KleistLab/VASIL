@@ -258,20 +258,20 @@ The figures are located as follows
 
 ```
 |-- Figure 1: c: MS_data/results/mutation_data/mutationprofile_positiongroups_RBD_NTD_groups.pdf
-                b: MS_data/results/relative_groups/Groups_proportions.pdf,svg
-                c: GinPipe
+              b: MS_data/results/relative_groups/Groups_proportions.pdf,svg
+              c: GinPipe
 |-- Figure 2: a: MS_data/plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf
-                b: MS_data/plots/Cross_major/major_Cross_React_AB_*.pdf,svg
+              b: MS_data/plots/Cross_major/major_Cross_React_AB_*.pdf,svg
 |-- Figure 3: a: MS_data/plots/P_neut_*/PK_Epitopes_ranges.pdf,svg
-                b: TBA
-                c-d: MS_data/plots/P_neut_*/P_Neut_.pdf,svg*
+              b: TBA
+              c-d: MS_data/plots/P_neut_*/P_Neut_.pdf,svg*
 |-- Figure 4: a: MS_data/plots/P_neut_groups/P_Neut_.pdf/svg*         
-                   b: MS_data/plots/relative or relative_all/relative_fitness_*.pdf,svg 
-                   c: MS_data/plots/relative_groups/relative_fitness_*.pdf,svg (available also separated)         
+              b: MS_data/plots/relative or relative_all/relative_fitness_*.pdf,svg 
+              c: MS_data/plots/relative_groups/relative_fitness_*.pdf,svg (available also separated)         
 |-- Figure 5: a: TBA
-                b: TBA                                 
-                c: MS_data/plots/absolute/absolute_estimate.pdf,svg
-                d: TBA
+              b: TBA                                 
+              c: MS_data/plots/absolute/absolute_estimate.pdf,svg
+              d: TBA
 ```
 
 ### Expected Runtime for demo
