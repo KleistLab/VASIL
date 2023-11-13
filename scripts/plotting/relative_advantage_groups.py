@@ -102,6 +102,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         # different axis for proportions
         ax_k_twin = ax_k.twinx()
         
+        lab_done = []
+        Pseudo_done = []
         for x in range(len(splited_var)):
             lineage = splited_var[x]
             try:
@@ -131,8 +133,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                 ES_sum += ES_df.to_numpy()[:, es_cols!="Days"].astype(float)
             
             # change in relative frequency from genomic surveillance data 
-            Pseudo_prop = np.zeros((len(t_prop)))
-            Pseudo_done = []
             if lineage in list(Pseudogroup_dic.keys()):
                 if "Spike. " + Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
                     if x == 0:
@@ -143,24 +143,33 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                     if Pseudogroup_dic[lineage] not in Pseudo_done:
                         Pseudo_done.append(Pseudogroup_dic[lineage])
                         num_pseudo +=1
-                        lab_k = "Spike Group"+lineage
+                        if x == 0:
+                            lab_k = lineage + "*"
+                            lab_done.append(lab_k)
+                        else:
+                            lab_k = lab_done[x-1]+"/"+lineage + "*"
                     else:
-                        lab_k = Pseudo_done[Pseudo_done.index(Pseudogroup_dic[lineage])] +"/"+lineage
+                        lab_k = Pseudo_done[Pseudo_done.index(Pseudogroup_dic[lineage])] +"/"+lineage+ "*"
+                    
                     #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
                     #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
-                elif lineage in lineage_freq.columns.astype(str):
+                elif Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
                     if x == 0:
-                        Pseudo_Prop = moving_average(lineage_freq[lineage], window = 14)
+                        Pseudo_Prop = moving_average(lineage_freq[Pseudogroup_dic[lineage]], window = 14)
                     else:
-                        Pseudo_Prop += moving_average(lineage_freq[lineage], window = 14)
+                        Pseudo_Prop += moving_average(lineage_freq[Pseudogroup_dic[lineage]], window = 14)
                     #Pseudo_Prop[Pseudo_Prop < threshold] = 0
                     #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
-                    if "Placeholder"+ lineage not in Pseudo_done:
-                        Pseudo_done.append("Placeholder"+ lineage)
+                    if Pseudogroup_dic[lineage] not in Pseudo_done:
+                        Pseudo_done.append(Pseudogroup_dic[lineage])
                         num_pseudo +=1
-                        lab_k = lineage
+                        if x == 0:
+                            lab_k = lineage + "*"
+                            lab_done.append(lab_k)
+                        else:
+                            lab_k = lab_done[x-1]+"/"+lineage + "*"
                     else:
-                        lab_k = lineage
+                        lab_k = Pseudo_done[Pseudo_done.index(Pseudogroup_dic[lineage])] +"/"+lineage+ "*"
             else:
                 if lineage in lineage_freq.columns.astype(str):
                     if x == 0:
@@ -212,7 +221,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         
         inds_dates = np.arange(0,len(t_dates),1)
         ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lineage_list[k])
-        ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lineage)
+        ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lineage_list[k])
         
         ax_prop.plot(t_prop, 100*Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
         
@@ -285,9 +294,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
             rotation = 45, horizontalalignment = "right")
     
         #ax_twin.set_ylim((-0.02, 0.02))
-
-        ax_k.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
         ax_k.axhline(xmin = 0, xmax = len(t_prop), ls = "--", linewidth = 2, color = "black")
+        ax_k.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
         ax_k_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
         ax_k.set_ylabel("Relative fitness", fontsize = 20)
         ax_k_twin.set_ylabel("Variant abundance (daily)", fontsize = 20)
@@ -361,7 +369,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     else:
         perday_orig = perday
     
-    ax.axvline(x = len(t_dates) - 1, ymin = -1, ymax = 1, ls = "--", linewidth = 2, color = "grey")
     ax.set_xticks(perday_orig)
     ax.set_xticklabels(date_ticks,
         rotation = 45, horizontalalignment = "right")
@@ -380,7 +387,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     
     # Save spikegroup_proportions
     ymin, ymax = ax_prop.get_ylim()
-    ax_prop.set_ylim(ymin, ymax)
+    ax_prop.set_ylim(((0, ymax)))
     ax.set_xticks(perday_orig)
     ax.set_xticklabels(date_ticks,
         rotation = 45, horizontalalignment = "right")
