@@ -628,17 +628,20 @@ if Lin_name != "ALL":
                         k +=1
                     except:
                         k +=1
-                    
+        
+        
         if len(not_pres)!=0:
             to_print = "Some Lineage in group do not have a cross reactivity file and are not present in covsonar data nor in results/ folder:" + " ".join(["%s"%var for var in not_pres])
             sys.exit(to_print)
             
         antigen_list = []
         k = loc_num_anti + 1
-        while k<13+len(Lin_list)+num_antigen:
+        pdb.set_trace()
+        while k<14+len(Lin_list)+num_antigen:
             antigen = str(sys.argv[k])
             antigen_list.append(antigen)
             k +=1
+            
         for i in range(len(Lin_list)):
             lin_sim = Lin_list[i]
             Cross_react_dic = cross_list[i]
