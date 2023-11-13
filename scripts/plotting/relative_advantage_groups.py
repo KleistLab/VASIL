@@ -75,12 +75,19 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     ax = fig.add_subplot(1, 1, 1)
     ### end of observation line
     ax.axvline(x = len(t_dates) - 1, ymin = -1, ymax = 1, ls = "--", linewidth = 2, color = "grey")
-
     # different axis for proportions
     ax_twin = ax.twinx()
-
-    status_list = []
     
+    ### Separate figure for proportions
+    PreFig(xsize = 20, ysize = 20)
+    fig_prop = plt.figure(figsize = (9, 7))
+    ax_prop = fig_prop.add_subplot(1, 1, 1)
+    
+    PreFig(xsize = 20, ysize = 20)
+    fig = plt.figure(figsize = (9, 7))
+    ax = fig.add_subplot(1, 1, 1)
+    
+    status_list = []
     Pseudo_prop = np.zeros((len(t_prop)))
     for k in range(len(lineage_list)):
         splited_var = np.array(lineage_list[k].split("/"))
@@ -200,8 +207,10 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         
         inds_dates = np.arange(0,len(t_dates),1)
         ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lineage_list[k])
-        ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lineage_list[k])
+        ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = "Spike Group"+lineage_list[k])
         status_list.append("Done")
+        
+        ax_prop.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lineage_list[k])
         
         ax_k.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lineage_list[k])
         ax_k_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lineage_list[k])
@@ -349,8 +358,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     ax.set_xticks(perday_orig)
     ax.set_xticklabels(date_ticks,
         rotation = 45, horizontalalignment = "right")
-
-    #ax_twin.set_ylim((-0.02, 0.02))
     
     ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
     ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
@@ -359,9 +366,48 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_groups.pdf")
     pdf.savefig(fig, bbox_inches = "tight")
     pdf.close()
- 
     fig.savefig(sys.argv[w_save]+"/relative_fitness_groups.svg", bbox_inches = "tight")
     plt.close()
+    
+    
+    # Save spikegroup_proportions
+    ymin, ymax = ax_prop.get_ylim()
+    ax_prop.set_ylim(ymin, ymax)
+    ax.set_xticks(perday_orig)
+    ax.set_xticklabels(date_ticks,
+        rotation = 45, horizontalalignment = "right")
+    
+    if (x_min is not None):
+        ax_prop.set_xlim((x_min1, x_max1))
+        t_dates_show = np.array(t_dates)[x_min1:x_max1+1]
+    else:
+        t_dates_show = t_dates
+    
+    perday = np.arange(0,len(t_dates_show), pp)
+    date_ticks = t_dates_show[perday].tolist()
+    
+    if day_prop[len(day_prop) - 1] not in date_ticks:
+        n=list(day_prop).index(date_ticks[-1])+pp
+        while n<len(day_prop)-1:
+            date_ticks.append(day_prop[n])
+            perday = np.append(perday, n)
+            n += pp
+        date_ticks.append(day_prop[len(t_prop) - 1])
+        perday = np.append(perday, len(t_prop) - 1)
+
+    if x_min is not None:
+        perday_orig = []
+        for i in range(len(np.array(date_ticks))):
+            perday_orig.append(list(t_dates).index(date_ticks[i]))
+    else:
+        perday_orig = perday
+        
+    ax_prop.set_ticsks(perday_orig)
+    ax_prop.set_ticks(date_ticks)
+    pdf2 = PdfPages(sys.argv[w_save]+"/Groups_proportions.pdf")
+    ax_prop.set_ylabel("Frequency (daily %%)", fontsize = 20)
+    pdf2.close()
+    
     return status_list
 
 num_groups = int(sys.argv[7])
