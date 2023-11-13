@@ -33,6 +33,7 @@ if config["plot_groups"]:
 if config["p_neut_groups"]:
     rule_all_common.append("plots/P_neut_PK_groups/plot_status.csv"),
 
+
 rule all:
     input:
         rule_all_common,
@@ -86,6 +87,7 @@ if config["fit_lineage_focus"]:
         shell:
             "python {workflow.basedir}/scripts/plotting/relative_advantage.py {input.ES_lin} {input.spikes_freqs} {params.threshold} {params.lineage_focus} {input.mean_trend} {output.res_dir} {params.time_start} {params.time_stop}"
 
+
 if config["p_neut"]:
 
     rule plot_pneut:
@@ -95,12 +97,13 @@ if config["p_neut"]:
         params:
             lin_name=config["lineage_focus"],
             col_pneut=config["color_pneut"],
-            antigen=config["antigen"]
+            antigen=config["antigen"],
         output:
             res_dir=directory("plots/P_neut_PK_lineage_focus/"),
             res="plots/P_neut_PK_lineage_focus/plot_status.csv",
         shell:
             "python {workflow.basedir}/scripts/plotting/P_neut.py {input.pk_file} {input.pneut_file} {params.col_pneut} {params.lin_name} {output.res_dir} {params.antigen}"
+
 
 if config["plot_groups"]:
 
@@ -122,6 +125,7 @@ if config["plot_groups"]:
         shell:
             "python {workflow.basedir}/scripts/plotting/relative_advantage_groups.py {input.ES_lin_dir} {input.mean_trend} {input.spikes_freqs} {params.threshold} {params.time_start} {params.time_stop} {params.len_groups} {output.res_dir} {params.lineage_focus} {params.col_groups}"
 
+
 if config["p_neut_groups"]:
 
     rule plot_pneut_groups:
@@ -138,6 +142,7 @@ if config["p_neut_groups"]:
             res="plots/P_neut_PK_groups/plot_status.csv",
         shell:
             "python {workflow.basedir}/scripts/plotting/P_neut_groups.py {input.pk_file} {input.pneut_dir} {output.res_dir} {params.len_groups} {params.lin_name} {params.col_pneut} {params.antigen}"
+
 
 if config["all_fit"]:
 

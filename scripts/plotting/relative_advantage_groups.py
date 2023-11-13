@@ -83,10 +83,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     fig_prop = plt.figure(figsize = (9, 7))
     ax_prop = fig_prop.add_subplot(1, 1, 1)
     
-    PreFig(xsize = 20, ysize = 20)
-    fig = plt.figure(figsize = (9, 7))
-    ax = fig.add_subplot(1, 1, 1)
-    
     status_list = []
     Pseudo_prop = np.zeros((len(t_prop)))
     for k in range(len(lineage_list)):
@@ -106,7 +102,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         # different axis for proportions
         ax_k_twin = ax_k.twinx()
         
-        Pseudo_done = []
         for x in range(len(splited_var)):
             lineage = splited_var[x]
             try:
@@ -137,6 +132,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
             
             # change in relative frequency from genomic surveillance data 
             Pseudo_prop = np.zeros((len(t_prop)))
+            Pseudo_done = []
             if lineage in list(Pseudogroup_dic.keys()):
                 if "Spike. " + Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
                     if x == 0:
@@ -147,7 +143,9 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                     if Pseudogroup_dic[lineage] not in Pseudo_done:
                         Pseudo_done.append(Pseudogroup_dic[lineage])
                         num_pseudo +=1
-                        
+                        lab_k = "Spike Group"+lineage
+                    else:
+                        lab_k = Pseudo_done[Pseudo_done.index(Pseudogroup_dic[lineage])] +"/"+lineage
                     #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
                     #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
                 elif lineage in lineage_freq.columns.astype(str):
@@ -160,6 +158,9 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                     if "Placeholder"+ lineage not in Pseudo_done:
                         Pseudo_done.append("Placeholder"+ lineage)
                         num_pseudo +=1
+                        lab_k = lineage
+                    else:
+                        lab_k = lineage
             else:
                 if lineage in lineage_freq.columns.astype(str):
                     if x == 0:
@@ -171,11 +172,15 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                     if "Placeholder"+lineage not in Pseudo_done:
                         Pseudo_done.append("Placeholder"+ lineage)
                         num_pseudo +=1
+                    
+                    lab_k = lineage
                 else:
                     if x == 0:
                         Pseudo_Prop = ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
                     else:
                         Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
+                        
+                    lab_k = lineage
         
         if num_avail !=0:
             ES_ranges = ES_sum/num_avail# compute the mean
@@ -207,10 +212,9 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         
         inds_dates = np.arange(0,len(t_dates),1)
         ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lineage_list[k])
-        ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = "Spike Group"+lineage_list[k])
-        status_list.append("Done")
+        ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lineage)
         
-        ax_prop.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lineage_list[k])
+        ax_prop.plot(t_prop, 100*Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
         
         ax_k.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lineage_list[k])
         ax_k_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lineage_list[k])
@@ -281,8 +285,9 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
             rotation = 45, horizontalalignment = "right")
     
         #ax_twin.set_ylim((-0.02, 0.02))
-        
+
         ax_k.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+        ax_k.axhline(xmin = 0, xmax = len(t_prop), ls = "--", linewidth = 2, color = "black")
         ax_k_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
         ax_k.set_ylabel("Relative fitness", fontsize = 20)
         ax_k_twin.set_ylabel("Variant abundance (daily)", fontsize = 20)
@@ -292,6 +297,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
  
         fig_k.savefig(sys.argv[w_save]+"/relative_fitness_%s.svg"%(lineage_list[k].replace("/", "_")), bbox_inches = "tight")
         plt.close()
+        status_list.append("Done")
         
     ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
     
@@ -354,7 +360,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
             pass
     else:
         perday_orig = perday
-        
+    
+    ax.axvline(x = len(t_dates) - 1, ymin = -1, ymax = 1, ls = "--", linewidth = 2, color = "grey")
     ax.set_xticks(perday_orig)
     ax.set_xticklabels(date_ticks,
         rotation = 45, horizontalalignment = "right")
@@ -369,6 +376,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     fig.savefig(sys.argv[w_save]+"/relative_fitness_groups.svg", bbox_inches = "tight")
     plt.close()
     
+
     
     # Save spikegroup_proportions
     ymin, ymax = ax_prop.get_ylim()
@@ -377,14 +385,20 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     ax.set_xticklabels(date_ticks,
         rotation = 45, horizontalalignment = "right")
     
-    if (x_min is not None):
-        ax_prop.set_xlim((x_min1, x_max1))
-        t_dates_show = np.array(t_dates)[x_min1:x_max1+1]
-    else:
-        t_dates_show = t_dates
+    try:
+        x_min1 = day_prop.index(str(sys.argv[5]))
+        x_max1 = day_prop.index(str(sys.argv[6]))
+    except:
+        x_min = None
     
-    perday = np.arange(0,len(t_dates_show), pp)
-    date_ticks = t_dates_show[perday].tolist()
+    if (x_min1 is not None):
+        ax_prop.set_xlim((x_min1, x_max1))
+        t_show = np.array(day_prop)[x_min1:x_max1+1]
+    else:
+        t_show = day_prop
+    
+    perday = np.arange(0,len(t_show), pp)
+    date_ticks = np.array(t_show)[perday].tolist()
     
     if day_prop[len(day_prop) - 1] not in date_ticks:
         n=list(day_prop).index(date_ticks[-1])+pp
@@ -394,18 +408,21 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
             n += pp
         date_ticks.append(day_prop[len(t_prop) - 1])
         perday = np.append(perday, len(t_prop) - 1)
-
-    if x_min is not None:
+        
+    if x_min1 is not None:
         perday_orig = []
         for i in range(len(np.array(date_ticks))):
-            perday_orig.append(list(t_dates).index(date_ticks[i]))
+            perday_orig.append(list(day_prop).index(date_ticks[i]))
     else:
         perday_orig = perday
-        
-    ax_prop.set_ticsks(perday_orig)
-    ax_prop.set_ticks(date_ticks)
+    
+    ax_prop.set_xticks(perday_orig)
+    ax_prop.set_xticklabels(date_ticks,rotation = 45, horizontalalignment = "right")
+    ax_prop.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
     pdf2 = PdfPages(sys.argv[w_save]+"/Groups_proportions.pdf")
-    ax_prop.set_ylabel("Frequency (daily %%)", fontsize = 20)
+    ax_prop.set_ylabel("Frequency (daily %)", fontsize = 20)
+    pdf2.savefig(fig_prop, bbox_inches = "tight")
+    fig_prop.savefig(sys.argv[w_save]+"/Groups_proportions.svg")
     pdf2.close()
     
     return status_list
