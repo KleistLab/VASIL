@@ -591,38 +591,46 @@ if Lin_name != "ALL":
                     k +=1
                 except:
                     try:
-                        file1 = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") # Check that this is the file you want to load
-                        Cross_dic = pickle.load(file1)
-                        variants_cross = list(Cross_dic["variant_list"])
-                        if lin_sim in Pseudogroup_dic.keys():
-                            ### insert lin_sim in the position of it's Pseudogroup
-                            Cross_dic["variant_list"][variants_cross.index(Pseudogroup_dic[lin_sim])] = lin_sim
-                        else:
-                            not_pres.append(lin_sim)
+                        try:
+                            file1 = open("results/Cross_react_dic_spikegroups_%s.pck"%lin_sim, "rb") # Check that this is the file you want to load
+                            Cross_dic = pickle.load(file1)
                             cross_list.append(Cross_dic)
                             file1.close()
-                            Lin_list.append(lin_sim)
+                        except:
+                            try:
+                                file1 = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") # Check that this is the file you want to load
+                                Cross_dic = pickle.load(file1)
+                                variants_cross = list(Cross_dic["variant_list"])
+                                file1.close()
+                                if lin_sim in Pseudogroup_dic.keys():
+                                    ### insert lin_sim in the position of it's Pseudogroup
+                                    Cross_dic["variant_list"][variants_cross.index(Pseudogroup_dic[lin_sim])] = lin_sim
+                                    cross_list.append(Cross_dic)
+                                    file1.close()
+                                    Lin_list.append(lin_sim)
+                                else:
+                                    not_pres.append(lin_sim)
+                            except:
+                                try:
+                                    file1 = open("results/Cross_react_dic_spikegroups_present.pck", "rb") # Check that this is the file you want to load
+                                    Cross_dic = pickle.load(file1)
+                                    variants_cross = list(Cross_dic["variant_list"])
+                                    file1.close()
+                                    if lin_sim in Pseudogroup_dic.keys():
+                                        ### insert lin_sim in the position of it's Pseudogroup
+                                        Cross_dic["variant_list"][variants_cross.index(Pseudogroup_dic[lin_sim])] = lin_sim
+                                        cross_list.append(Cross_dic)
+                                        Lin_list.append(lin_sim)
+                                    else:
+                                        not_pres.append(lin_sim)   
+                                except:
+                                    pass
                         k +=1
                     except:
-                        try:
-                            file1 = open("results/Cross_react_dic_spikegroups_present.pck", "rb") # Check that this is the file you want to load
-                            Cross_dic = pickle.load(file1)
-                            variants_cross = list(Cross_dic["variant_list"])
-                            if lin_sim in Pseudogroup_dic.keys():
-                                ### insert lin_sim in the position of it's Pseudogroup
-                                Cross_dic["variant_list"][variants_cross.index(Pseudogroup_dic[lin_sim])] = lin_sim
-                                cross_list.append(Cross_dic)
-                                file1.close()
-                                Lin_list.append(lin_sim)
-                            else:
-                                not_pres.append(lin_sim)
-                            
-                            k +=1
-                        except:
-                            pass                         
+                        k +=1
                     
         if len(not_pres)!=0:
-            to_print = "Some Lineage in group do not have a cross reactivity file and are not present in covsonar data:" + " ".join(["%s"%var for var in not_pres])
+            to_print = "Some Lineage in group do not have a cross reactivity file and are not present in covsonar data nor in results/ folder:" + " ".join(["%s"%var for var in not_pres])
             sys.exit(to_print)
             
         antigen_list = []
