@@ -18,7 +18,11 @@ except:
 fq_cols = frequency_lineage_df.columns.astype(str)
 unique_lineage = fq_cols[fq_cols != "date"]
 days_prop = frequency_lineage_df["date"] ### already matched with timeline of infection -- including excess
-frequency_lineage = frequency_lineage_df.to_numpy()[:, (fq_cols != "date")&(fq_cols != "week_num")].T.astype(float)
+
+if "week_num" in list(fq_cols):
+    frequency_lineage = frequency_lineage_df.to_numpy()[:, (fq_cols != "date")&(fq_cols != "week_num")].T.astype(float)
+else:
+    frequency_lineage = frequency_lineage_df.to_numpy()[:, fq_cols != "date"].T.astype(float)
 
 """Load spikegroups and mutation data  """
 variant_mut_data = pd.read_csv(sys.argv[2])

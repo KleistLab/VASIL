@@ -117,13 +117,16 @@ frequency_lineage = np.divide(freq_rounded, NormProp, out = np.zeros(freq_rounde
 freq_dic = {}
 freq_dic["date"] = list(days_incidence[where_first_day:]) + list(extra_days)
 
-""" Save frequency calendar week """
-KW_all = list(covsonar_data["week_num"].values.astype(str))
-KW_kept = []
-for i in range(len(freq_dic["date"])):
-    KW_kept.append(KW_all[list(days_prop).index(freq_dic["date"][i])])
-
-freq_dic["week_num"] = KW_kept                    
+try:
+    """ Save frequency calendar week """
+    KW_all = list(covsonar_data["week_num"].values.astype(str))
+    KW_kept = []
+    for i in range(len(freq_dic["date"])):
+        KW_kept.append(KW_all[list(days_prop).index(freq_dic["date"][i])])
+        freq_dic["week_num"] = KW_kept       
+except:
+    print("Consonar data does not have the column week_num of the calendar week")
+    
 for x in range(len(unique_lineage_timeframe)):
     freq_dic[unique_lineage_timeframe[x]] = frequency_lineage[x, :]
 
