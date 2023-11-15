@@ -101,9 +101,18 @@ frequency_lineage = np.divide(freq_rounded, NormProp, out = np.zeros(freq_rounde
 ### check
 """ Save frequency data """
 freq_dic = {}
-freq_dic["date"] = list(days_incidence[where_first_day:]) + list(extra_days)                       
+freq_dic["date"] = list(days_incidence[where_first_day:]) + list(extra_days)
+
+""" Save frequency calendar week """
+KW_all = list(covsonar_data["week_num"].values.astype(str))
+KW_kept = []
+for i in range(len(freq_dic["date"])):
+    KW_kept.append(KW_all[list(days_prop).index(freq_dic["date"][i])])
+
+freq_dic["week_num"] = KW_kept                    
 for x in range(len(unique_lineage_timeframe)):
     freq_dic[unique_lineage_timeframe[x]] = frequency_lineage[x, :]
+
 
 freq_df = pd.DataFrame(freq_dic, index = np.arange(0, len(freq_dic["date"])))
 freq_df.to_csv(sys.argv[5]) ### output file
