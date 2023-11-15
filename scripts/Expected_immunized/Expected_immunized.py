@@ -636,7 +636,6 @@ if Lin_name != "ALL":
             
         antigen_list = []
         k = loc_num_anti + 1
-        pdb.set_trace()
         while k<14+len(Lin_list)+num_antigen:
             antigen = str(sys.argv[k])
             antigen_list.append(antigen)
