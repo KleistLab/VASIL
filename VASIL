@@ -80,17 +80,18 @@ rule get_epitope_landscape:
         "Rscript {workflow.basedir}/scripts/epitopelandscape/epitope_landscape.R {input.Escape_data} {input.AB_mapping} {output.dir}"
 
 
-rule get_lineages_frequencies:
-    input:
-        cases=config["cases"],
-        covsonar=config["covsonardata"],
-    params:
-        date_start=config["date_start"],
-        date_end=config["date_end"],
-    output:
-        result="results/Daily_Lineages_Freq.csv",
-    shell:
-        "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.cases} {input.covsonar} {params.date_start} {params.date_end} {output.result}"
+if config["freq_lin"]:
+    rule get_lineages_frequencies:
+        input:
+            cases=config["cases"],
+            covsonar=config["covsonardata"],
+        params:
+            date_start=config["date_start"],
+            date_end=config["date_end"],
+        output:
+            result="results/Daily_Lineages_Freq.csv",
+        shell:
+            "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.cases} {input.covsonar} {params.date_start} {params.date_end} {output.result}"
 
 
 rule get_spikegroups_frequencies:

@@ -1,5 +1,7 @@
 # 1. Full path to covsonar data
-covsonardata: "Stichprobe_RKI-Jul2021_to_9thAug2023_KW.tsv"
+covsonardata: "covsonar_mock.tsv"
+freq_lin: FALSE ## if FALSE results/Daily_Lineages_Freq.csv is required (set this TRUE only on first code run)
+# prefix for mutation_data filename
 prefix: "mutationprofile"
 mutation_threshold: 0.75
 # 2a. Full path to GInPipe incidence data
@@ -7,7 +9,7 @@ cases: "caseAscertainmentTable_reportedCasesRatio.csv"
 # 2b. Fixed total population size for the region of interest
 total_population: 84334787
 # 3. Full path to DMS escape fraction data
-escape_data: "escape_data_original_202309.csv"
+escape_data: "escape_data_mock.csv"
 antibody_mapping: "antibody_classes.csv"
 # 4. Full path to Clinical VE data for delta variant
 VE_delta: "Clinical_Delta_VE.xlsx"

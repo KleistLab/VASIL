@@ -1,5 +1,7 @@
 # 1. Full path to covsonar data
 covsonardata: "path/to/covsonar_data.tsv"
+freq_lin: FALSE ## if FALSE results/Daily_Lineages_Freq.csv is required (set this TRUE only on first code run)
+# prefix for mutation_data filename
 prefix: "mutationprofile"
 mutation_threshold: 0.75
 # 2a. Full path to GInPipe incidence data
