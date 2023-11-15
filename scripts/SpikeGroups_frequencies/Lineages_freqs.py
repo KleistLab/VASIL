@@ -45,7 +45,7 @@ else:
 
 extra_days = []
 """
-### Restricted to frequency timeline to date_end was necessary in older versions, this will be deleted later
+### Restricted to frequency timeline to date_end was necessary in older versions (this part of code will be deleted later)
 if extra != 0:
     for k in range(extra):
         if len(days_incidence[where_first_day:]) + k <= list(unique_days_prop).index(date_end):
@@ -68,7 +68,7 @@ def sub_func2(k, x, days_prop, days_incidence, lineages_all, unique_lineage):
     return res
 
 """ 
-### Restrict to lineages to lineages until date_end was necessary in older versions but now the feature is directly implemented in scripts/mutationprofile/mutation_profile.R this will be deleted later
+### Restricting to lineages until date_end was necessary in older versions but now the feature is directly implemented in scripts/mutationprofile/mutation_profile.R (this part of code will be deleted later)
 between_dates = unique_days_prop_all[unique_days_prop_all.index(date_start):unique_days_prop_all.index(date_end)+1]
 to_keep = []
 for i in range(len(days_prop)):
