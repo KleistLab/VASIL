@@ -20,7 +20,7 @@ unique_lineage = fq_cols[fq_cols != "date"]
 days_prop = frequency_lineage_df["date"] ### already matched with timeline of infection -- including excess
 frequency_lineage = frequency_lineage_df.to_numpy()[:, fq_cols != "date"].T.astype(float)
 
-"""Load lineage data  """
+"""Load spikegroups and mutation data  """
 variant_mut_data = pd.read_csv(sys.argv[2])
 variant_x_name_orig = np.array(variant_mut_data["lineage"].values).astype(str)
 mut_x_sites_orig = np.array(variant_mut_data["RBD_NTD_mutations"].values).astype(str)
@@ -50,10 +50,13 @@ for x in range(len(Lineages_list)):
     else:
         x_lin = list(unique_lineage).index(variant)
         variant_proportion_orig[x, :] = proportion_lineage[x_lin, :]
+        """
+        # used in previous versions, now obsolete, spikegroups and mutation profiles are restricted a specific timeline we do not need to care for those that have misssing mutation profiles
         if (variant not in list(mut_x_sites_dic.keys())) & (variant not in Grouped_in_Spike):
             prop_miss = proportion_lineage[x_lin, :]
             missing_var_prop[variant] = prop_miss 
             print("Missing mutation profile for variant %s :\n"%variant, "proportion (min, mean, max):", (np.min(prop_miss), np.mean(prop_miss), np.max(prop_miss)))
+        """
             
 """ Merge proportions by Spike Groups"""
 SpikeGroups_list = []
@@ -62,7 +65,6 @@ variant_x_pseudo = np.array(Pseudogroups["lineage"].values).astype(str)
 pseudo_members = np.array(Pseudogroups["group"].values).astype(str)
 
 unique_group = np.unique(pseudo_members)
-pdb.set_trace()
 variant_proportion = np.zeros((len(unique_group), len(days_prop)))
 pseudo_members_dic = {}
 SpikeGroups_dic  = {}
