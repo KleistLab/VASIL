@@ -81,6 +81,7 @@ rule get_epitope_landscape:
 
 
 if config["freq_lin"]:
+
     rule get_lineages_frequencies:
         input:
             cases=config["cases"],
