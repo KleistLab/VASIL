@@ -36,6 +36,7 @@ where_first_day = list(days_incidence).index(date_start)
 unique_days_prop_all = list(np.unique(days_prop))
 ### make sure that dates are sorted
 unique_days_prop_all.sort(key = lambda date: datetime.strptime(date, "%Y-%m-%d")) 
+
 unique_days_prop = np.array(unique_days_prop_all[unique_days_prop_all.index(date_start):])
 if len(unique_days_prop)>len(days_incidence[where_first_day:]):
     extra = len(unique_days_prop) - len(days_incidence[where_first_day:])
