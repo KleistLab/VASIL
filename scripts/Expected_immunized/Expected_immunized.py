@@ -400,10 +400,11 @@ except:
 	pass
 
 ### Make sure proportions axis 0 is aligned with Spikegroup_list
+prop_start = list(frequency_spk_df["date"]).index(date_start)
 spikegroups_freq = np.zeros((len(SpikeGroups_list), len(t)))
 for i in range(len(SpikeGroups_list)):
     if SpikeGroups_list[i]!="Wuhan-Hu-1":
-        spikegroups_freq[i, :] = frequency_spk_df["Spike. "+SpikeGroups_list[i]][:len(t)]
+        spikegroups_freq[i, :] = frequency_spk_df["Spike. "+SpikeGroups_list[i]][prop_start:prop_start+len(t)]
 
 NormProp = np.sum(spikegroups_freq, axis = 0)
 prop_rounded = np.round(spikegroups_freq,decimals = 10)
