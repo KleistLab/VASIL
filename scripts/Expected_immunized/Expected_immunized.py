@@ -675,7 +675,7 @@ else:
         if SpikeGroups_list[j] in variants_in_cross:
             SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
     SpikeGroups_list_index = np.array(SpikeGroups_list_index)
-    
+    add_print = False
     if len(SpikeGroups_list_index)!=len(SpikeGroups_list):
         try: ### use updated cross ALL including missing if it was computed
             file1 = open("results/Cross_react_dic_spikegroups_present.pck", "rb") 
@@ -690,9 +690,10 @@ else:
                 if SpikeGroups_list[j] in variants_in_cross:
                     SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
             SpikeGroups_list_index = np.array(SpikeGroups_list_index)
-        
+            
         except:
             # readjust variant proportions to spikegroups available in cross react
+            add_print = True
             spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
             for j in range(len(SpikeGroups_list_index)):
                 w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
@@ -705,7 +706,10 @@ else:
     
     for i in range(len(SpikeGroups_list)):
         if SpikeGroups_list[i] in variants_in_cross:
-            print("Compute E[immunized] for %d out of %d spikegroups + Wuhan-Hu-1"%(i, len(SpikeGroups_list)-1))
+            if add_print:
+                print("A smaller set of spikesgroups are being simulated for all_il = TRUE \n Make sure this is what you want otherwise first set the parameter cross_missing to TRUE")
+                
+            print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i, len(SpikeGroups_list)-1))
             status_var.append(ei_util(SpikeGroups_list[i], 
                                       variants_in_cross = variants_in_cross,
                                       antigen_list = antigen_list,
