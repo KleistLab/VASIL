@@ -5,6 +5,7 @@ import numpy as np
 import pickle
 import re
 import sys
+import pdb
 #import pdb
 
 """ Loads lineage frequency data aready matched with timeline of infection """
@@ -61,6 +62,7 @@ variant_x_pseudo = np.array(Pseudogroups["lineage"].values).astype(str)
 pseudo_members = np.array(Pseudogroups["group"].values).astype(str)
 
 unique_group = np.unique(pseudo_members)
+pdb.set_trace()
 variant_proportion = np.zeros((len(unique_group), len(days_prop)))
 pseudo_members_dic = {}
 SpikeGroups_dic  = {}

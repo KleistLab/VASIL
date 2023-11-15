@@ -18,7 +18,7 @@ days_incidence = list(Population_Data['date'])
 
 """Simulation timeframe"""
 date_start = sys.argv[3]
-date_end = sys.argv[4]
+#date_end = sys.argv[4]
 
 #### covsonar data 
 try:
@@ -66,13 +66,16 @@ def sub_func2(k, x, days_prop, days_incidence, lineages_all, unique_lineage):
     res = np.sum((days_prop == unique_days_prop[len(days_incidence[where_first_day:]) + k]) & (lineages_all == unique_lineage[x]))
     return res
 
-"""Restrict to lineages that are found within the simulation timeframe"""    
+""" 
+### Restrict to lineages to lineages until date_end was necessary in older versions but now the feature is directly implemented in scripts/mutationprofile/mutation_profile.R this will be deleted later
 between_dates = unique_days_prop_all[unique_days_prop_all.index(date_start):unique_days_prop_all.index(date_end)+1]
 to_keep = []
 for i in range(len(days_prop)):
     if days_prop[i] in between_dates:
         to_keep.append(i)
 unique_lineage_timeframe = np.unique(lineages_all[np.array(to_keep)])
+"""
+unique_lineage_timeframe = np.unique(lineages_all)
 
 """Compute lineage frequencies"""
 frequency_lineage = np.zeros((len(unique_lineage_timeframe), total_days)) # indexing of t correspondis to timeline of infection days_incidence
