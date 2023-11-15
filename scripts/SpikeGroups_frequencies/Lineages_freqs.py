@@ -43,11 +43,19 @@ else:
     extra = 0
 
 extra_days = []
+"""
+### Restricted to frequency timeline to date_end was necessary in older versions, this will be deleted later
 if extra != 0:
     for k in range(extra):
         if len(days_incidence[where_first_day:]) + k <= list(unique_days_prop).index(date_end):
             extra_days.append(unique_days_prop[len(days_incidence[where_first_day:]) + k])
-        
+"""    
+
+if extra != 0:
+    for k in range(extra):
+        if len(days_incidence[where_first_day:]) + k <= len(unique_days_prop) - 1:
+            extra_days.append(unique_days_prop[len(days_incidence[where_first_day:]) + k])
+            
 total_days = len(days_incidence[where_first_day:]) + len(extra_days)
         
 def sub_func(s, x, days_prop, days_incidence, lineages_all, unique_lineage):
