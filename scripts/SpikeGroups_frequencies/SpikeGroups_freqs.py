@@ -97,12 +97,18 @@ for x in range(len(unique_group)):
     
     pseudo_members_dic[variant_x_pseudo[pseudo_members == unique_group[x]][0]] = unique_group[x]
 
-""" Check that all lineages were grouped """ 
+""" Check that all lineages were grouped  (obsolete) """ 
+"""
 test = False
 for x in check_var:
     test = x not in Lineages_list
     if test:
         print("Lineage not included in pseudogroup list", x)
+"""
+
+NormProp = np.sum(variant_proportion, axis = 0)
+prop_rounded = np.round(variant_proportion,decimals = 10)
+variant_proportion = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
 
 """ Save frequency pseudogroup data """
 freq_dic = {}
