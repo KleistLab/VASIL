@@ -82,14 +82,28 @@ unique_lineage_timeframe = np.unique(lineages_all)
 frequency_lineage = np.zeros((len(unique_lineage_timeframe), total_days)) # indexing of t correspondis to timeline of infection days_incidence
 for x in range(len(unique_lineage_timeframe)):
     pfunc = partial(sub_func, x = x, days_prop = days_prop, days_incidence = days_incidence, lineages_all = lineages_all, unique_lineage = unique_lineage_timeframe)
-    res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(days_incidence[where_first_day:])))) 
+    try:
+        res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(days_incidence[where_first_day:]))))
+    except:
+        try:
+            res = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc)(d) for d in range(len(days_incidence[where_first_day:])))) 
+        except: 
+            res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(days_incidence[where_first_day:])))) 
+
     
     for s in range(len(days_incidence[where_first_day:])):
         frequency_lineage[x, s] = res[s]
         
     if len(unique_days_prop)>len(days_incidence[where_first_day:]):
         pfunc2 = partial(sub_func2, x = x, days_prop = days_prop, days_incidence = days_incidence, lineages_all = lineages_all, unique_lineage = unique_lineage_timeframe)
-        res2 = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc2)(d) for d in range(extra))) 
+        try:
+            res2 = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc2)(d) for d in range(extra))) 
+        except:
+            try:
+                res2 = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc2)(d) for d in range(extra))) 
+            except:
+                res2 = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc2)(d) for d in range(extra))) 
+                
         for k in range(len(extra_days)):
             frequency_lineage[x, len(days_incidence[where_first_day:]) + k] = res2[k]
  
