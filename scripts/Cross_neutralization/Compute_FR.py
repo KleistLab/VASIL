@@ -541,18 +541,22 @@ elif Lin_name == "ALL":
     
           
     for ab in Ab_classes:
-        print("Assess all spikegroups with the NTD-RBD mutation positions ")
-        print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes))
         if ab!= "NTD":
             FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
+            num_to_do = 0
             for s1 in range(len(g)):
+                print("Assess all spikegroups with the NTD-RBD mutation positions ")
+                print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes))
+                print("Run Cross for %d out of %d (to achieve %d/%d spikegroups)"%(s1+1, len(g), num_to_do+len(g[s1]), len(variant_x_names_cross)))
                 for s2 in range(len(g)):
                     Cross_Lin, Missed, Greater_one = cross_reactivity((g_var[s1], g_var[s2]), 
                                                                        Escape_Fraction, 
                                                                        [ab],
-                                                                       mut_x_sites_dic, joblib=joblib)
+                                                                       mut_x_sites_dic, joblib=True)
             
                     FRxy_ab[g[s1], :][:, g[s2]] = Cross_Lin[ab]
+                
+                num_to_do +=len(g[s2])
     
             Cross_react_dic[ab] = FRxy_ab
         a +=1
@@ -560,7 +564,7 @@ elif Lin_name == "ALL":
     
     Cross_react_dic["variant_list"] = list(variant_x_names_cross)
     """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""  
-    print("Cross reactivity Epitope NTD")
+    print("Cross reactivity spikegroups for Epitope NTD")
     n = len(Cross_react_dic["variant_list"])
     FR_NTD = np.ones((n, n))
     for i in range(n):
