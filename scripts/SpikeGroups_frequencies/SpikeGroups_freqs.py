@@ -51,7 +51,7 @@ proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_round
 Lineages_list = list(unique_lineage)
 variant_proportion_orig = np.zeros((len(Lineages_list), len(days_prop)))
 if weeks is not None:
-    weekly_prop = np.zeros((len(Lineages_list), len(weeks_all)))
+    weekly_prop = np.zeros((len(Lineages_list), len(weeks)))
 #missing_var_prop = {}
 for x in range(len(Lineages_list)):
     variant = Lineages_list[x]
@@ -60,8 +60,7 @@ for x in range(len(Lineages_list)):
     if weeks is not None:
         for wk in range(len(weeks)):
             locs_wk = np.where(np.array(weeks_all) == weeks[wk])[0]
-            # weekly_prop[x, wk] = np.sum(proportion_lineage[x_lin, locs_wk])
-            weekly_prop[x, locs_wk] = proportion_lineage[x_lin, locs_wk]
+            weekly_prop[x, wk] = np.sum(proportion_lineage[x_lin, locs_wk])
     
     """
     # used in previous versions, now obsolete, spikegroups and mutation profiles are restricted a specific timeline we do not need to care for those that have misssing mutation profiles
@@ -77,9 +76,6 @@ for x in range(len(Lineages_list)):
 filt = float(sys.argv[7])
 if filt !=0:
     ## Filter
-    NormProp = np.sum(weekly_prop, axis = 0)
-    prop_rounded = np.round(weekly_prop, decimals = 10)
-    weekly_prop = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
     keep_inds = np.any((weekly_prop>=filt), axis = 1)
     Lineages_list = list(np.array(Lineages_list)[keep_inds])
     variant_proportion_orig = variant_proportion_orig[keep_inds, :]
