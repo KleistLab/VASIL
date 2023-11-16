@@ -20,9 +20,12 @@ days_prop = frequency_lineage_df["date"] ### already matched with timeline of in
 
 if "week_num" in list(fq_cols):
     unique_lineage = fq_cols[(fq_cols != "date")&(fq_cols != "week_num")]
+    weeks_all = frequency_lineage_df["week_num"].astype(str)
+    weeks = np.unique(frequency_lineage_df["week_num"].astype(str))
     frequency_lineage = frequency_lineage_df.to_numpy()[:, (fq_cols != "date")&(fq_cols != "week_num")].T.astype(float)
 else:
     unique_lineage = fq_cols[fq_cols != "date"]
+    weeks = None
     frequency_lineage = frequency_lineage_df.to_numpy()[:, fq_cols != "date"].T.astype(float)
 
 """Load spikegroups and mutation data  """
@@ -45,39 +48,48 @@ prop_rounded = np.round(frequency_lineage,decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
 
 """Finalizing variant proportion parameter """
-Lineages_list = ["Wuhan-Hu-1"] + list(unique_lineage)
+Lineages_list = list(unique_lineage)
 variant_proportion_orig = np.zeros((len(Lineages_list), len(days_prop)))
-missing_var_prop = {}
+if weeks is not None:
+    weekly_prop = np.zeros((len(Lineages_list), len(weeks_all)))
+#missing_var_prop = {}
 for x in range(len(Lineages_list)):
     variant = Lineages_list[x]
-    if variant == "Wuhan-Hu-1":
-        variant_proportion_orig[x, :] = np.zeros(proportion_lineage.shape[1])
-    else:
-        x_lin = list(unique_lineage).index(variant)
-        variant_proportion_orig[x, :] = proportion_lineage[x_lin, :]
-        """
-        # used in previous versions, now obsolete, spikegroups and mutation profiles are restricted a specific timeline we do not need to care for those that have misssing mutation profiles
-        if (variant not in list(mut_x_sites_dic.keys())) & (variant not in Grouped_in_Spike):
-            prop_miss = proportion_lineage[x_lin, :]
-            missing_var_prop[variant] = prop_miss 
-            print("Missing mutation profile for variant %s :\n"%variant, "proportion (min, mean, max):", (np.min(prop_miss), np.mean(prop_miss), np.max(prop_miss)))
-        """
+    x_lin = list(unique_lineage).index(variant)
+    variant_proportion_orig[x, :] = proportion_lineage[x_lin, :]
+    if weeks is not None:
+        for wk in range(len(weeks)):
+            locs_wk = np.where(np.array(weeks_all) == weeks[wk])[0]
+            # weekly_prop[x, wk] = np.sum(proportion_lineage[x_lin, locs_wk])
+            weekly_prop[x, locs_wk] = proportion_lineage[x_lin, locs_wk]
+    
+    """
+    # used in previous versions, now obsolete, spikegroups and mutation profiles are restricted a specific timeline we do not need to care for those that have misssing mutation profiles
+    if (variant not in list(mut_x_sites_dic.keys())) & (variant not in Grouped_in_Spike):
+        prop_miss = proportion_lineage[x_lin, :]
+        missing_var_prop[variant] = prop_miss 
+        print("Missing mutation profile for variant %s :\n"%variant, "proportion (min, mean, max):", (np.min(prop_miss), np.mean(prop_miss), np.max(prop_miss)))
+    """
 
-try:
-    filt = float(sys.arg[7])
-except:
-    filt = 0
 
+
+### Load filtering threshold
+filt = float(sys.argv[7])
 if filt !=0:
     ## Filter
-    keep_inds = np.any(variant_proportion_orig>=filt, axis = 1)
-    Lineages_list = list(np.array(Lineages_list[keep_inds]))
+    NormProp = np.sum(weekly_prop, axis = 0)
+    prop_rounded = np.round(weekly_prop, decimals = 10)
+    weekly_prop = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
+    keep_inds = np.any((weekly_prop>=filt), axis = 1)
+    Lineages_list = list(np.array(Lineages_list)[keep_inds])
     variant_proportion_orig = variant_proportion_orig[keep_inds, :]
+    print("Number of kept lineages (appearing above %.3f in some calendar week): %d"%(filt, len(Lineages_list)))
 
+    
 NormProp = np.sum(variant_proportion_orig, axis = 0)
 prop_rounded = np.round(variant_proportion_orig, decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
-          
+         
 """ Merge proportions by Spike Groups"""
 SpikeGroups_list = []
 Pseudogroups = pd.read_csv(sys.argv[3])
@@ -87,7 +99,7 @@ pseudo_members = np.array(Pseudogroups["group"].values).astype(str)
 unique_group = np.unique(pseudo_members)
 variant_proportion = []
 SpikeGroups_dic  = {}
-SpikeGroups_dic ["Wuhan-Hu-1"] = "Wuhan-Hu-1" ### place holder for wild type
+SpikeGroups_dic["Wuhan-Hu-1"] = "Wuhan-Hu-1" ### place holder for wild type
 
 check_var = []
 for x in range(len(unique_group)):
@@ -111,7 +123,8 @@ for x in range(len(unique_group)):
         
             for Om in splited_var:
                 SpikeGroups_dic[Om] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
-    
+
+variant_proportion = np.array(variant_proportion)
 
 """ Check that all lineages were grouped  (obsolete) """ 
 """
