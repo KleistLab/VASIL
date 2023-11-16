@@ -416,7 +416,6 @@ NormProp = np.sum(spikegroups_freq, axis = 0)
 prop_rounded = np.round(spikegroups_freq,decimals = 10)
 spikegroups_proportion = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
 
-
 ### end of simulation
 def ei_util(Lin_name, variants_in_cross, antigen_list, 
             Cross_react_dic = None, save_pneut=None, w_save=len(sys.argv)-2, 

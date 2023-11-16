@@ -71,7 +71,6 @@ for x in range(len(Lineages_list)):
     """
 
 
-
 ### Load filtering threshold
 filt = float(sys.argv[7])
 if filt !=0:
