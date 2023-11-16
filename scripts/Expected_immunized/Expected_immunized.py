@@ -55,7 +55,13 @@ else:
     where_last_day = len(list(Population_Data['date']))
 
 t = np.arange(1, len(Population_Data['date'][:where_last_day]) + 1, 1)
-infection_data_corrected = Population_Data['minNTrue'].values[:where_last_day]
+
+cases_col = str(sys.argv[len(sys.argv) - 1])
+try:
+    infection_data_corrected = Population_Data[cases_col].values[:where_last_day]
+except:
+    sys.exit("The column %s was not found in case ascertainment data"%cases_col)
+    
 t_dates = Population_Data['date'].values[:where_last_day]
 days_incidence = list(Population_Data['date'][:where_last_day]) 
         
@@ -412,7 +418,10 @@ spikegroups_proportion = np.divide(prop_rounded, NormProp, out = np.zeros(prop_r
 
 
 ### end of simulation
-def ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic = None, save_pneut=None, w_save=len(sys.argv)-1, var_list_index = None, spikegroups_proportion_adjust=None):
+def ei_util(Lin_name, variants_in_cross, antigen_list, 
+            Cross_react_dic = None, save_pneut=None, w_save=len(sys.argv)-2, 
+            var_list_index = None, spikegroups_proportion_adjust=None):
+    
     variant_to_sim = [Lin_name]
     EI = {}
     EI["Days"] = days_incidence
@@ -423,53 +432,55 @@ def ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic = None, s
     if antigen_list == ["ALL"]:
         antigen_list = np.array(SpikeGroups_list[var_list_index])
     
-    if save_pneut in ("TRUE", "True"):
-        VE = {}
-        VE["Day since infection"] = t_conc
-        pfunc = partial(PNeut_Envelope, t=t_conc, 
-                            variants=[Lin_name], 
-                            variant_x_names = variants_in_cross, 
-                            Cross_react_dic = Cross_react_dic,
-                            c_dframe_dic = c_dframe_dic, 
-                            IC50xx_dic = IC50xx_dic, 
-                            antigen_list = antigen_list, 
-                            mean_IC50xx = True, 
-                            ) 
-        status = False
-        try:
-            jb_res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(antigen_list))))
-            status = True
-            print("run joblib.Parallel")
-        except:
+    if len(antigen_list) != 0:
+        if save_pneut in ("TRUE", "True"):
+            VE = {}
+            VE["Day since infection"] = t_conc
+            pfunc = partial(PNeut_Envelope, t=t_conc, 
+                                variants=[Lin_name], 
+                                variant_x_names = variants_in_cross, 
+                                Cross_react_dic = Cross_react_dic,
+                                c_dframe_dic = c_dframe_dic, 
+                                IC50xx_dic = IC50xx_dic, 
+                                antigen_list = antigen_list, 
+                                mean_IC50xx = True, 
+                                ) 
+            status = False
             try:
-                jb_res = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc)(d) for d in range(len(antigen_list))))
-                status=True
+                jb_res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(antigen_list))))
+                status = True
                 print("run joblib.Parallel")
             except:
-                jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(antigen_list))))
-                status=True
-                print("run joblib.Parallel")
-        
-        if status:
-             for i in range(len(antigen_list)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
-                 antigen = antigen_list[i]
-                 EnvD_Min,EnvD_Max = jb_res[i]
-                 VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
-                 VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
-        
-        else:
-           
-            for i in range(len(antigen_list)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
-                antigen = antigen_list[i]
-                EnvD_Min,EnvD_Max = PNeut_Envelope(1, t_conc, [Lin_name], variants_in_cross, Cross_react_dic, c_dframe_dic, IC50xx_dic, antigen_list = antigen_list, mean_IC50xx = True)
-                VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
-                VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
+                try:
+                    jb_res = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc)(d) for d in range(len(antigen_list))))
+                    status=True
+                    print("run joblib.Parallel")
+                except:
+                    jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(antigen_list))))
+                    status=True
+                    print("run joblib.Parallel")
             
-        """ Save P_Neut ranges"""
-        VE_df = pd.DataFrame(VE)
-        VE_df.to_csv(sys.argv[w_save]+"/P_neut_"+Lin_name+".csv")
-    else:
-        pass
+            if status:
+                 for i in range(len(antigen_list)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
+                     antigen = antigen_list[i]
+                     EnvD_Min,EnvD_Max = jb_res[i]
+                     VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
+                     VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
+            
+            else:
+               
+                for i in range(len(antigen_list)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
+                    antigen = antigen_list[i]
+                    EnvD_Min,EnvD_Max = PNeut_Envelope(1, t_conc, [Lin_name], variants_in_cross, Cross_react_dic, c_dframe_dic, IC50xx_dic, antigen_list = antigen_list, mean_IC50xx = True)
+                    VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
+                    VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
+                
+            """ Save P_Neut ranges"""
+            VE_df = pd.DataFrame(VE)
+            VE_df.to_csv(sys.argv[w_save]+"/P_neut_"+Lin_name+".csv")
+        else:
+            pass
+    
     
     try:
         if var_list_index is None:

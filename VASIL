@@ -150,13 +150,14 @@ if config["focus_il"]:
             save_neut=config["p_neut"],
             antigen=config["antigen"],
             num_antigen=len(config["antigen"]),
+            cases_column=config["cases_column"],
         output:
             resultdir=directory("results/Immunological_Landscape"),
             results_done="results/Immunological_Landscape/simulation_status_"
             + config["lineage_focus"]
             + ".csv",
         shell:
-            "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {output.resultdir} {params.save_neut} {params.lineage_focus} {params.num_antigen} {params.antigen}"
+            "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {output.resultdir} {params.save_neut} {params.lineage_focus} {params.num_antigen} {params.antigen} {params.cases_column}"
 
 
 if config["cross_all"]:
@@ -229,11 +230,12 @@ if config["groups_il"]:
             save_neut=config["p_neut_groups"],
             antigen=config["antigen_groups"],
             num_antigen=len(config["antigen_groups"]),
+            cases_column=config["cases_column"],
         output:
             resultdir=directory("results/Immunological_Landscape_groups"),
             results_done="results/Immunological_Landscape_groups/simulation_status_group.csv",
         shell:
-            "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk_dir} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {output.resultdir} {params.save_neut} {params.lineage_focus} {params.num_antigen} {params.antigen}"
+            "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk_dir} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {output.resultdir} {params.save_neut} {params.lineage_focus} {params.num_antigen} {params.antigen} {params.cases_column}"
 
 
 if config["all_il"]:
@@ -255,11 +257,12 @@ if config["all_il"]:
             save_neut=config["p_neut_all"],
             antigen=config["antigen_all"],
             num_antigen=len(config["antigen_all"]),
+            cases_column=config["cases_column"],
         output:
             resultdir=directory("results/Immunological_Landscape_ALL"),
             results_done="results/Immunological_Landscape_ALL/simulation_status_ALL.csv",
         shell:
-            "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {output.resultdir} {params.save_neut} {params.lineage_focus} {params.num_antigen} {params.antigen}"
+            "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {output.resultdir} {params.save_neut} {params.lineage_focus} {params.num_antigen} {params.antigen} {params.cases_column}"
 
 
 if config["Cross_major"]:

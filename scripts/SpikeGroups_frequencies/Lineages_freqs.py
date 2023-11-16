@@ -25,8 +25,15 @@ try:
 	covsonar_data = pd.read_csv(sys.argv[2], sep = "\t")
 except:
 	covsonar_data = pd.read_csv(sys.argv[2])
-	
-days_prop = covsonar_data["date"].values.astype(str)
+
+try:
+    days_prop = covsonar_data["Date"].values.astype(str)
+except:
+    try:
+        days_prop = covsonar_data["date"].values.astype(str)
+    except:
+        sys.exit("Date or date column not found in covsonar data")
+    
 lineages_all = covsonar_data["lineage"].values.astype(str)
 
 """Start computing Variant-proportions"""
