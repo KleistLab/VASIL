@@ -148,6 +148,9 @@ freq_df.to_csv(sys.argv[4])
 if "Wuhan-Hu-1" not in SpikeGroups_list:
     freq_dic["Wuhan-Hu-1"] = np.zeros(variant_proportion.shape[1])
     SpikeGroups_list.append("Wuhan-Hu-1")
+    print("Number of Spikegroups: %d + 1 Wuhan-Hu-1"%(len(SpikeGroups_list) - 1))
+else:
+    print("Number of Spikegroups: %d + 1 Wuhan-Hu-1"%(len(SpikeGroups_list) - 2))
 
 ### Save SpikeGroups_list and Mutation_Profiles
 spk_file = open(sys.argv[5], "wb")
