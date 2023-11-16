@@ -80,7 +80,7 @@ for x in range(len(SpikeGroups_list)):
                 pS_all[:, x, i] = Pseudo_Prop[:len(t)-1]*S_i[:len(t)-1] ### weighted susceptible, remove the last value to be comparable the prop change timeline
        
         except:
-            print(x, "File not found")
+            print(SpikeGroups_list[x], "File not found")
             a = np.empty(len(dprop_all[:, x]))
             b = np.empty(pS_all[:, x, :].shape)
             c = np.zeros(p_prop[:, x, :].shape)
