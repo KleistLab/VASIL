@@ -73,10 +73,10 @@ for x in range(len(SpikeGroups_list)):
                     
             dprop_all[:, x] = gamma_prop       
             #dprop_all[:, x] = np.diff(np.log(Pseudo_Prop[:len(t)][0]))
+            
             #Estimated susceptible
             for i in range(EI_ranges.shape[1]):
                 S_i = (N_pop - EI_ranges[:, i])
-                p_prop[:, x, i] = Pseudo_Prop[:len(t)-1]
                 pS_all[:, x, i] = Pseudo_Prop[:len(t)-1]*S_i[:len(t)-1] ### weighted susceptible, remove the last value to be comparable the prop change timeline
        
         except:
@@ -92,11 +92,6 @@ for x in range(len(SpikeGroups_list)):
 ### Mean timecourse over the pseudogroups for all 
 import numpy.ma as ma        
 pS_all =  ma.masked_array(pS_all, mask=np.isnan(pS_all))
-# renormalize prop
-#p_prop = ma.masked_array(p_prop, mask=np.isnan(p_prop))
-#p_prop = p_prop/(np.sum(p_prop, axis = 1)[:, np.newaxis, :])
-#pS_all_mean = np.sum(p_prop*pS_all, axis = 1) ## if not yet weighted
-
 pS_all_mean = np.sum(pS_all, axis = 1) ## if already weighted
 dprop_mean = np.sum(dprop_all[~np.isnan(dprop_all)])
 
