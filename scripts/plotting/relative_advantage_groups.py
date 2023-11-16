@@ -168,7 +168,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                     lab_done[lineage_list[k]] += lab_k
                     if lab_k not in (Pseudo_done[lineage_list[k]].split("/")):
                         Pseudo_done[lineage_list[k]] += Pseudogroup_dic[lineage] + "/"
-                        num_pseudo +=1
+                    
+                    num_pseudo +=1
                 
                 else:
                     if lineage in lineage_freq.columns.astype(str):
@@ -188,7 +189,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                         lab_done[lineage_list[k]] += lab_k
                         if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
                             Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"
-                            num_pseudo +=1  
+                        num_pseudo +=1  
+                        
                     else:
                         if x == 0:
                             Pseudo_Prop = ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
