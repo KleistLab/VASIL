@@ -167,7 +167,7 @@ if variant != "ALL":
         try:
             ES_df = pd.read_csv(sys.argv[1]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant)
         except:
-            print("Computation needed: Excpected Susceptible file is not available for %s"%variant)
+            print("Computation needed: Expected Susceptible file is not available for %s"%variant)
     w_save = 6
     plot_fit(ES_df, variant, w_save = w_save)
     status = pd.DataFrame({"lineage":variant, "relative_advantage":"Done"}, index = [1])

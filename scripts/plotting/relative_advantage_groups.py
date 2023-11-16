@@ -114,7 +114,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
                 run = True
             except:
                 try:
-                    ES_df = pd.read_csv(ES_df_dir+"/Immunological_Landscape_ALL/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+                    ES_df = pd.read_csv(ES_df_dir+"/Immunological_Landscape_ALL/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
                     num_avail +=1
                     run = True
                 except:
