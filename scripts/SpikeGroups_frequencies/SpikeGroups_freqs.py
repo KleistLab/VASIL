@@ -62,7 +62,22 @@ for x in range(len(Lineages_list)):
             missing_var_prop[variant] = prop_miss 
             print("Missing mutation profile for variant %s :\n"%variant, "proportion (min, mean, max):", (np.min(prop_miss), np.mean(prop_miss), np.max(prop_miss)))
         """
-            
+
+try:
+    filt = float(sys.arg[7])
+except:
+    filt = 0
+
+if filt !=0:
+    ## Filter
+    keep_inds = np.any(variant_proportion_orig>=filt, axis = 1)
+    Lineages_list = list(np.array(Lineages_list[keep_inds]))
+    variant_proportion_orig = variant_proportion_orig[keep_inds, :]
+
+NormProp = np.sum(variant_proportion_orig, axis = 0)
+prop_rounded = np.round(variant_proportion_orig, decimals = 10)
+proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
+          
 """ Merge proportions by Spike Groups"""
 SpikeGroups_list = []
 Pseudogroups = pd.read_csv(sys.argv[3])
@@ -70,32 +85,33 @@ variant_x_pseudo = np.array(Pseudogroups["lineage"].values).astype(str)
 pseudo_members = np.array(Pseudogroups["group"].values).astype(str)
 
 unique_group = np.unique(pseudo_members)
-variant_proportion = np.zeros((len(unique_group), len(days_prop)))
-pseudo_members_dic = {}
+variant_proportion = []
 SpikeGroups_dic  = {}
 SpikeGroups_dic ["Wuhan-Hu-1"] = "Wuhan-Hu-1" ### place holder for wild type
 
 check_var = []
 for x in range(len(unique_group)):
     if "/" not in unique_group[x]:
-        where_x = list(Lineages_list).index(unique_group[x])
-        variant_proportion[x, :] = variant_proportion_orig[where_x, :]
-        SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
-        SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
-        check_var.append(unique_group[x])
+        if unique_group[x] in Lineages_list:
+            where_x = list(Lineages_list).index(unique_group[x])
+            variant_proportion.append(variant_proportion_orig[where_x, :])
+            SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
+            SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
+            check_var.append(unique_group[x])
     else:
         splited_var = unique_group[x].split("/")
         where_x = []
         for var_x in splited_var:
-            where_x.append(list(Lineages_list).index(var_x))
-            check_var.append(var_x)
-        variant_proportion[x, :] = np.sum(variant_proportion_orig[np.array(where_x), :], axis = 0)
-        SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
+            if var_x in Lineages_list:
+                where_x.append(list(Lineages_list).index(var_x))
+                check_var.append(var_x)
+        if len(where_x) != 0:
+            variant_proportion.append(np.sum(variant_proportion_orig[np.array(where_x), :], axis = 0))
+            SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
         
-        for Om in splited_var:
-            SpikeGroups_dic[Om] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
+            for Om in splited_var:
+                SpikeGroups_dic[Om] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
     
-    pseudo_members_dic[variant_x_pseudo[pseudo_members == unique_group[x]][0]] = unique_group[x]
 
 """ Check that all lineages were grouped  (obsolete) """ 
 """
