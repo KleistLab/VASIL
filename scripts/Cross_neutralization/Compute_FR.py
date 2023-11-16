@@ -519,23 +519,46 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
         stat_df = pd.DataFrame({"Lineages":Lin_list, "computed_cross":status_sim})
         stat_df.to_csv(sys.argv[k+1]+"/cross_status.csv")
 
-elif Lin_name == "ALL":            
+elif Lin_name == "ALL":  
+    """Break runs into manageable pieces"""
+    g = []
+    g_var =[]
+    inds = np.arange(0, len(variant_x_names_cross)).astype(int)
+    cut_step = 200
+    if len(variant_x_names_cross)>cut_step:
+        cut1 = 0
+        cut2 = cut_step
+        while cut2<len(variant_x_names_cross):
+            g.append(inds[cut1:cut2])
+            g_var.append(list(np.array(variant_x_names_cross)[cut1:cut2]))
+            cut1=cut2
+            cut2+=min(cut_step, len(variant_x_names_cross)-cut2)
+        g.append(inds[cut1:cut2])
+        g_var.append(list(np.array(variant_x_names_cross)[cut1:cut2]))
+    else:
+        g.append(inds)
+        g_var.append(variant_x_names_cross)
+    
+          
     for ab in Ab_classes:
         print("Assess all spikegroups with the NTD-RBD mutation positions ")
         print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes))
         if ab!= "NTD":
-            Cross_Lin, Missed, Greater_one = cross_reactivity((variant_x_names_cross, variant_x_names_cross), 
-                       Escape_Fraction, 
-                       [ab],
-                       mut_x_sites_dic, joblib=joblib)
+            FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
+            for s1 in range(len(g)):
+                for s2 in range(len(g)):
+                    Cross_Lin, Missed, Greater_one = cross_reactivity((g_var[s1], g_var[s2]), 
+                                                                       Escape_Fraction, 
+                                                                       [ab],
+                                                                       mut_x_sites_dic, joblib=joblib)
             
-            FRxy_ab = Cross_Lin[ab]
+                    FRxy_ab[g[s1], :][:, g[s2]] = Cross_Lin[ab]
     
             Cross_react_dic[ab] = FRxy_ab
         a +=1
     
-    Cross_react_dic["variant_list"] = list(variant_x_names_cross)
     
+    Cross_react_dic["variant_list"] = list(variant_x_names_cross)
     """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""  
     print("Cross reactivity Epitope NTD")
     n = len(Cross_react_dic["variant_list"])
