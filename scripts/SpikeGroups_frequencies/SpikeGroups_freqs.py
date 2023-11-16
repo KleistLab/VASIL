@@ -146,7 +146,7 @@ freq_df = pd.DataFrame(freq_dic, index = np.arange(0, len(days_prop)))
 freq_df.to_csv(sys.argv[4])
 
 if "Wuhan-Hu-1" not in SpikeGroups_list:
-    variant_proportion = np.row_stack((variant_proportion, np.zeros(variant_proportion.shape[1])))
+    freq_dic["Wuhan-Hu-1"] = np.zeros(variant_proportion.shape[1])
     SpikeGroups_list.append("Wuhan-Hu-1")
 
 ### Save SpikeGroups_list and Mutation_Profiles
