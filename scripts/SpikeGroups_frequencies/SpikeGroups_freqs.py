@@ -65,7 +65,7 @@ for x in range(len(Lineages_list)):
     """
 
 ### Load filtering threshold
-filt = int(sys.argv[7])
+filt = float(sys.argv[7])
 if filt !=0:
     ## Filter
     keep_file = pd.read_csv(sys.argv[8])
