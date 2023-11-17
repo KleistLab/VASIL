@@ -15,6 +15,7 @@ if config["filter_out"] != 0:
         "results/filtered_lineages_" + str(config["filter_out"]) + "_percent.csv"
     ),
     rule_all_common.append("results/Stichprobe_"+str(config["filter_out"])+"_percent.tsv"),
+    rule_all_common.append("results/Daily_Lineages_Freq_"+str(config["filter_out"])+"_percent.csv")
 
 if config["cross_all"]:
     rule_all_common.append("results/Cross_react_dic_spikegroups_ALL.pck"),
@@ -98,7 +99,7 @@ if config["filter_out"] != 0:
             var_res="results/filtered_lineages_"+str(config["filter_out"])+"_percent.csv",
             covsonar_res="results/Stichprobe_"+str(config["filter_out"])+"_percent.tsv",
         shell:
-            "Rscript {workflow.basedir}/scripts/Filter_lineages/Filter_lineages.R {input.covsonar} {input.lins_freqs} {params.freq_filt} {output.var_res} {output.covsonar_res}"
+            "Rscript {workflow.basedir}/scripts/Filter_lineages/Filter_lineages.R {input.covsonar} {input.lins_freqs} {params.freq_filt} {output.var_res} {output.covsonar_res}"
 
     rule get_filtered_freqs:
         input:
@@ -108,13 +109,13 @@ if config["filter_out"] != 0:
             date_start=config["date_start"],
             date_end=config["date_end"],
         output:
-            result="results/Daily_Lineages_Freq.csv",
+            result="results/Daily_Lineages_Freq_"+str(config["filter_out"])+"_percent.csv",
         shell:
             "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.cases} {input.covsonar} {params.date_start} {params.date_end} {output.result}"       
     
     rule get_mutation_and_spikegroups:
         input:
-            covsonar="results/Stichprobe_"+str(config["filter_out"])+"_percent.tsv",
+            covsonar="results/Daily_Lineages_Freq_"+str(config["filter_out"])+"_percent.csv",
         params:
             prefix=config["prefix"],
             mutation_threshold=config["mutation_threshold"],
