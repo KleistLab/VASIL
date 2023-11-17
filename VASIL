@@ -15,6 +15,8 @@ if config["filter_out"] != 0:
         "results/filtered_lineages_" + str(config["filter_out"]) + "_percent.csv"
     ),
     rule_all_common.append("results/Stichprobe_"+str(config["filter_out"])+"_percent.tsv"),
+
+if config["freq_lin_filt"]:   
     rule_all_common.append("results/Daily_Lineages_Freq_"+str(config["filter_out"])+"_percent.csv")
 
 if config["cross_all"]:
@@ -100,22 +102,23 @@ if config["filter_out"] != 0:
             covsonar_res="results/Stichprobe_"+str(config["filter_out"])+"_percent.tsv",
         shell:
             "Rscript {workflow.basedir}/scripts/Filter_lineages/Filter_lineages.R {input.covsonar} {input.lins_freqs} {params.freq_filt} {output.var_res} {output.covsonar_res}"
-
-    rule get_filtered_freqs:
-        input:
-            cases=config["cases"],
-            covsonar="results/Stichprobe_"+str(config["filter_out"])+"_percent.tsv",
-        params:
-            date_start=config["date_start"],
-            date_end=config["date_end"],
-        output:
-            result="results/Daily_Lineages_Freq_"+str(config["filter_out"])+"_percent.csv",
-        shell:
-            "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.cases} {input.covsonar} {params.date_start} {params.date_end} {output.result}"       
+    
+    if config["freq_lin_filt"]:
+         rule get_filtered_freqs:
+            input:
+                cases=config["cases"],
+                covsonar="results/Stichprobe_"+str(config["filter_out"])+"_percent.tsv",
+            params:
+                date_start=config["date_start"],
+                date_end=config["date_end"],
+            output:
+                result="results/Daily_Lineages_Freq_"+str(config["filter_out"])+"_percent.csv",
+            shell:
+                "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.cases} {input.covsonar} {params.date_start} {params.date_end} {output.result}"       
     
     rule get_mutation_and_spikegroups:
         input:
-            covsonar="results/Daily_Lineages_Freq_"+str(config["filter_out"])+"_percent.csv",
+            covsonar="results/Stichprobe_"+str(config["filter_out"])+"_percent.tsv",
         params:
             prefix=config["prefix"],
             mutation_threshold=config["mutation_threshold"],

@@ -2,6 +2,7 @@
 covsonardata: "covsonar_mock.tsv"
 freq_lin: FALSE ## if FALSE results/Daily_Lineages_Freq.csv is required (set this TRUE only on first code run)
 filter_out: 0 ### percentage (between 0 and 100, do not add zeros after last decimal) filtering lineages that never appeared above it in any calendar week (requires that consonar data includes calendar weeks) -- set to 0 if no filtering is desired
+freq_lin_filt: FALSE ## if FALSE results/Daily_Lineages_Freq_%filter_out%_percent.csv is required (set this TRUE only on first code run when filter_out not 0)
 # prefix for mutation_data filename
 prefix: "mutationprofile"
 mutation_threshold: 0.75

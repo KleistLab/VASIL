@@ -44,17 +44,6 @@ write.csv(variants_df, file = Var_outputfile, row.names = FALSE, quote = FALSE)
 # load the stichproben file and delete all variants, that are below the threshold
 
 data_stichprobe = read.csv(covsonar_data, sep = "\t")
-#head(data_stichprobe)
-
-data_stichprobe_filtered = data_stichprobe[data_stichprobe$lineage %in% variants,]
-
-date_max = max(data_stichprobe_filtered$date)
-date_min = min(data_stichprobe_filtered$date)
-
-#date_min
-#date_max
-
-# order of dates might be corrupted. If dates are not in order, VASIL crashes
-data_stichprobe_filtered <- data_stichprobe_filtered[order(data_stichprobe_filtered$date),]
+data_stichprobe_filtered = data_stichprobe[data_stichprobe$lineage %in% variants, ]
 
 write.table(data_stichprobe_filtered, file=Covsonar_outputfile, quote=FALSE, sep='\t')
