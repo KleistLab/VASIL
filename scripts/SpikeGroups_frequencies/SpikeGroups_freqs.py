@@ -61,8 +61,10 @@ for x in range(len(Lineages_list)):
         for wk in range(len(weeks)):
             locs_wk = np.where(np.array(weeks_all) == weeks[wk])[0]
             w_lin = np.where(np.array(Lineages_list) == variant)[0]
-            weekly_prop[x, wk] = np.sum(proportion_lineage[x_lin, locs_wk])/np.sum(locs_wk & w_lin) ### average weekly proportions because they sum up to 1 for each day of that week
-    
+            if np.sum(locs_wk & w_lin)!=0:
+                weekly_prop[x, wk] = np.sum(proportion_lineage[x_lin, locs_wk])/np.sum(locs_wk & w_lin) ### average weekly proportions because they sum up to 1 for each day of that week
+            else:
+                weekly_prop[x, wk] = np.sum(proportion_lineage[x_lin, locs_wk])
     """
     # used in previous versions, now obsolete, spikegroups and mutation profiles are restricted a specific timeline we do not need to care for those that have misssing mutation profiles
     if (variant not in list(mut_x_sites_dic.keys())) & (variant not in Grouped_in_Spike):
