@@ -1,11 +1,13 @@
 rm(list = ls())
 args = commandArgs(trailingOnly=TRUE)
-if (length(args)!=3) {
-  stop("Call: Rscript Filter_lineages <lineage frequency data file> <filter threshold> <output directory>", call.=FALSE)
+if (length(args)!=5) {
+  stop("Call: Rscript Filter_lineages <covsonar data file> <lineage frequency data file> <filter threshold> <output file filtered variants> <output file for filtered covsonar data>", call.=FALSE)
 } else  {
-  lineage_frequency_file <- args[1]
-  threshold <- as.numeric(args[2])
-  outputfile <- args[3]
+  covsonar_data <- args[1]
+  lineage_frequency_file <- args[2]
+  threshold <- as.numeric(args[3])
+  Var_outputfile <- args[4]
+  Covsonar_outputfile <- args[5]
 }
 
 # load the daily lineage frequencies in order to filter for variants who pass
@@ -37,5 +39,22 @@ for (i in 1:length(all_lineages)){
 
 variants_df <- data.frame("lineage"=variants, "max"=max_list)
 ### Save filtered variants
-write.csv(variants_df, file = outputfile, row.names = FALSE, quote = FALSE)
+write.csv(variants_df, file = Var_outputfile, row.names = FALSE, quote = FALSE)
 
+# load the stichproben file and delete all variants, that are below the threshold
+
+data_stichprobe = read.csv(covsonar_data, sep = "\t")
+head(data_stichprobe)
+
+data_stichprobe_filtered = data_stichprobe[data_stichprobe$lineage %in% variants,]
+
+date_max = max(data_stichprobe_filtered$date)
+date_min = min(data_stichprobe_filtered$date)
+
+date_min
+date_max
+
+# order of dates might be corrupted. If dates are not in order, VASIL crashes
+data_stichprobe_filtered <- data_stichprobe_filtered[order(data_stichprobe_filtered$date),]
+
+write.table(data_stichprobe_filtered, file=Covsonar_outputfile, quote=FALSE, sep='\t')
