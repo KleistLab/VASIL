@@ -10,7 +10,7 @@ rule_all_common = [
     "results/Mutation_Profiles.pck",
     "results/epitope_data/dms_per_ab_per_site.csv",
 ]
-if int(config["filter_out"])!=0:
+if config["filter_out"]!=0:
     rule_all_common.append("results/filtered_lineages_"+str(config["filter_out"])+"_percent.csv"),
 
 if config["cross_all"]:
@@ -114,7 +114,7 @@ if int(config["filter_out"]) != 0:
             spk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
             spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
         params:
-            freq_filt=int(config["filter_out"]),
+            freq_filt=config["filter_out"],
         output:
             spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
             spikes_dic="results/SpikeGroups.pck",
