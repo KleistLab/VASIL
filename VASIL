@@ -10,8 +10,10 @@ rule_all_common = [
     "results/Mutation_Profiles.pck",
     "results/epitope_data/dms_per_ab_per_site.csv",
 ]
-if config["filter_out"]!=0:
-    rule_all_common.append("results/filtered_lineages_"+str(config["filter_out"])+"_percent.csv"),
+if config["filter_out"] != 0:
+    rule_all_common.append(
+        "results/filtered_lineages_" + str(config["filter_out"]) + "_percent.csv"
+    ),
 
 if config["cross_all"]:
     rule_all_common.append("results/Cross_react_dic_spikegroups_ALL.pck"),
@@ -97,20 +99,27 @@ if config["freq_lin"]:
         shell:
             "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.cases} {input.covsonar} {params.date_start} {params.date_end} {output.result}"
 
-if int(config["filter_out"]) != 0:
+
+if config["filter_out"] != 0:
+
     rule get_filtered_variants:
         input:
             lins_freqs="results/Daily_Lineages_Freq.csv",
         params:
             freq_filt=config["filter_out"],
         output:
-            res="results/filtered_lineages_"+str(config["filter_out"])+"_percent.csv",
+            res="results/filtered_lineages_"
+            + str(config["filter_out"])
+            + "_percent.csv",
         shell:
-            "Rscript {workflow.basedir}/scripts/Filter_lineages/Filter_lineages.R {input.lins_freqs} {params.freq_filt} {output.res}"         
+            "Rscript {workflow.basedir}/scripts/Filter_lineages/Filter_lineages.R {input.lins_freqs} {params.freq_filt} {output.res}"
+
     rule get_spikegroups_frequencies:
         input:
             lins_freqs="results/Daily_Lineages_Freq.csv",
-            filtered_lin="results/filtered_lineages_"+str(config["filter_out"])+"_percent.csv",
+            filtered_lin="results/filtered_lineages_"
+            + str(config["filter_out"])
+            + "_percent.csv",
             spk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
             spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
         params:
@@ -121,7 +130,9 @@ if int(config["filter_out"]) != 0:
             mutations_dic="results/Mutation_Profiles.pck",
         shell:
             "python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.spk_profiles} {input.spike_groups} {output.spikes_freqs} {output.spikes_dic} {output.mutations_dic} {params.freq_filt} {input.filtered_lin}"
+
 else:
+
     rule get_spikegroups_frequencies:
         input:
             lins_freqs="results/Daily_Lineages_Freq.csv",
