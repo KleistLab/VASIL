@@ -1,34 +1,41 @@
 rm(list = ls())
-setwd("Desktop/percent_study/")
-threshold = 3 #percent
-
 args = commandArgs(trailingOnly=TRUE)
-if (length(args)!=2) {
+if (length(args)!=3) {
   stop("Call: Rscript Filter_lineages <lineage frequency data file> <filter threshold> <output directory>", call.=FALSE)
 } else  {
   lineage_frequency_file <- args[1]
   threshold <- as.numeric(args[2])
-  outputdir <- args[3]
+  outputfile <- args[3]
 }
-
-## Outputfiles:
-outputfile <- paste0(outputdir,"/filtered_lineages_")
 
 # load the daily lineage frequencies in order to filter for variants who pass
 # the threshold in the time frame
 data_variant_percentage = read.csv(lineage_frequency_file)
-data_variant_max = as.data.frame(apply(data_variant_percentage,2,max))
+drop <- c("X", "date", "week_num")
+data_variant_percentage <- data_variant_percentage[, !(names(data_variant_percentage)%in%drop)]
 
-colnames(data_variant_max) = c("max", "variants")
+#data_variant_max <- as.data.frame(apply(data_variant_percentage,2,max)) # does not work on Monterey
+#colnames(data_variant_max) <- c("max", "variants") # does not work on Monterey
+#data_variant_max$variants = rownames(data_variant_max)
+#data_filtered = data_variant_max[data_variant_max$max > threshold, ]
+#dim(data_variant_max)
+#print(variants)
+#variants = data_filtered$variants
+#length(variants)
 
-dim(data_variant_max)
+all_lineages <- colnames(data_variant_percentage)
+variants <- c()
+max_list <- c()
+for (i in 1:length(all_lineages)){
+  max_per <- max(data_variant_percentage[, all_lineages[i]])
+  if (max_per > threshold)
+    {
+     variants <- append(variants, all_lineages[i])
+     max_list <- append(max_list, max_per)
+    }
+}
 
-data_variant_max$variants = rownames(data_variant_max)
-data_filtered = data_variant_max[data_variant_max$max > threshold, ]
-
-variants = data_filtered$variants
-length(variants)
-colnames(variants) <- c("lineage")
+variants_df <- data.frame("lineage"=variants, "max"=max_list)
 ### Save filtered variants
-write.csv(variants, file=paste(outputfile, threshold,'_percent.csv'), row.names = FALSE, quote = FALSE)
+write.csv(variants_df, file = outputfile, row.names = FALSE, quote = FALSE)
 

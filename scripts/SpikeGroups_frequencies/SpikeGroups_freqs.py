@@ -68,10 +68,9 @@ for x in range(len(Lineages_list)):
 filt = int(sys.argv[7])
 if filt !=0:
     ## Filter
-    pdb.set_trace()
-    keep_file = pd.read_csv(sys.argv[8]+"%d_percent.csv"%filt)
-    keep_variants = list(keep_file["lineages"].astype(str))
-    keep_inds = np.array([Lineages_list[i] in keep_variants])
+    keep_file = pd.read_csv(sys.argv[8])
+    keep_variants = list(keep_file["lineage"].astype(str))
+    keep_inds = np.array([list(Lineages_list).index(keep_variants[i]) for i in range(len(keep_variants))])
     Lineages_list = list(np.array(Lineages_list)[keep_inds])
     variant_proportion_orig = variant_proportion_orig[keep_inds, :]
     print("Number of kept lineages (appearing above %d %% in some calendar day): %d"%(filt, len(Lineages_list)))
