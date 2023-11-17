@@ -50,21 +50,12 @@ proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_round
 """Finalizing variant proportion parameter """
 Lineages_list = list(unique_lineage)
 variant_proportion_orig = np.zeros((len(Lineages_list), len(days_prop)))
-if weeks is not None:
-    weekly_prop = np.zeros((len(Lineages_list), len(weeks)))
 #missing_var_prop = {}
 for x in range(len(Lineages_list)):
     variant = Lineages_list[x]
     x_lin = list(unique_lineage).index(variant)
     variant_proportion_orig[x, :] = proportion_lineage[x_lin, :]
-    if weeks is not None:
-        for wk in range(len(weeks)):
-            locs_wk = np.where(np.array(weeks_all) == weeks[wk])[0]
-            w_lin = np.where(np.array(Lineages_list) == variant)[0]
-            if np.sum(locs_wk & w_lin)!=0:
-                weekly_prop[x, wk] = np.sum(proportion_lineage[x_lin, locs_wk])/np.sum(locs_wk & w_lin) ### average weekly proportions because they sum up to 1 for each day of that week
-            else:
-                weekly_prop[x, wk] = np.sum(proportion_lineage[x_lin, locs_wk])
+    
     """
     # used in previous versions, now obsolete, spikegroups and mutation profiles are restricted a specific timeline we do not need to care for those that have misssing mutation profiles
     if (variant not in list(mut_x_sites_dic.keys())) & (variant not in Grouped_in_Spike):
@@ -74,15 +65,19 @@ for x in range(len(Lineages_list)):
     """
 
 ### Load filtering threshold
-filt = float(sys.argv[7])
+filt = int(sys.argv[7])
 if filt !=0:
     ## Filter
-    keep_inds = np.any((weekly_prop>=filt), axis = 1)
+    pdb.set_trace()
+    keep_file = pd.read_csv(sys.argv[8]+"%d_percent.csv"%filt)
+    keep_variants = list(keep_file["lineages"].astype(str))
+    keep_inds = np.array([Lineages_list[i] in keep_variants])
     Lineages_list = list(np.array(Lineages_list)[keep_inds])
     variant_proportion_orig = variant_proportion_orig[keep_inds, :]
-    print("Number of kept lineages (appearing above %.3f in some calendar week): %d"%(filt, len(Lineages_list)))
+    print("Number of kept lineages (appearing above %d %% in some calendar day): %d"%(filt, len(Lineages_list)))
+else:
+    print("Number of kept lineages (all): %d"%(len(Lineages_list)))
 
-    
 NormProp = np.sum(variant_proportion_orig, axis = 0)
 prop_rounded = np.round(variant_proportion_orig, decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
