@@ -246,8 +246,6 @@ for source in u_Delta_Sources:
         Delta_done.append("%s (%s)"%(vacc, source))
 	
 def Fitting_IC50(thalf, tmax, t, Ab_classes, Cross_dic, quiet = False):  
-   
-    
     N = len(Ab_classes)
     t_max = tmax*np.ones(N) # time to the peak of antibody concentration for each antibody class
     t_half = thalf*np.ones(N) # antibody half-life for all antibody classes, respecively
@@ -306,7 +304,7 @@ from scipy import signal
 def Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data, present_variant_index, tested_variant_list, variant_name, variant_proportion, Ab_classes, 
                                   IC50xx, Cross_react_dic, escape_per_sites = None, mut_sites_per_variant = None, parallel = False, mode_func = None):
     
-    stop = min(len(infection_data), variant_proportion.shape[0])
+    stop = min(len(infection_data), variant_proportion.shape[1])
     Infected_l_vect = infection_data[np.newaxis, :stop]*variant_proportion[:, :stop]    
     
     Prob_Neut = P_Neut(t, present_variant_index, PK_dframe, tested_variant_list, variant_name, Ab_classes, IC50xx, Cross_react_dic)
@@ -505,7 +503,7 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
 
         else:
             spikegroups_proportion_adjust = spikegroups_proportion_adjust
-            
+        
         for key in c_dframe_dic.keys():
             PK_dframe = c_dframe_dic[key]
             key_num = np.array(re.findall(r"\d+", key)).astype(int)
@@ -538,11 +536,11 @@ save_pneut = str(sys.argv[12])
 Lin_name = str(sys.argv[13])
 """Update name if necessary -- this is the same update as in Compute_FR"""
 
+### Load spikegroups membership file
+file = open("Spikegroups_membership.pck", "rb")
+Pseudogroup_dic = pickle.load(file)
+file.close()
 if Lin_name != "ALL":
-    ### Load spikegroups membership file
-    file = open("Spikegroups_membership.pck", "rb")
-    Pseudogroup_dic = pickle.load(file)
-    file.close()
     if not run_group:
         num_antigen = int(sys.argv[14])
         k=15
@@ -697,10 +695,19 @@ else:
             # regenerage the indexes
             SpikeGroups_list_index = []
             for j in range(len(SpikeGroups_list)):
-                if SpikeGroups_list[j] in variants_in_cross:
-                    SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
+                if Pseudogroup_dic[SpikeGroups_list[j]] in variants_in_cross:
+                    SpikeGroups_list_index.append(list(variants_in_cross).index(Pseudogroup_dic[SpikeGroups_list[j]])) ### giving the cross neut of it's pseudogroup in extended data    
             SpikeGroups_list_index = np.array(SpikeGroups_list_index)
             
+            if len(SpikeGroups_list_index)!=len(SpikeGroups_list): ### must adjust if there are still some missing spikegroups
+                add_print = True
+                spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
+                for j in range(len(SpikeGroups_list_index)):
+                    w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+                    spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
+                
+                # renormalization
+                spikegroups_proportion_adjust = spikegroups_proportion_adjust/np.sum(spikegroups_proportion_adjust, axis = 0)
         except:
             # readjust variant proportions to spikegroups available in cross react
             add_print = True
@@ -718,8 +725,9 @@ else:
         if SpikeGroups_list[i] in variants_in_cross:
             if add_print:
                 print("A smaller set of spikesgroups are being simulated for all_il = TRUE \n Make sure this is what you want otherwise first set the parameter cross_missing to TRUE")
-                
-            print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i, len(SpikeGroups_list)-1))
+                print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i, len(SpikeGroups_list_index)-1))
+            else:
+                print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i, len(SpikeGroups_list)-1))
             status_var.append(ei_util(SpikeGroups_list[i], 
                                       variants_in_cross = variants_in_cross,
                                       antigen_list = antigen_list,

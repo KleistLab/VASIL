@@ -45,7 +45,6 @@ for i in range(len(unique_muts)):
 NormProp = np.sum(frequency_lineage, axis = 0)
 prop_rounded = np.round(frequency_lineage,decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
-
 """Finalizing variant proportion parameter """
 Lineages_list = list(unique_lineage)
 variant_proportion_orig = np.zeros((len(Lineages_list), len(days_prop)))
@@ -66,7 +65,9 @@ for x in range(len(Lineages_list)):
 NormProp = np.sum(variant_proportion_orig, axis = 0)
 prop_rounded = np.round(variant_proportion_orig, decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
-         
+
+print("Number of lineages: %d"%len(Lineages_list))
+
 """ Merge proportions by Spike Groups"""
 SpikeGroups_list = []
 Pseudogroups = pd.read_csv(sys.argv[3])

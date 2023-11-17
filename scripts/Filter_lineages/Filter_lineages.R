@@ -23,7 +23,6 @@ data_variant_percentage <- data_variant_percentage[, !(names(data_variant_percen
 #dim(data_variant_max)
 #print(variants)
 #variants = data_filtered$variants
-#length(variants)
 
 all_lineages <- colnames(data_variant_percentage)
 variants <- c()
@@ -41,9 +40,11 @@ variants_df <- data.frame("lineage"=variants, "max"=max_list)
 ### Save filtered variants
 write.csv(variants_df, file = Var_outputfile, row.names = FALSE, quote = FALSE)
 
+print(paste("Number of variants above threshold in some calendar day", threshold, "%:", length(variants)))
+
 # load the stichproben file and delete all variants, that are below the threshold
-
 data_stichprobe = read.csv(covsonar_data, sep = "\t")
-data_stichprobe_filtered = data_stichprobe[data_stichprobe$lineage %in% variants, ]
-
-write.table(data_stichprobe_filtered, file=Covsonar_outputfile, quote=FALSE, sep='\t')
+#print(colnames(data_stichprobe))
+data_stichprobe <- data_stichprobe[data_stichprobe$lineage %in% variants, ]
+#print(colnames(data_stichprobe))
+write.table(data_stichprobe, file=Covsonar_outputfile, quote=FALSE, sep='\t')
