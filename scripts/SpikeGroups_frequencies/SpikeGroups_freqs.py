@@ -42,7 +42,6 @@ for i in range(len(unique_muts)):
     variant_x_names.append(variant_x_name_orig[where_mut][0])
     Grouped_in_Spike += list(variant_x_name_orig[where_mut])
     
-
 NormProp = np.sum(frequency_lineage, axis = 0)
 prop_rounded = np.round(frequency_lineage,decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
@@ -64,19 +63,6 @@ for x in range(len(Lineages_list)):
         print("Missing mutation profile for variant %s :\n"%variant, "proportion (min, mean, max):", (np.min(prop_miss), np.mean(prop_miss), np.max(prop_miss)))
     """
 
-### Load filtering threshold
-filt = float(sys.argv[7])
-if filt !=0:
-    ## Filter
-    keep_file = pd.read_csv(sys.argv[8])
-    keep_variants = list(keep_file["lineage"].astype(str))
-    keep_inds = np.array([list(Lineages_list).index(keep_variants[i]) for i in range(len(keep_variants))])
-    Lineages_list = list(np.array(Lineages_list)[keep_inds])
-    variant_proportion_orig = variant_proportion_orig[keep_inds, :]
-    print("Number of kept lineages (appearing above %d %% in some calendar day): %d"%(filt, len(Lineages_list)))
-else:
-    print("Number of kept lineages (all): %d"%(len(Lineages_list)))
-
 NormProp = np.sum(variant_proportion_orig, axis = 0)
 prop_rounded = np.round(variant_proportion_orig, decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
@@ -95,12 +81,11 @@ SpikeGroups_dic["Wuhan-Hu-1"] = "Wuhan-Hu-1" ### place holder for wild type
 check_var = []
 for x in range(len(unique_group)):
     if "/" not in unique_group[x]:
-        if unique_group[x] in Lineages_list:
-            where_x = list(Lineages_list).index(unique_group[x])
-            variant_proportion.append(variant_proportion_orig[where_x, :])
-            SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
-            SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
-            check_var.append(unique_group[x])
+        where_x = list(Lineages_list).index(unique_group[x])
+        variant_proportion.append(variant_proportion_orig[where_x, :])
+        SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
+        SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
+        check_var.append(unique_group[x])
     else:
         splited_var = unique_group[x].split("/")
         where_x = []
@@ -108,12 +93,12 @@ for x in range(len(unique_group)):
             if var_x in Lineages_list:
                 where_x.append(list(Lineages_list).index(var_x))
                 check_var.append(var_x)
-        if len(where_x) != 0:
-            variant_proportion.append(np.sum(variant_proportion_orig[np.array(where_x), :], axis = 0))
-            SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
         
-            for Om in splited_var:
-                SpikeGroups_dic[Om] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
+        variant_proportion.append(np.sum(variant_proportion_orig[np.array(where_x), :], axis = 0))
+        SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
+        
+        for Om in splited_var:
+            SpikeGroups_dic[Om] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
 
 variant_proportion = np.array(variant_proportion)
 
