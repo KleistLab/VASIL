@@ -83,13 +83,14 @@ dates <- D$date
 u_dates <- unique(dates)
 id_dates <- 1:length(u_dates)
 between_dates <- subset(u_dates, (id_dates >= match(date_start, u_dates))&(id_dates <= match(date_end, u_dates)))
-to_keep <- c()
-for (i in 1:length(dates)){
-  if (dates[i] %in% between_dates){
-    to_keep <- append(to_keep, i)
-  }
-}
-D <- D[to_keep,]
+#to_keep <- c()
+#for (i in 1:length(dates)){
+#  if (dates[i] %in% between_dates){
+#    to_keep <- append(to_keep, i)
+#  }
+#}
+#D <- D[to_keep,]
+D <- D[D$date %in% to_keep]
 sprintf("Timeframe of extracted mutation profiles %s to %s", unique(D$date)[1], unique(D$date)[length(unique(D$date))])
 
 ### filter mutations 
