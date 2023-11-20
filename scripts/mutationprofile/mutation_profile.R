@@ -90,7 +90,7 @@ between_dates <- subset(u_dates, (id_dates >= match(date_start, u_dates))&(id_da
 #  }
 #}
 #D <- D[to_keep,]
-D <- D[D$date %in% to_keep]
+D <- D[D$date %in% between_dates, ]
 sprintf("Timeframe of extracted mutation profiles %s to %s", unique(D$date)[1], unique(D$date)[length(unique(D$date))])
 
 ### filter mutations 
@@ -260,33 +260,35 @@ print(paste("Number of individual lineages:",nrow(psgroups2) - length(grep("/",p
 
 
 ####################### Plotting:
-
+tryCatch(
 # Limit the numer of lineages in the plotting: at least 100 genomes must be present for being plotted:
-min_number_genomes_for_plotting <- 100
-number_genomes_per_lineage <- data.frame(number_genomes_per_lineage)
-colnames(number_genomes_per_lineage) <- c("lineage","N")
-number_genomes_per_lineage$N <- as.numeric(number_genomes_per_lineage$N )
-lineages_above_genome_threshold <- number_genomes_per_lineage$lineage[which(number_genomes_per_lineage$N > min_number_genomes_for_plotting)]
+min_number_genomes_for_plotting <- 100,
+number_genomes_per_lineage <- data.frame(number_genomes_per_lineage),
+colnames(number_genomes_per_lineage) <- c("lineage","N"),
+number_genomes_per_lineage$N <- as.numeric(number_genomes_per_lineage$N ),
+lineages_above_genome_threshold <- number_genomes_per_lineage$lineage[which(number_genomes_per_lineage$N > min_number_genomes_for_plotting)],
 
 # Highlight Spike-Pseudogroups with "*" behind name to distinguish from individual lineages that do not belong to any group (or represent an own group, respectivly)
-psgr <- c()
+psgr <- c(),
 for (i in 1:nrow(psgroups2)){
   if (psgroups2$group[i] != psgroups2$lineage[i]){
     psgr <- c(psgr,psgroups2$lineage[i])
   }
-}
-MP3_red <- MP3[unlist(lapply(lineages_above_genome_threshold, function(x) which(rownames(MP3) == x))),]
-MP4_unique <- MP3_red[!duplicated(MP3_red),]
-x <- unlist(lapply(psgr, function(x) which(rownames(MP4_unique) == x)))
-rownames(MP4_unique)[x] <- paste0(rownames(MP4_unique)[x],"*")
-rm(x)
+},
+MP3_red <- MP3[unlist(lapply(lineages_above_genome_threshold, function(x) which(rownames(MP3) == x))),],
+MP4_unique <- MP3_red[!duplicated(MP3_red),],
+x <- unlist(lapply(psgr, function(x) which(rownames(MP4_unique) == x))),
+rownames(MP4_unique)[x] <- paste0(rownames(MP4_unique)[x],"*"),
+rm(x),
 
 #remove empty mutational sites:
-x <- which(apply(MP4_unique,2,sum)>0)
-MP4_unique <- MP4_unique[,x]
-mydf3 <- as.data.frame(mydf3[x,]); colnames(mydf3) <- "category"; rownames(mydf3) <- colnames(MP4_unique)
-rm(x)
-print(paste("Number of lineages / Spike-pseudogroups found with > ",min_number_genomes_for_plotting," genomes available in the dataset that are plotted as a heatmap:", nrow(MP4_unique)))
+x <- which(apply(MP4_unique,2,sum)>0),
+MP4_unique <- MP4_unique[,x],
+mydf3 <- as.data.frame(mydf3[x,]),
+colnames(mydf3) <- "category",
+rownames(mydf3) <- colnames(MP4_unique),
+rm(x),
+print(paste("Number of lineages / Spike-pseudogroups found with > ",min_number_genomes_for_plotting," genomes available in the dataset that are plotted as a heatmap:", nrow(MP4_unique))),
 
 if (length(MP4_unique)>=2){
   pdf(paste0(outputdir,"/",outputfile_mutationprofile_plot), height = 15, width = 15)
@@ -299,13 +301,13 @@ if (length(MP4_unique)>=2){
   }
 
 
-### Zooming in for a predefined set of lineages:
-MP2_zoom <- MP2[unlist(lapply(zoom_in_lineages, function(x) which(rownames(MP2) == x))),]
+## Zooming in for a predefined set of lineages:
+MP2_zoom <- MP2[unlist(lapply(zoom_in_lineages, function(x) which(rownames(MP2) == x))),],
 #keep only those sites with at least one mutations among the lineages
-MP2_zoom <- MP2_zoom[,which(apply(MP2_zoom,2,sum)>0)] 
+MP2_zoom <- MP2_zoom[,which(apply(MP2_zoom,2,sum)>0)],
 #keep only RBD and NTD regions:
-MP2_zoom <- MP2_zoom[,unlist(lapply(intersect(rownames(mydf3),colnames(MP2_zoom)), 
-                                    function(x) which(colnames(MP2_zoom) == x)))]
+MP2_zoom <- MP2_zoom[,unlist(lapply(intersect(rownames(mydf3),colnames(MP2_zoom)),
+                                   function(x) which(colnames(MP2_zoom) == x)))],
 
 if (length(MP2_zoom)>=2){
   pdf(paste0(outputdir,"/",stringr::str_replace(outputfile_mutationprofile_plot,".pdf","_zoom.pdf")),height = 3, width = 10)
@@ -317,4 +319,5 @@ if (length(MP2_zoom)>=2){
            legend = FALSE,
            annotation_col = mydf3)
   dev.off()
- }
+}
+)
