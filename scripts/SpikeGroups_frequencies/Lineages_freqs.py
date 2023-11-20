@@ -41,7 +41,8 @@ where_first_day = list(days_incidence).index(date_start)
 
 # initializing variant proportion for all lineages
 unique_days_prop_all = list(np.unique(days_prop))
-### make sure that dates are sorted
+### make sure that dates are sorted and not nan
+unique_days_prop_all = [x for x in unique_days_prop_all if x!= "nan"]
 unique_days_prop_all.sort(key = lambda date: datetime.strptime(date, "%Y-%m-%d")) 
 
 unique_days_prop = np.array(unique_days_prop_all[unique_days_prop_all.index(date_start):])
