@@ -212,15 +212,19 @@ for spklin in lineages_sim:
         mut_maj = mut_x_sites_dic[Pseudogroup_dic[spklin]]
     else:
         Top_Pseudo.append(spklin)
-        mut_file = open(mut_sim[lineages_sim.index(spklin)], "r")
-        mut_lin0 = mut_file.readlines()
-        mut_file.close()
-        mut_maj= []
-        for mut in mut_lin0:
-            if mut[:3] not in ("DEL", "del"):
-                if len(re.findall(r'\d+', mut))>0:
-                    mut_maj.append(re.findall(r'\d+', mut)[0])       
-                    mut_maj = list(np.unique(np.array(mut_maj).astype(str)))
+        
+        try:
+            mut_file = open(mut_sim[lineages_sim.index(spklin)], "r")
+            mut_lin0 = mut_file.readlines()
+            mut_file.close()
+            mut_maj= []
+            for mut in mut_lin0:
+                if mut[:3] not in ("DEL", "del"):
+                    if len(re.findall(r'\d+', mut))>0:
+                        mut_maj.append(re.findall(r'\d+', mut)[0])       
+                        mut_maj = list(np.unique(np.array(mut_maj).astype(str)))
+        except:
+            pass
 
     """Update mutation profile dictionary"""        
     mut_x_sites_dic_updated[spklin] = mut_maj
