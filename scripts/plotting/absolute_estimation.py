@@ -96,7 +96,10 @@ ax2.legend(loc='upper center', bbox_to_anchor=(0.3, -0.2),
 
 try:
     x_min = list(t_dates).index(str(sys.argv[5]))
-    x_max = list(t_dates).index(str(sys.argv[6]))
+    if str(sys.argv[6]) in t_dates:
+        x_max = list(t_dates).index(str(sys.argv[6]))
+    else:
+        x_max = len(t_dates) - 1
 except:
     x_min = None
     x_max = None
