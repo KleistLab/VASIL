@@ -77,11 +77,11 @@ def plot_fit(ES_df, lineage, w_save = 6):
     # change in relative frequency from genomic surveillance data 
     if "Spike. " + lineage in lineage_freq.columns.astype(str):
         Pseudo_Prop = moving_average(lineage_freq["Spike. " + lineage], window = 14)
-        #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
+        Pseudo_Prop[Pseudo_Prop < 0.05] = 0        
         #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
     elif lineage in lineage_freq.columns.astype(str):
         Pseudo_Prop = moving_average(lineage_freq[lineage], window = 14)
-        #Pseudo_Prop[Pseudo_Prop < threshold] = 0
+        Pseudo_Prop[Pseudo_Prop < 0.05] = 0
         #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
     else:
         Pseudo_Prop = np.zeros(len(t_dates))
@@ -100,7 +100,7 @@ def plot_fit(ES_df, lineage, w_save = 6):
     
     plt.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = "$\gamma_{%s}$"%lineage)
     #more smoothing
-    gamma_prop = moving_average(gamma_prop, window = 14)
+    #gamma_prop = moving_average(gamma_prop, window = 14)
     plt.plot(t_dates, gamma_prop, color = "orange", label="$\gamma_prop$ %s"%lineage)
     
     #ax.axhline(xmin = 0, xmax = t_dates[-1], ls = "--", linewidth = 2, color = "black")

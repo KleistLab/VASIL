@@ -25,6 +25,7 @@ Cross_Lin_file: "results/Cross_react_dic_spikegroups_BA_2_86.pck"
 # 8. OPTIONAL: Plot relative fitness for all spikegroups in Data
 all_fit: FALSE
 S_ALL: "results/Immunological_Landscape_ALL"
+threshold: 1
 # 9a. OPTIONAL: Plot neutralization against specific antigen for lineage focus, PK figure is plotted alongside
 p_neut: TRUE
 antigen: "Wuhan-Hu-1" ### must be one of the antigen used in main config file for the lineage focus or for all spikegroups if lineage focus is one of the spikegroups in covsonar data
