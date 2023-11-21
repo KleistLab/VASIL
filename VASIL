@@ -133,10 +133,7 @@ if config["filter_out"] != 0:
 
     rule get_spikegroups_frequencies:
         input:
-            lins_freqs="results/Daily_Lineages_Freq.csv",
-            filtered_lin="results/filtered_lineages_"
-            + str(config["filter_out"])
-            + "_percent.csv",
+            filtered_freqs="results/Daily_Lineages_Freq_"+str(config["filter_out"])+"_percent.csv",
             spk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
             spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
         output:
@@ -144,7 +141,7 @@ if config["filter_out"] != 0:
             spikes_dic="results/SpikeGroups.pck",
             mutations_dic="results/Mutation_Profiles.pck",
         shell:
-            "python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.spk_profiles} {input.spike_groups} {output.spikes_freqs} {output.spikes_dic} {output.mutations_dic}"
+            "python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.filtered_freqs} {input.spk_profiles} {input.spike_groups} {output.spikes_freqs} {output.spikes_dic} {output.mutations_dic}"
 
 else:
     rule get_mutation_and_spikegroups:

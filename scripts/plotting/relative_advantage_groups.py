@@ -85,6 +85,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     
     status_list = []
     Pseudo_prop = np.zeros((len(t_prop)))
+    already_prop = np.zeros((len(t_prop)))
     for k in range(len(lineage_list)):
         splited_var = np.array(lineage_list[k].split("/"))
         splited_var = splited_var[~(splited_var == "")]
@@ -212,6 +213,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
             if num_avail !=0:
                 ES_ranges = ES_sum/num_avail# compute the mean
                 Pseudo_prop = Pseudo_prop/num_pseudo 
+                already_prop +=Pseudo_prop
             else:
                 print("Error: There are no E[Susceptible] files for any lineage in %s"%lineage)
                 
@@ -445,6 +447,9 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     else:
         perday_orig = perday
     
+    ### Group Plot proportion of all other spikegroups
+    ax_prop.plot(t_prop, (100 - 100*already_prop), linewidth = 3, color = "grey", label = "Other")
+    
     ax_prop.set_xticks(perday_orig)
     ax_prop.set_xticklabels(date_ticks,rotation = 45, horizontalalignment = "right")
     ax_prop.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
@@ -463,6 +468,7 @@ lineage_list = []
 color_list = []
 custom_col = sns.color_palette("Set2", 100) 
 s = 0
+
 for i in range(num_groups):
     lineage_list.append(str(sys.argv[k+i]))
     try:
