@@ -208,11 +208,9 @@ for spklin in lineages_sim:
         mut_maj = mut_x_sites_dic[Pseudogroup_dic[spklin]]
         """Update mutation profile dictionary"""        
         mut_x_sites_dic_updated[spklin] = mut_maj
-
     else:
-        Top_Pseudo.append(spklin)
-        
         try:
+            Top_Pseudo.append(spklin)
             mut_file = open(mut_sim[lineages_sim.index(spklin)], "r")
             mut_lin0 = mut_file.readlines()
             mut_file.close()
@@ -228,8 +226,9 @@ for spklin in lineages_sim:
         except:
             pass
 
+if "Wuhan-Hu-1" not in Top_Pseudo:
+    Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo)
     
-Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo)
 a = 1
 if len(Top_Pseudo)!=0:
     Cross_react_dic = {}
