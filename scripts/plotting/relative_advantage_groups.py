@@ -85,7 +85,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     
     status_list = []
     Pseudo_Prop = np.zeros((len(t_prop)))
-    masked_locs = []
+   
     for k in range(len(lineage_list)):
         splited_var = np.array(lineage_list[k].split("/"))
         splited_var = splited_var[~(splited_var == "")]
@@ -102,6 +102,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         # different axis for proportions
         ax_k_twin = ax_k.twinx()
         
+        masked_locs = []
         lab_done = {}
         lab_done[lineage_list[k]] = ""
         Pseudo_done = {}
@@ -173,9 +174,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                         Pseudo_done[lineage_list[k]] += Pseudogroup_dic[lineage] + "/"
  
                 else:
-                    lab_k = lineage + "*"+"/"
+                    lab_k = lineage+"/"
                     lab_done[lineage_list[k]] += lab_k
-                            
                     if lineage in lineage_freq.columns.astype(str):
                         masked_locs.append(False)
                         if x == 0:
@@ -186,11 +186,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                             if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
                                 Pseudo_Prop += moving_average(lineage_freq[lineage], window = 14)
                                 #Pseudo_Prop[Pseudo_Prop < threshold] = 0
-                                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
-                        
-                        if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
-                            Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"    
-                            
+                                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)     
                     else:
                         masked_locs.append(True)
                         if x == 0:
@@ -198,10 +194,9 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                         else:
                             Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
                         
-                        lab_k = lineage + "/"
-                        lab_done[lineage_list[k]] += lab_k
-                        if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
-                            Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"
+                        
+                    if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
+                        Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"
                                                                  
         lab_k = lab_done[lineage_list[k]][:-1]
         if lab_k != "":
@@ -237,7 +232,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
             ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
             
-            if not np.any(masked_locs):
+            if not np.all(masked_locs):
                 already_prop = already_prop + Pseudo_Prop
                 ax_prop.plot(t_prop, 100*Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
             
