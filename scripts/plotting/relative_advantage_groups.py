@@ -91,7 +91,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         splited_var = splited_var[~(splited_var == "")]
         splited_var = splited_var[~(splited_var == " ")]
         num_avail = 0
-        num_pseudo = 1
         
         # plotting
         PreFig(xsize = 20, ysize = 20)
@@ -115,8 +114,9 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 run = True
             except:
                 try:
-                    ES_df = pd.read_csv("results/Immunological_Landscape_ALL/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
-                    num_avail +=1
+                    if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
+                        ES_df = pd.read_csv("results/Immunological_Landscape_ALL/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
+                        num_avail +=1
                     run = True
                 except:
                     try:
@@ -141,16 +141,22 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     ES_sum += ES_df.to_numpy()[:, es_cols!="Days"].astype(float)
                 
                 # change in relative frequency from genomic surveillance data 
+                
                 if lineage in list(Pseudogroup_dic.keys()):
+                    lab_k = lineage + "*"+"/"
+                    lab_done[lineage_list[k]] += lab_k
+                    masked_locs.append(False)
+                        
                     if "Spike. " + Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
                         if x == 0:
                             Pseudo_Prop = moving_average(lineage_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)
                             #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
                             #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
                         else:
-                            Pseudo_Prop += moving_average(lineage_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)
-                            #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
-                            #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+                            if lab_k not in (Pseudo_done[lineage_list[k]].split("/")):
+                                Pseudo_Prop += moving_average(lineage_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)
+                                #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
+                                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
                         
                     elif Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
                         if x == 0:
@@ -158,68 +164,49 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                             #Pseudo_Prop[Pseudo_Prop < threshold] = 0
                             #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
                         else:
-                            Pseudo_Prop += moving_average(lineage_freq[Pseudogroup_dic[lineage]], window = 14)
-                            #Pseudo_Prop[Pseudo_Prop < threshold] = 0
-                            #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+                            if lab_k not in (Pseudo_done[lineage_list[k]].split("/")):
+                                Pseudo_Prop += moving_average(lineage_freq[Pseudogroup_dic[lineage]], window = 14)
+                                #Pseudo_Prop[Pseudo_Prop < threshold] = 0
+                                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
                     
-                    if x != len(splited_var) - 1:
-                        lab_k = lineage + "*"+"/"
-                    else:
-                        lab_k = lineage + "*"  
-                    lab_done[lineage_list[k]] += lab_k
                     if lab_k not in (Pseudo_done[lineage_list[k]].split("/")):
                         Pseudo_done[lineage_list[k]] += Pseudogroup_dic[lineage] + "/"
-                    else:
-                        num_pseudo +=1
-                        
-                    masked_locs.append(False)
+ 
                 else:
+                    lab_k = lineage + "*"+"/"
+                    lab_done[lineage_list[k]] += lab_k
+                            
                     if lineage in lineage_freq.columns.astype(str):
+                        masked_locs.append(False)
                         if x == 0:
                             Pseudo_Prop = moving_average(lineage_freq[lineage], window = 14)
                             #Pseudo_Prop[Pseudo_Prop < threshold] = 0
                             #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
                         else:
-                            Pseudo_Prop += moving_average(lineage_freq[lineage], window = 14)
-                            #Pseudo_Prop[Pseudo_Prop < threshold] = 0
-                            #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+                            if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
+                                Pseudo_Prop += moving_average(lineage_freq[lineage], window = 14)
+                                #Pseudo_Prop[Pseudo_Prop < threshold] = 0
+                                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
                         
-                        if x != len(splited_var) - 1:
-                            lab_k = lineage + "*"+"/"
-                        else:
-                            lab_k = lineage + "*"
-                        lab_done[lineage_list[k]] += lab_k
                         if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
-                            Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"
-                        else:
-                            num_pseudo +=1
+                            Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"    
                             
-                        masked_locs.append(False)
                     else:
+                        masked_locs.append(True)
                         if x == 0:
                             Pseudo_Prop = ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
                         else:
                             Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
                         
-                        if x != len(splited_var) - 1:
-                            lab_k = lineage + "/"
-                        else:
-                            lab_k = lineage
-                            
+                        lab_k = lineage + "/"
                         lab_done[lineage_list[k]] += lab_k
                         if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
                             Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"
-                        
-                        masked_locs.append(True)
-                                         
-        lab_k = lab_done[lineage_list[k]]
-        
+                                                                 
+        lab_k = lab_done[lineage_list[k]][:-1]
         if lab_k != "":
             if num_avail !=0:
                 ES_ranges = ES_sum/num_avail# compute the mean
-            
-            if num_pseudo != 0:
-                Pseudo_Prop = Pseudo_Prop/num_pseudo 
                 
             else:
                 print("Error: There are no E[Susceptible] files for any lineage in %s"%lineage)
