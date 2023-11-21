@@ -553,11 +553,11 @@ elif Lin_name == "ALL":
                                                                        Escape_Fraction, 
                                                                        [ab],
                                                                        mut_x_sites_dic, joblib=True)
-            
+                    pdb.set_trace()
                     FRxy_ab[g[s1], :][:, g[s2]] = Cross_Lin[ab]
                 
                 num_to_do +=len(g[s2])
-    
+            pdb.set_trace()
             Cross_react_dic[ab] = FRxy_ab
         a +=1
     
