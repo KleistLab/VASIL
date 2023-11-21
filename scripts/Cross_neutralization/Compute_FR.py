@@ -388,8 +388,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
         status_sim = []
         for i in range(len(Lin_list)):
             Cross_i = {}
-            Cross_i["variant_list"] = list(variant_x_names_cross)+ [Lin_list[i]]
-            
+                        
             if Lin_list[i] not in list(variant_x_names_cross):
                 w_lin = len(variant_x_names_cross)
                 Cross_i["variant_list"] = list(variant_x_names_cross) + [Lin_list[i]]
