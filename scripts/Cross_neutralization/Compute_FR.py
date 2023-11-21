@@ -365,8 +365,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
                 """Update mutation profile dictionary"""
                 mut_x_sites_dic_updated[Lin_list[j]] = mut_Lin
             else:
-                if Lin_list[j] not in list(mut_x_sites_dic.keys()):
-                    mut_x_sites_dic_updated[Lin_list[j]] = mut_x_sites_dic[Pseudogroup_dic[Lin_list[j]]]
+                mut_x_sites_dic_updated[Lin_list[j]] = mut_x_sites_dic[Pseudogroup_dic[Lin_list[j]]]
                 
         g = []
         g_var =[]
