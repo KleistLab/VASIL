@@ -90,12 +90,14 @@ between_dates <- subset(u_dates, (id_dates >= match(date_start, u_dates))&(id_da
 #  }
 #}
 #D <- D[to_keep,]
+#print(D$date)
 D <- D[D$date %in% between_dates, ]
 sprintf("Timeframe of extracted mutation profiles %s to %s", unique(D$date)[1], unique(D$date)[length(unique(D$date))])
 
 ### filter mutations 
 lineages <- sort(unique(D$lineage))
 number_lineages <- length(lineages)
+#print(D$date)
 
 mutationprofiles_l <- list()
 lineages_l <- c()

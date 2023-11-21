@@ -1,8 +1,8 @@
 # 1. Full path to covsonar data
 covsonardata: "path/to/covsonar_data.tsv"
-freq_lin: FALSE ## if FALSE results/Daily_Lineages_Freq.csv is required (set this TRUE only on first code run)
+freq_lin: TRUE ## if FALSE results/Daily_Lineages_Freq.csv is required (set this TRUE only on first code run)
 filter_out: 0 ### percentage (between 0 and 100, do not add zeros after last decimal) filtering lineages that never appeared above it in any calendar week (requires that consonar data includes calendar weeks) -- set to 0 if no filtering is desired
-freq_lin_filt: FALSE ## if FALSE results/Daily_Lineages_Freq_%filter_out%_percent.csv is required (set this TRUE only on first code run when filter_out not 0)
+freq_lin_filt: TRUE ## if FALSE results/Daily_Lineages_Freq_%filter_out%_percent.csv is required (set this TRUE only on first code run when filter_out not 0)
 # prefix for mutation_data filename
 prefix: "mutationprofile"
 mutation_threshold: 0.75
@@ -21,7 +21,7 @@ date_start: "2021-07-01" # must be included cases timeframe and in covsonar time
 date_end: "2023-05-27" # must be included at least in covsonar timeframe
 # 6.a OPTIONAL: Get immunological landscape for lineage/spikegroup 
 focus_il: TRUE
-cross_focus: FALSE # if FALSE you must include file {workdir}/results/Cross_react_dic_spikegroups_*_pck" *=lineage_focus & {workdir}/results/Cross_with_delta_validation.pck (just rename previous file) or if they are present in covsonar data, it is extracted from there
+cross_focus: TRUE # if FALSE you must include file {workdir}/results/Cross_react_dic_spikegroups_*_pck" *=lineage_focus & {workdir}/results/Cross_with_delta_validation.pck (just rename previous file) or if they are present in covsonar data, it is extracted from there
 # 6.b if above is TRUE, provide name  --- please replace "." with "_" 
 lineage_focus: "BA_2_86"
 # 6.c and NTD-RBD mutation positions file (DEL/del are ignored)
@@ -31,7 +31,7 @@ p_neut: TRUE
 antigen: ["Wuhan-Hu-1", "XBB.1.5", "Wuhan-Hu-1=0.75/EG.5.1=0.25", "Wuhan-Hu-1/EG.5.1"] ### if not "Wuhan-Hu-1", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if focus_il is TRUE.
 # set antigen to ["ALL"] you need the p_neut for all spikegroups of covsonar data (might take a while)
 # 7. OPTIONAL: Get Immunological landscape for all spikegroups in simulation timeframe TRUE/FALSE
-cross_all: FALSE
+cross_all: TRUE
 # if cross_all is FALSE, you must include the precomputed files:
 # {workdir}/results/Cross_with_delta_validation_recomputed.pck & {workdir}/results/Cross_react_dic_spikegroups_ALL.pck (just rename previous file) 
 # 7.a In case one is using a premade cross_all file (for example computed for shorter timeframe), there might be some variants missing 

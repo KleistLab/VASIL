@@ -1,5 +1,6 @@
 # 1a. Full path to GInPipe incidence data
-cases: "caseAscertainmentTable_reportedCasesRatio.csv"
+cases: "path/to/covid_case_data.csv"
+cases_column: "minNTrue" ## provide the data column name of the case ascertainment that you want to use
 # 1b. Fixed total population size for the region of interest
 total_population: 84334787
 # 1c. Fix time range for all figures

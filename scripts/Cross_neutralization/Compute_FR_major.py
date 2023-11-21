@@ -210,6 +210,9 @@ for spklin in lineages_sim:
     if spklin in Pseudo_keys:
         Top_Pseudo.append(spklin)
         mut_maj = mut_x_sites_dic[Pseudogroup_dic[spklin]]
+        """Update mutation profile dictionary"""        
+        mut_x_sites_dic_updated[spklin] = mut_maj
+
     else:
         Top_Pseudo.append(spklin)
         
@@ -223,12 +226,13 @@ for spklin in lineages_sim:
                     if len(re.findall(r'\d+', mut))>0:
                         mut_maj.append(re.findall(r'\d+', mut)[0])       
                         mut_maj = list(np.unique(np.array(mut_maj).astype(str)))
+            
+            """Update mutation profile dictionary"""        
+            mut_x_sites_dic_updated[spklin] = mut_maj
         except:
             pass
 
-    """Update mutation profile dictionary"""        
-    mut_x_sites_dic_updated[spklin] = mut_maj
-
+    
 Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo)
 a = 1
 if len(Top_Pseudo)!=0:

@@ -78,7 +78,7 @@ if config["fit_lineage_focus"]:
             spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
             mean_trend="results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv",
         params:
-            threshold=config["threshold"],
+            threshold=config["weight_prop"],
             lineage_focus=config["lineage_focus"],
             time_start=config["time_start"],
             time_stop=config["time_stop"],

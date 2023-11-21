@@ -85,6 +85,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     
     status_list = []
     Pseudo_Prop = np.zeros((len(t_prop)))
+    masked_locs = []
     for k in range(len(lineage_list)):
         splited_var = np.array(lineage_list[k].split("/"))
         splited_var = splited_var[~(splited_var == "")]
@@ -168,9 +169,10 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     lab_done[lineage_list[k]] += lab_k
                     if lab_k not in (Pseudo_done[lineage_list[k]].split("/")):
                         Pseudo_done[lineage_list[k]] += Pseudogroup_dic[lineage] + "/"
-                    
-                    num_pseudo +=1
-                
+                    else:
+                        num_pseudo +=1
+                        
+                    masked_locs.append(False)
                 else:
                     if lineage in lineage_freq.columns.astype(str):
                         if x == 0:
@@ -189,8 +191,10 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                         lab_done[lineage_list[k]] += lab_k
                         if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
                             Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"
-                        num_pseudo +=1  
-                        
+                        else:
+                            num_pseudo +=1
+                            
+                        masked_locs.append(False)
                     else:
                         if x == 0:
                             Pseudo_Prop = ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
@@ -205,6 +209,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                         lab_done[lineage_list[k]] += lab_k
                         if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
                             Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"
+                        
+                        masked_locs.append(True)
                                          
         lab_k = lab_done[lineage_list[k]]
         
@@ -244,8 +250,9 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
             ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
             
-            already_prop = already_prop + Pseudo_Prop
-            ax_prop.plot(t_prop, 100*Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
+            if not np.any(masked_locs):
+                already_prop = already_prop + Pseudo_Prop
+                ax_prop.plot(t_prop, 100*Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
             
             ax_k.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
             ax_k_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)

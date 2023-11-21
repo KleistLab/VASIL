@@ -354,29 +354,32 @@ def PNeut_Envelope(s, t, variants, variant_x_names, Cross_react_dic, c_dframe_di
             try:
                 where_x = list(variant_x_names).index(Pseudogroup_dic[lin])
             except:
+                where_x = "Not Found"
                 print("Error in antigen parameter: %s is not present in covsonar data"%lin)
-
-        if len(spl_sub)==1:
-            prop_lin = 1/len(splited_var)
-        else:
-            prop_0 = re.findall(r"[-+]?(?:\d*\.*\d+)", spl_sub[1])[0] ### anything else is error
-            prop_lin = float(prop_0)
         
-        for i in range(len(variants)):
-            where_y = list(variant_x_names).index(variants[i])
+        if where_x != "Not Found":
+            if len(spl_sub)==1:
+                prop_lin = 1/len(splited_var)
+            else:
+                prop_0 = re.findall(r"[-+]?(?:\d*\.*\d+)", spl_sub[1])[0] ### anything else is error
+                prop_lin = float(prop_0)
             
-            for j in range(len(list(c_dframe_dic.keys()))):
-                if not mean_IC50xx:
-                    IC50xx = IC50xx_dic[list(c_dframe_dic.keys())[j]]
+            for i in range(len(variants)):
+                where_y = list(variant_x_names).index(variants[i])
                 
-                IC50xy = [Cross_react_dic[Ab_classes[i]][where_x, where_y]*IC50xx*FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))]
+                for j in range(len(list(c_dframe_dic.keys()))):
+                    if not mean_IC50xx:
+                        IC50xx = IC50xx_dic[list(c_dframe_dic.keys())[j]]
                     
-                c_dframe = c_dframe_dic[list(c_dframe_dic.keys())[j]]
-                for l in range(len(t)): 
-                    antibody_level = c_dframe.loc[l][1:]
-                    res[i, j, l] += prop_lin*efficacy_n_antibodies(antibody_level, IC50xy) 
+                    IC50xy = [Cross_react_dic[Ab_classes[i]][where_x, where_y]*IC50xx*FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))]
+                        
+                    c_dframe = c_dframe_dic[list(c_dframe_dic.keys())[j]]
+                    for l in range(len(t)): 
+                        antibody_level = c_dframe.loc[l][1:]
+                        res[i, j, l] += prop_lin*efficacy_n_antibodies(antibody_level, IC50xy) 
     
     return np.min(res, axis = (0, 1)), np.max(res, axis = (0, 1))
+        
 
 """Compute Antibody concentration over time for a range of t_half and t_max"""
 thalf_vec = np.linspace(25, 69, 15) 
