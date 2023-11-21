@@ -54,7 +54,7 @@ outputfile_mutationprofile_plot <- paste0(output_prefix_for_file,"_positiongroup
 outputfile_mutationprofile_groups <- paste0(output_prefix_for_file,"_RBD_NTD_pseudogroups.csv")
 
 
-zoom_in_lineages <- c("XBB.1.5", "XBT", "XBK.1", "XBK")
+
 
 ######## CONSTANT DEFINTIONS:
 ## spike protein positions (NTD and RBD):
@@ -302,6 +302,13 @@ if (length(MP4_unique)>=2){
 
 
 ## Zooming in for a predefined set of lineages:
+lineages_tb <- data.frame(table(D$lineage))
+# random selection:
+# zoom_in_lineages <- sample(lineages_tb$Var1,3)
+# take the top 3:
+zoom_in_lineages <- lineages_tb[order(lineages_tb$Freq, decreasing = TRUE)[1:3],1]
+
+
 MP2_zoom <- MP2[unlist(lapply(zoom_in_lineages, function(x) which(rownames(MP2) == x))),]
 #keep only those sites with at least one mutations among the lineages
 MP2_zoom <- MP2_zoom[,which(apply(MP2_zoom,2,sum)>0)]
