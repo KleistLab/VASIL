@@ -18,6 +18,14 @@ except:
 fq_cols = frequency_lineage_df.columns.astype(str)
 days_prop = frequency_lineage_df["date"] ### already matched with timeline of infection -- including excess
 
+""" Remove NONE and UNASSIGNED """
+if "NONE" in fq_cols:
+    frequency_lineage_df.drop(columns = "NONE", inplace = True)
+    fq_cols = frequency_lineage_df.columns.astype(str)
+if "UNASSIGNED" in fq_cols:
+    frequency_lineage_df.drop(columns = "UNASSIGNED", inplace = True)
+    fq_cols = frequency_lineage_df.columns.astype(str)
+
 if "week_num" in list(fq_cols):
     unique_lineage = fq_cols[(fq_cols != "date")&(fq_cols != "week_num")]
     weeks_all = frequency_lineage_df["week_num"].astype(str)
@@ -27,6 +35,7 @@ else:
     unique_lineage = fq_cols[fq_cols != "date"]
     weeks = None
     frequency_lineage = frequency_lineage_df.to_numpy()[:, fq_cols != "date"].T.astype(float)
+
 
 """Load spikegroups and mutation data  """
 variant_mut_data = pd.read_csv(sys.argv[2])
@@ -82,11 +91,12 @@ SpikeGroups_dic["Wuhan-Hu-1"] = "Wuhan-Hu-1" ### place holder for wild type
 check_var = []
 for x in range(len(unique_group)):
     if "/" not in unique_group[x]:
-        where_x = list(Lineages_list).index(unique_group[x])
-        variant_proportion.append(variant_proportion_orig[where_x, :])
-        SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
-        SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
-        check_var.append(unique_group[x])
+        if unique_group[x] in Lineages_list:
+            where_x = list(Lineages_list).index(unique_group[x])
+            variant_proportion.append(variant_proportion_orig[where_x, :])
+            SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
+            SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
+            check_var.append(unique_group[x])
     else:
         splited_var = unique_group[x].split("/")
         where_x = []

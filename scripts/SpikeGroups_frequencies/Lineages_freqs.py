@@ -85,10 +85,17 @@ for i in range(len(days_prop)):
 unique_lineage_timeframe = np.unique(lineages_all[np.array(to_keep)])
 """
 unique_lineage_timeframe = np.unique(lineages_all)
+""" Remove NONE and UNASSIGNED """
+if "NONE" in unique_lineage_timeframe:
+    unique_lineage_timeframe = np.array(unique_lineage_timeframe)[np.array(unique_lineage_timeframe) != "NONE"]
+if "UNASSIGNED" in unique_lineage_timeframe:
+    unique_lineage_timeframe = np.array(unique_lineage_timeframe)[np.array(unique_lineage_timeframe) != "UNASSIGNED"]
+
 
 """Compute lineage frequencies"""
 frequency_lineage = np.zeros((len(unique_lineage_timeframe), total_days)) # indexing of t correspondis to timeline of infection days_incidence
 for x in range(len(unique_lineage_timeframe)):
+    
     pfunc = partial(sub_func, x = x, days_prop = days_prop, days_incidence = days_incidence, lineages_all = lineages_all, unique_lineage = unique_lineage_timeframe)
     try:
         res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(days_incidence[where_first_day:]))))
