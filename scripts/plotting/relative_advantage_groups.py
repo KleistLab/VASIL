@@ -68,7 +68,7 @@ def PreFig(xsize = 12, ysize = 12):
 file = open("Spikegroups_membership.pck", "rb")
 Pseudogroup_dic = pickle.load(file)
 file.close()    
-def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
+def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, already_prop = np.zeros((len(t_prop)))):
     # plotting
     PreFig(xsize = 20, ysize = 20)
     fig = plt.figure(figsize = (9, 7))
@@ -84,8 +84,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     ax_prop = fig_prop.add_subplot(1, 1, 1)
     
     status_list = []
-    Pseudo_prop = np.zeros((len(t_prop)))
-    already_prop = np.zeros((len(t_prop)))
+    Pseudo_Prop = np.zeros((len(t_prop)))
     for k in range(len(lineage_list)):
         splited_var = np.array(lineage_list[k].split("/"))
         splited_var = splited_var[~(splited_var == "")]
@@ -212,8 +211,10 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
         if lab_k != "":
             if num_avail !=0:
                 ES_ranges = ES_sum/num_avail# compute the mean
-                Pseudo_prop = Pseudo_prop/num_pseudo 
-                already_prop +=Pseudo_prop
+            
+            if num_pseudo != 0:
+                Pseudo_Prop = Pseudo_Prop/num_pseudo 
+                
             else:
                 print("Error: There are no E[Susceptible] files for any lineage in %s"%lineage)
                 
@@ -243,6 +244,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
             ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
             ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
             
+            already_prop = already_prop + Pseudo_Prop
             ax_prop.plot(t_prop, 100*Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
             
             ax_k.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
@@ -410,8 +412,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
 
     
     # Save spikegroup_proportions
-    ymin, ymax = ax_prop.get_ylim()
-    ax_prop.set_ylim(((0, ymax)))
     ax.set_xticks(perday_orig)
     ax.set_xticklabels(date_ticks,
         rotation = 45, horizontalalignment = "right")
@@ -447,19 +447,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1):
     else:
         perday_orig = perday
     
-    ### Group Plot proportion of all other spikegroups
-    ax_prop.plot(t_prop, (100 - 100*already_prop), linewidth = 3, color = "grey", label = "Other")
-    
-    ax_prop.set_xticks(perday_orig)
-    ax_prop.set_xticklabels(date_ticks,rotation = 45, horizontalalignment = "right")
-    ax_prop.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
-    pdf2 = PdfPages(sys.argv[w_save]+"/Groups_proportions.pdf")
-    ax_prop.set_ylabel("Frequency (daily %)", fontsize = 20)
-    pdf2.savefig(fig_prop, bbox_inches = "tight")
-    fig_prop.savefig(sys.argv[w_save]+"/Groups_proportions.svg")
-    pdf2.close()
-    
-    return status_list
+    return status_list, already_prop, ax_prop, perday_orig, date_ticks, fig_prop
 
 num_groups = int(sys.argv[7])
 w_save = 8
@@ -481,8 +469,20 @@ for i in range(num_groups):
             color_list.append(sns.color_palette("rocked", rand_num)[0])
         s +=1
 
-status_list = plot_fit(ES_lin_dir, lineage_list, color_list, w_save)
-    
+status_list, already_prop, ax_prop, perday_orig, date_ticks, fig_prop = plot_fit(ES_lin_dir, lineage_list, color_list, w_save, already_prop = np.zeros((len(t_prop))))
+### Group Plot proportion of all other spikegroups
+ax_prop.plot(t_prop, (100 - 100*already_prop), linewidth = 3, color = "grey", label = "Other")
+ymin, ymax = ax_prop.get_ylim()
+ax_prop.set_ylim(((0, 1.1*ymax)))
+ax_prop.set_xticks(perday_orig)
+ax_prop.set_xticklabels(date_ticks,rotation = 45, horizontalalignment = "right")
+ax_prop.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+pdf2 = PdfPages(sys.argv[w_save]+"/Groups_proportions.pdf")
+ax_prop.set_ylabel("Frequency (daily %)", fontsize = 20)
+pdf2.savefig(fig_prop, bbox_inches = "tight")
+fig_prop.savefig(sys.argv[w_save]+"/Groups_proportions.svg")
+pdf2.close()
+
 status = pd.DataFrame({"lineage":lineage_list, "relative_advantage":status_list})
 status.to_csv(sys.argv[w_save]+"/plot_status.csv")
  
