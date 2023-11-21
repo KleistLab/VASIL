@@ -70,7 +70,8 @@ fig = plt.figure(figsize = (15, 7))
 ax = fig.add_subplot(1, 1, 1)
 
 # I plot
-plt.plot(x, infection_data_corrected["minNTrue"], color = "black", label = "Infections", linewidth = 3)
+cases_col = str(sys.argv[len(sys.argv) - 1])
+plt.plot(x, infection_data_corrected[cases_col], color = "black", label = "Infections", linewidth = 3)
 plt.ylabel("Infections", fontsize = 25)
 
 # S plot 
