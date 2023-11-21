@@ -61,12 +61,13 @@ rule get_absolute_advantage:
         color=config["color"],
         time_start=config["time_start"],
         time_stop=config["time_stop"],
+        cases_col=config["cases_column"],
     output:
         res_dir=directory("plots/absolute"),
         res1="plots/absolute/absolute_estimate.pdf",
         res2="plots/absolute/absolute_estimate.svg",
     shell:
-        "python {workflow.basedir}/scripts/plotting/absolute_estimation.py {input.cases} {input.mean_trend} {params.color} {output.res_dir} {params.time_start} {params.time_stop}"
+        "python {workflow.basedir}/scripts/plotting/absolute_estimation.py {input.cases} {input.mean_trend} {params.color} {output.res_dir} {params.time_start} {params.time_stop} {params.cases_col}"
 
 
 if config["fit_lineage_focus"]:
