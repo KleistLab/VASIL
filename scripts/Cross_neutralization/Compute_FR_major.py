@@ -208,9 +208,8 @@ for spklin in lineages_sim:
         mut_maj = mut_x_sites_dic[Pseudogroup_dic[spklin]]
         """Update mutation profile dictionary"""        
         mut_x_sites_dic_updated[spklin] = mut_maj
-    else:
+    else:           
         try:
-            Top_Pseudo.append(spklin)
             mut_file = open(mut_sim[lineages_sim.index(spklin)], "r")
             mut_lin0 = mut_file.readlines()
             mut_file.close()
@@ -223,6 +222,7 @@ for spklin in lineages_sim:
             
             """Update mutation profile dictionary"""        
             mut_x_sites_dic_updated[spklin] = mut_maj
+            Top_Pseudo.append(spklin)
         except:
             pass
 
