@@ -57,11 +57,7 @@ try:
 
     """Update mutation profile dictionary"""
     mut_x_sites_dic_updated = mut_x_sites_dic.copy()
-    if Lin_name not in SpikeGroups_list: ### Keep Lin_name as it is
-        mut_x_sites_dic_updated[Lin_name] = mut_Lin
-    else:
-        Lin_name = Lin_name + "_requested" ### renamed to avoid ambiguities
-        mut_x_sites_dic_updated[Lin_name] = mut_Lin
+    mut_x_sites_dic_updated[Lin_name] = mut_Lin
 except:
     mut_x_sites_dic_updated = mut_x_sites_dic.copy()
 

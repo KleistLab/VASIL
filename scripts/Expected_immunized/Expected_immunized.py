@@ -342,6 +342,7 @@ def PNeut_Envelope(s, t, variants, variant_x_names, Cross_react_dic, c_dframe_di
     
     res = np.zeros((len(variants), len(list(c_dframe_dic.keys())), len(t)))
     
+    success = []
     for j in range(len(splited_var)):
         spl_sub = np.array(splited_var[j].split("="))
         spl_sub = spl_sub[~(spl_sub == "")]
@@ -358,6 +359,7 @@ def PNeut_Envelope(s, t, variants, variant_x_names, Cross_react_dic, c_dframe_di
                 print("Error in antigen parameter: %s is not present in covsonar data"%lin)
         
         if where_x != "Not Found":
+            success.append(True)
             if len(spl_sub)==1:
                 prop_lin = 1/len(splited_var)
             else:
@@ -376,9 +378,14 @@ def PNeut_Envelope(s, t, variants, variant_x_names, Cross_react_dic, c_dframe_di
                     c_dframe = c_dframe_dic[list(c_dframe_dic.keys())[j]]
                     for l in range(len(t)): 
                         antibody_level = c_dframe.loc[l][1:]
-                        res[i, j, l] += prop_lin*efficacy_n_antibodies(antibody_level, IC50xy) 
-    
-    return np.min(res, axis = (0, 1)), np.max(res, axis = (0, 1))
+                        res[i, j, l] += prop_lin*efficacy_n_antibodies(antibody_level, IC50xy)
+        else:
+            success.append(False)
+            
+    if np.all(success):
+        return np.min(res, axis = (0, 1)), np.max(res, axis = (0, 1))
+    else:
+        return None, None
         
 
 """Compute Antibody concentration over time for a range of t_half and t_max"""
@@ -464,16 +471,18 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
                  for i in range(len(antigen_list)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
                      antigen = antigen_list[i]
                      EnvD_Min,EnvD_Max = jb_res[i]
-                     VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
-                     VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
+                     if EnvD_Min is not None:
+                         VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
+                         VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
             
             else:
                
                 for i in range(len(antigen_list)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
                     antigen = antigen_list[i]
                     EnvD_Min,EnvD_Max = PNeut_Envelope(1, t_conc, [Lin_name], variants_in_cross, Cross_react_dic, c_dframe_dic, IC50xx_dic, antigen_list = antigen_list, mean_IC50xx = True)
-                    VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
-                    VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
+                    if EnvD_Min is not None:
+                        VE["Proba Neut Min\n vs. %s antigen"%antigen] = EnvD_Min
+                        VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
                 
             """ Save P_Neut ranges"""
             VE_df = pd.DataFrame(VE)
