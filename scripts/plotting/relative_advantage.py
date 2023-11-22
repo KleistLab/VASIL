@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import sys
 import pdb
+import mpl_axes_aligner
 
 def moving_average(X, window = 7):
     u = np.zeros(len(X))
@@ -97,11 +98,12 @@ def plot_fit(ES_df, lineage, w_save = 6):
     PreFig(xsize = 20, ysize = 20)
     fig = plt.figure(figsize = (15, 7))
     ax = fig.add_subplot(1, 1, 1)
+    ax_twin = ax.twinx()
     
-    plt.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = "$\gamma_{%s}$"%lineage)
+    ax.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = "$\gamma_{%s}$"%lineage)
     #more smoothing
     #gamma_prop = moving_average(gamma_prop, window = 14)
-    plt.plot(t_dates, gamma_prop, color = "orange", label="$\gamma_prop$ %s"%lineage)
+    ax_twin.plot(t_dates, gamma_prop, color = "orange", label="$\gamma_prop$ %s"%lineage)
     
     #ax.axhline(xmin = 0, xmax = t_dates[-1], ls = "--", linewidth = 2, color = "black")
     ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
@@ -152,6 +154,12 @@ def plot_fit(ES_df, lineage, w_save = 6):
     
     ymin, ymax = ax.get_ylim()
     ax.set_ylim((ymin, ymax))
+    
+    # Align y = 0 of ax1 and ax2 with the center of figure.
+    mpl_axes_aligner.align.yaxes(ax, 0, ax_twin, 0, 0.5)
+    
+    ax.set_ylabel("Relative fitness $\gamma_y$", fontsize = 20)
+    ax_twin.set_ylabel("Change in proportion", fontsize = 20)
     
     pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lineage)
     pdf.savefig(fig, bbox_inches = "tight")

@@ -26,7 +26,8 @@ regex,
 pip,
 pyOpenSSL,
 patsy,
-scikit-learn.
+scikit-learn,
+mpl_axes_aligner,
 
 #### Install Conda/Miniconda
 Conda will manage the dependencies of our pipeline. Instructions can be found here:
@@ -376,9 +377,12 @@ If the conda installation fails, please use the following commands to install it
 ```
 conda create --name VASIL
 conda activate VASIL
-conda install -c conda-forge -c bioconda -c anaconda python==3.11.3 numpy scipy openpyxl pandas==1.5.3 matplotlib seaborn joblib regex pip pyOpenSSL patsy scikit-learn  
+conda install -c conda-forge -c bioconda -c anaconda python==3.11.3 numpy scipy openpyxl pandas==1.5.3 matplotlib seaborn joblib regex pip pyOpenSSL patsy scikit-learn
 ```
 
+```
+pip install mpl_axes_aligner
+```
 
 
 
