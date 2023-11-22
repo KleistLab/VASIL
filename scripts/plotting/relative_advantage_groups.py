@@ -84,8 +84,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     ax_prop = fig_prop.add_subplot(1, 1, 1)
     
     status_list = []
-    Pseudo_Prop = np.zeros((len(t_prop)))
-   
+    Pseudo_done_global = []
     for k in range(len(lineage_list)):
         splited_var = np.array(lineage_list[k].split("/"))
         splited_var = splited_var[~(splited_var == "")]
@@ -102,11 +101,13 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         # different axis for proportions
         ax_k_twin = ax_k.twinx()
         
-        masked_locs = []
+        
         lab_done = {}
         lab_done[lineage_list[k]] = ""
         Pseudo_done = {}
         Pseudo_done[lineage_list[k]] = ""
+        plot_prop = []
+        Pseudo_Prop = np.zeros((len(t_prop)))
         for x in range(len(splited_var)):
             lineage = splited_var[x]
             try:
@@ -146,58 +147,44 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 if lineage in list(Pseudogroup_dic.keys()):
                     lab_k = lineage + "*"+"/"
                     lab_done[lineage_list[k]] += lab_k
-                    masked_locs.append(False)
-                        
+                    plot_prop.append(True)
                     if "Spike. " + Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
-                        if x == 0:
-                            Pseudo_Prop = moving_average(lineage_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)
+                        if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
+                            Pseudo_Prop += moving_average(lineage_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)
                             #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
                             #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
-                        else:
-                            if lab_k not in (Pseudo_done[lineage_list[k]].split("/")):
-                                Pseudo_Prop += moving_average(lineage_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)
-                                #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
-                                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
-                        
                     elif Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
-                        if x == 0:
-                            Pseudo_Prop = moving_average(lineage_freq[Pseudogroup_dic[lineage]], window = 14)
+                        if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
+                            Pseudo_Prop += moving_average(lineage_freq[Pseudogroup_dic[lineage]], window = 14)
                             #Pseudo_Prop[Pseudo_Prop < threshold] = 0
                             #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
-                        else:
-                            if lab_k not in (Pseudo_done[lineage_list[k]].split("/")):
-                                Pseudo_Prop += moving_average(lineage_freq[Pseudogroup_dic[lineage]], window = 14)
-                                #Pseudo_Prop[Pseudo_Prop < threshold] = 0
-                                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
                     
-                    if lab_k not in (Pseudo_done[lineage_list[k]].split("/")):
+                    if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
                         Pseudo_done[lineage_list[k]] += Pseudogroup_dic[lineage] + "/"
- 
+                    
+                    if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
+                        already_prop += Pseudo_Prop
+                        Pseudo_done_global.append(Pseudogroup_dic[lineage])
+                        
                 else:
                     lab_k = lineage+"/"
                     lab_done[lineage_list[k]] += lab_k
                     if lineage in lineage_freq.columns.astype(str):
-                        masked_locs.append(False)
-                        if x == 0:
-                            Pseudo_Prop = moving_average(lineage_freq[lineage], window = 14)
+                        plot_prop.append(True)
+                        if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
+                            Pseudo_Prop += moving_average(lineage_freq[lineage], window = 14)
                             #Pseudo_Prop[Pseudo_Prop < threshold] = 0
-                            #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
-                        else:
-                            if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
-                                Pseudo_Prop += moving_average(lineage_freq[lineage], window = 14)
-                                #Pseudo_Prop[Pseudo_Prop < threshold] = 0
-                                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)     
+                            #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)    
+                        if lineage not in Pseudo_done_global: ### Repeating lineage in variants combination cannot be accounted twice in final proportion plot
+                            already_prop += Pseudo_Prop
+                            Pseudo_done_global.append(lineage)
                     else:
-                        masked_locs.append(True)
-                        if x == 0:
-                            Pseudo_Prop = ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
-                        else:
-                            Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
-                        
+                        plot_prop.append(False)
+                        Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
                         
                     if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
                         Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"
-                                                                 
+        
         lab_k = lab_done[lineage_list[k]][:-1]
         if lab_k != "":
             if num_avail !=0:
@@ -232,9 +219,10 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
             ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
             
-            if not np.all(masked_locs):
-                already_prop = already_prop + Pseudo_Prop
+            if np.all(plot_prop):
                 ax_prop.plot(t_prop, 100*Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
+            else:
+                already_prop = np.zeros((len(t_prop))) ### prop was not plotted if any of the variants are not in dataset, thus even the prop of present variant in the group must be discarded
             
             ax_k.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
             ax_k_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
@@ -397,7 +385,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     pdf.close()
     fig.savefig(sys.argv[w_save]+"/relative_fitness_groups.svg", bbox_inches = "tight")
     plt.close()
-    
 
     
     # Save spikegroup_proportions
