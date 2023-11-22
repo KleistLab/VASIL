@@ -154,12 +154,15 @@ def plot_fit(ES_df, lineage, w_save = 6):
     
     ymin, ymax = ax.get_ylim()
     ax.set_ylim((ymin, ymax))
-    
+    ymin1, ymax1 = ax_twin.get_ylim()
+    ax_twin.set_ylim((ymin1, ymax1))
     # Align y = 0 of ax1 and ax2 with the center of figure.
+    #loc0 = min(np.abs(ymin)/(np.abs(ymin)+np.abs(ymax)), np.abs(ymax)/(np.abs(ymin)+np.abs(ymax)))
+    #mpl_axes_aligner.align.yaxes(ax, 0, ax_twin, 0, loc0)
     mpl_axes_aligner.align.yaxes(ax, 0, ax_twin, 0, 0.5)
     
     ax.set_ylabel("Relative fitness $\gamma_y$", fontsize = 20)
-    ax_twin.set_ylabel("Change in proportion", fontsize = 20)
+    ax_twin.set_ylabel("Change in proportion $\gamma_{prop}$", fontsize = 20)
     
     pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lineage)
     pdf.savefig(fig, bbox_inches = "tight")

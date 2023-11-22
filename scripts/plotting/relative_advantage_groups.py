@@ -14,6 +14,8 @@ import sys
 import pdb
 import seaborn as sns
 import pickle
+import mpl_axes_aligner
+
 
 def moving_average(X, window = 7):
     u = np.zeros(len(X))
@@ -108,11 +110,17 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         Pseudo_done[lineage_list[k]] = ""
         plot_prop = []
         Pseudo_Prop = np.zeros((len(t_prop)))
+        start = 0
         for x in range(len(splited_var)):
             lineage = splited_var[x]
             try:
-                ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
-                num_avail +=1
+                if lineage in list(Pseudogroup_dic.keys()):
+                    if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
+                        ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
+                        num_avail +=1
+                else:
+                    ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+                    num_avail +=1
                 run = True
             except:
                 try:
@@ -122,11 +130,16 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     run = True
                 except:
                     try:
-                        ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
-                        num_avail +=1
+                        if lineage in list(Pseudogroup_dic.keys()):
+                            if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
+                                ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
+                                num_avail +=1
+                        else:
+                            ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+                            num_avail +=1
                         run = True
                     except:
-                        print("Computation needed: Excpected Susceptible file is not available for %s"%lineage)
+                        print("Computation needed: Expected Susceptible file is not available for %s"%lineage)
                         run = False
             # processing of susceptibles 
             if run:
@@ -137,7 +150,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 
                 es_cols = ES_df.columns
                 ES_df = ES_df[ES_df['Days'].isin(t_dates)]
-                if x == 0:
+                if start == 0:
                     ES_sum = ES_df.to_numpy()[:, es_cols!="Days"].astype(float)
                 else:
                     ES_sum += ES_df.to_numpy()[:, es_cols!="Days"].astype(float)
@@ -146,18 +159,23 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 
                 if lineage in list(Pseudogroup_dic.keys()):
                     lab_k = lineage + "*"+"/"
-                    lab_done[lineage_list[k]] += lab_k
                     plot_prop.append(True)
                     if "Spike. " + Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
                         if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
                             Pseudo_Prop += moving_average(lineage_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)
+                            lab_done[lineage_list[k]] += " + "+lab_k
                             #Pseudo_Prop[Pseudo_Prop < threshold] = 0        
                             #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+                        else:
+                            lab_done[lineage_list[k]] += lab_k
                     elif Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
                         if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
                             Pseudo_Prop += moving_average(lineage_freq[Pseudogroup_dic[lineage]], window = 14)
+                            lab_done[lineage_list[k]] += " + "+lab_k
                             #Pseudo_Prop[Pseudo_Prop < threshold] = 0
                             #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+                        else:
+                            lab_done[lineage_list[k]] += lab_k
                     
                     if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
                         Pseudo_done[lineage_list[k]] += Pseudogroup_dic[lineage] + "/"
@@ -168,24 +186,35 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                         
                 else:
                     lab_k = lineage+"/"
-                    lab_done[lineage_list[k]] += lab_k
                     if lineage in lineage_freq.columns.astype(str):
                         plot_prop.append(True)
                         if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
                             Pseudo_Prop += moving_average(lineage_freq[lineage], window = 14)
+                            lab_done[lineage_list[k]] += " + "+lab_k
                             #Pseudo_Prop[Pseudo_Prop < threshold] = 0
-                            #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)    
+                            #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop) 
+                        else:
+                            lab_done[lineage_list[k]] += lab_k
+                            
                         if lineage not in Pseudo_done_global: ### Repeating lineage in variants combination cannot be accounted twice in final proportion plot
                             already_prop += Pseudo_Prop
                             Pseudo_done_global.append(lineage)
                     else:
                         plot_prop.append(False)
                         Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
-                        
+                        if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
+                            lab_done[lineage_list[k]] += " + "+lab_k
+                        else:
+                            lab_done[lineage_list[k]] += " + "+lab_k
                     if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
                         Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"
-        
+                
+                start +=1
+            
         lab_k = lab_done[lineage_list[k]][:-1]
+        if lab_k[:3] == " + ":
+            lab_k = lab_k[3:]
+            
         if lab_k != "":
             if num_avail !=0:
                 ES_ranges = ES_sum/num_avail# compute the mean
@@ -230,9 +259,11 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             
             ymin1, ymax1 = ax_k.get_ylim()
             ymin2, ymax2 = ax_k_twin.get_ylim()
-            ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
-            ax_k.set_ylim((ymin, ymax))
-            ax_k_twin.set_ylim((ymin, ymax))
+            #ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
+            ax_k.set_ylim((ymin1, ymax1))
+            #ax_k_twin.set_ylim((ymin, ymax))
+            loc0k = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
+            mpl_axes_aligner.align.yaxes(ax_k, 0, ax_k_twin, 0, loc0k)
             try:
                 x_min = list(t_dates).index(str(sys.argv[5]))
                 #x_max = list(t_dates).index(str(sys.argv[6]))
@@ -314,9 +345,11 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     
     ymin1, ymax1 = ax.get_ylim()
     ymin2, ymax2 = ax_twin.get_ylim()
-    ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
-    ax.set_ylim((ymin, ymax))
-    ax_twin.set_ylim((ymin, ymax))
+    #ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
+    ax.set_ylim((ymin1, ymax1))
+    #ax_twin.set_ylim((ymin2, ymax2))
+    loc0 = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
+    mpl_axes_aligner.align.yaxes(ax, 0, ax_twin, 0, loc0)
     try:
         x_min = list(t_dates).index(str(sys.argv[5]))
         #x_max = list(t_dates).index(str(sys.argv[6]))
