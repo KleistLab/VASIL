@@ -16,6 +16,9 @@ if config["filter_out"] != 0:
     ),
     rule_all_common.append("results/Stichprobe_"+str(config["filter_out"])+"_percent.tsv"),
 
+if config["freq_lin"]:   
+    rule_all_common.append("results/Daily_Lineages_Freq.csv")
+
 if config["freq_lin_filt"]:   
     rule_all_common.append("results/Daily_Lineages_Freq_"+str(config["filter_out"])+"_percent.csv")
 
