@@ -248,6 +248,25 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
             ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
             
+            
+            gamma_prop = np.zeros(len(t_prop))
+            for l in range(len(t_dates)-1):
+                if Pseudo_Prop[l] == 0 or Pseudo_Prop[l+1] == 0:
+                    gamma_prop[l] = float('nan')
+                else:
+                    gamma_prop[l] = (Pseudo_Prop[l+1]/Pseudo_Prop[l]) -1
+            
+            ### Separate figure for relative fitness vs change in proportion
+            PreFig(xsize = 20, ysize = 20)
+            fig2 = plt.figure(figsize = (9, 7))
+            ax2 = fig2.add_subplot(1, 1, 1)
+            # different axis for proportions
+            ax2_twin = ax2.twinx()
+            
+            ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
+            ax2_twin.plot(t_prop, gamma_prop, color = "orange", label=lab_k)
+            
+            ### Plot spikegroups frequencies
             if np.all(plot_prop):
                 ax_prop.plot(t_prop, 100*Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
             else:
@@ -329,12 +348,38 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ax_k_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
             ax_k.set_ylabel("Relative fitness", fontsize = 20)
             ax_k_twin.set_ylabel("Variant abundance (daily)", fontsize = 20)
-            pdf_k = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lineage_list[k].replace("/", "_"))
+            pdf_k = PdfPages(sys.argv[w_save]+"/relative_fitness_%s_vs_prop.pdf"%lineage_list[k].replace("/", "_"))
             pdf_k.savefig(fig_k, bbox_inches = "tight")
             pdf_k.close()
      
-            fig_k.savefig(sys.argv[w_save]+"/relative_fitness_%s.svg"%(lineage_list[k].replace("/", "_")), bbox_inches = "tight")
+            fig_k.savefig(sys.argv[w_save]+"/relative_fitness_%s_vs_prop.svg"%(lineage_list[k].replace("/", "_")), bbox_inches = "tight")
             plt.close()
+            
+            ### Save relative grouped
+            ax2.set_xticks(perday_orig)
+            ax2.set_xticklabels(date_ticks,
+                rotation = 45, horizontalalignment = "right")
+            
+            if x_min is not None:
+                ax2.set_xlim((x_min, list(t_dates).index(t_dates[len(t_dates)-1])))
+                ax2_twin.set_xlim((x_min1, day_prop.index(t_dates[len(t_dates)-1])))
+                
+            
+            
+            #ymin2, ymax2 = ax2.get_ylim()
+            #ax2.set_ylim((ymin2, ymin2))
+            mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, 0.5)
+            ax2.set_ylabel("Relative fitness $\gamma_y$", fontsize = 20)
+            ax2_twin.set_ylabel("Change in proportion $\gamma_{prop}$", fontsize = 20)
+            ax2.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+            ax2_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+            pdf_2 = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lineage_list[k].replace("/", "_"))
+            pdf_2.savefig(fig2, bbox_inches = "tight")
+            pdf_2.close()
+     
+            fig2.savefig(sys.argv[w_save]+"/relative_fitness_%s.pdf.svg"%(lineage_list[k].replace("/", "_")), bbox_inches = "tight")
+            plt.close()
+            
             status_list.append("Done")
         
         else:
