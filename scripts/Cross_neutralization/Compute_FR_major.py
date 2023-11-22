@@ -234,8 +234,8 @@ if len(Top_Pseudo)!=0:
     Cross_react_dic = {}
     mut_x_sites_dic_used = mut_x_sites_dic_updated.copy()
     try:
-        Top_Pseudo.append(Lin_name)
         mut_x_sites_dic_used[Lin_name] = mut_Lin
+        Top_Pseudo.append(Lin_name)
     except:
         pass
       
