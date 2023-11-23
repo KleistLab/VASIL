@@ -109,11 +109,14 @@ def plot_fit(ES_df, lineage, w_save = 6):
     ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
     
     try:
-        x_min = list(t_dates).index(str(sys.argv[7]))
-        if str(sys.argv[8]) in t_dates:
-            x_max = list(t_dates).index(str(sys.argv[8]))
+        if str(sys.argv[5]) in list(t_dates):
+            x_min = list(t_dates).index(str(sys.argv[5]))
         else:
-            x_max = len(t_dates) - 1
+            x_min = 0
+        if str(sys.argv[6]) not in list(t_dates):
+            x_max = (len(t_dates) - 1) 
+        else:
+            x_max = list(t_dates).index(str(sys.argv[6])) 
     except:
         x_min = None
         x_max = None

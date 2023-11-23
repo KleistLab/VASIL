@@ -260,7 +260,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         if lab_k[:3] == " + ":
             lab_k = lab_k[3:]
         
-        lab_k_fn = lineage_list[k].replace("/", "_") ## for filename 
+        lab_k_fn = (lab_k.replace("/", "_")).replace("*","") ## for filename 
         if len(lab_k_fn) > 30: # can't be too long
             lab_k_fn = lab_k_fn[:-30] + "_et_al"
             
@@ -303,23 +303,22 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             loc0k = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
             mpl_axes_aligner.align.yaxes(ax_k, 0, ax_k_twin, 0, loc0k)
             try:
-                if str(sys.argv[5]) in t_dates:
+                if str(sys.argv[5]) in list(t_dates):
                     x_min = list(t_dates).index(str(sys.argv[5]))
                 else:
                     x_min = 0
-                if str(sys.argv[5]) in day_prop:
+                if str(sys.argv[5]) in list(day_prop):
                     x_min1 = day_prop.index(str(sys.argv[5]))
                 else:
                     x_min1 = 0
-                if str(sys.argv[6]) in day_prop:
+                if str(sys.argv[6]) in list(day_prop):
                     x_max1 = day_prop.index(str(sys.argv[6]))
                 else:
                     x_max1 = len(day_prop) - 1
                 if str(sys.argv[6]) not in list(t_dates):
                     x_max = (len(t_dates) - 1) + (x_max1 - day_prop.index(t_dates[len(t_dates) - 1]))
                 else:
-                    x_max = list(t_dates).index(str(sys.argv[6]))
-                    
+                    x_max = list(t_dates).index(str(sys.argv[6])) 
             except:
                 x_min = None
         
@@ -376,7 +375,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ax_k.set_xticklabels(date_ticks,
                 rotation = 45, horizontalalignment = "right")
             
-            pdb.set_trace()
             if (x_min is not None):
                 ax_k.set_xlim((x_min, x_max))
                 ax_k_twin.set_xlim((x_min1, x_max1))
@@ -461,15 +459,15 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     loc0 = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
     mpl_axes_aligner.align.yaxes(ax, 0, ax_twin, 0, loc0)
     try:
-        if str(sys.argv[5]) in t_dates:
+        if str(sys.argv[5]) in list(t_dates):
             x_min = list(t_dates).index(str(sys.argv[5]))
         else:
             x_min = 0
-        if str(sys.argv[5]) in day_prop:
+        if str(sys.argv[5]) in list(day_prop):
             x_min1 = day_prop.index(str(sys.argv[5]))
         else:
             x_min1 = 0
-        if str(sys.argv[6]) in day_prop:
+        if str(sys.argv[6]) in list(day_prop):
             x_max1 = day_prop.index(str(sys.argv[6]))
         else:
             x_max1 = len(day_prop) - 1
@@ -550,11 +548,11 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     
     ### work on spikes group props fig
     try:
-        if str(sys.argv[5]) in day_prop:
+        if str(sys.argv[5]) in list(day_prop):
             x_min1 = day_prop.index(str(sys.argv[5]))
         else:
             x_min1 = 0
-        if str(sys.argv[6]) in day_prop:
+        if str(sys.argv[6]) in list(day_prop):
             x_max1 = day_prop.index(str(sys.argv[6]))
         else:
             x_max1 = len(day_prop) - 1
