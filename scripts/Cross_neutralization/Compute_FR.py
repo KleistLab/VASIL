@@ -481,7 +481,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
                         for u1 in range(len(variant_x_names_cross)):
                             v_u1 = variant_x_names_cross[u1]
                             if v_u1 in variant_global:
-                                FRxy_ab[w_lin, u1] = Cross_global[ab][list(variant_global).index(Lin_list[i]), list(variant_global).index(v_u1)]
+                                FRxy_ab[w_lin, u1] = Cross_global[ab][list(variant_global).index(Pseudogroup_dic[Lin_list[i]]), list(variant_global).index(v_u1)]
                                 FRxy_ab[u1, w_lin] = FRxy_ab[w_lin, u1]
                             else:
                                 # recompute it, should not happen normaly
@@ -510,18 +510,17 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
                                     FRxy_ab[u1, w_lin] = FR_sites
                         Cross_i[ab] = FRxy_ab
                         a +=1 
-                        
+                
                 status_sim.append("Done")
-                file0 = open(sys.argv[k]+"/Cross_%s.pck"%Lin_list[i], "wb") 
+                file0 = open(sys.argv[len(sys.argv)-1]+"/Cross_%s.pck"%Lin_list[i], "wb") 
                 pickle.dump(Cross_i, file0)
                 file0.close()
                 
             except:
                 status_sim.append("No mutation profile for %s, give mutation file or chose a lineage present in covsonar data"%Lin_list[i])
                 
-            
         stat_df = pd.DataFrame({"Lineages":Lin_list, "computed_cross":status_sim})
-        stat_df.to_csv(sys.argv[k]+"/cross_status.csv")
+        stat_df.to_csv(sys.argv[len(sys.argv)-1]+"/cross_status.csv")
 
 elif Lin_name == "ALL":  
     """Break runs into manageable pieces"""
