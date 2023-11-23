@@ -39,6 +39,7 @@ rule all:
     input:
         rule_all_common,
 
+
 rule get_spike_props_overview:
     input:
         spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
@@ -47,6 +48,13 @@ rule get_spike_props_overview:
         res="plots/Spikes_Props/SpikeGroups_Props_overview.pdf",
     shell:
         "python {workflow.basedir}/scripts/plotting/Dominant_Spikes.py {input.spikes_freqs} {output.res_dir}"
+        
+
+import os
+try:
+    os.remove("results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv")
+except:
+    pass
 
 rule get_susceptible_weighted_mean:
     input:
