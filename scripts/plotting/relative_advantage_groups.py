@@ -87,12 +87,19 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     
     status_list = []
     Pseudo_done_global = []
+    
     for k in range(len(lineage_list)):
-        splited_var = np.array(lineage_list[k].split("/"))
-        splited_var = splited_var[~(splited_var == "")]
-        splited_var = splited_var[~(splited_var == " ")]
-        num_avail = 0
+        if lineage_list[k][-3:] == "ALL":
+            splited_var = []
+            for x in list(Pseudogroup_dic.keys()):
+                if x[:len(lineage_list[k][:-3])] == lineage_list[k][:-3]:
+                    splited_var.append(x)
+        else:
+            splited_var = np.array(lineage_list[k].split("/"))
+            splited_var = splited_var[~(splited_var == "")]
+            splited_var = splited_var[~(splited_var == " ")]
         
+        num_avail = 0
         # plotting
         PreFig(xsize = 20, ysize = 20)
         fig_k = plt.figure(figsize = (9, 7))
@@ -111,52 +118,86 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         plot_prop = []
         Pseudo_Prop = np.zeros((len(t_prop)))
         start = 0
+        ES_list = []
         for x in range(len(splited_var)):
             lineage = splited_var[x]
             try:
-                if lineage in list(Pseudogroup_dic.keys()):
-                    if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
-                        ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
-                        num_avail +=1
-                else:
-                    ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
-                    num_avail +=1
+                if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
+                    ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
+                    num_avail +=1 
+                    
+                    try:
+                        ES_df.drop(columns = "Unnamed: 0", inplace = True)
+                    except:
+                        pass
+                    
+                    es_cols = ES_df.columns
+                    ES_df = ES_df[ES_df['Days'].isin(t_dates)]
+                    ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))    
                 run = True
             except:
                 try:
-                    if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
-                        ES_df = pd.read_csv("results/Immunological_Landscape_ALL/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
-                        num_avail +=1
+                    ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+                    num_avail +=1
+                    try:
+                        ES_df.drop(columns = "Unnamed: 0", inplace = True)
+                    except:
+                        pass
+                    
+                    es_cols = ES_df.columns
+                    ES_df = ES_df[ES_df['Days'].isin(t_dates)]
+                    ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
                     run = True
                 except:
                     try:
-                        if lineage in list(Pseudogroup_dic.keys()):
+                        if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
+                            ES_df = pd.read_csv("results/Immunological_Landscape_ALL/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
+                            num_avail +=1
+                            try:
+                                ES_df.drop(columns = "Unnamed: 0", inplace = True)
+                            except:
+                                pass
+                            
+                            es_cols = ES_df.columns
+                            ES_df = ES_df[ES_df['Days'].isin(t_dates)]
+                            ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
+                        run = True
+                    except:
+                        try:
                             if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
                                 ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
                                 num_avail +=1
-                        else:
-                            ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
-                            num_avail +=1
-                        run = True
-                    except:
-                        print("Computation needed: Expected Susceptible file is not available for %s"%lineage)
-                        run = False
-            # processing of susceptibles 
-            if run:
-                try:
-                    ES_df.drop(columns = "Unnamed: 0", inplace = True)
-                except:
-                    pass
-                
-                es_cols = ES_df.columns
-                ES_df = ES_df[ES_df['Days'].isin(t_dates)]
-                if start == 0:
-                    ES_sum = ES_df.to_numpy()[:, es_cols!="Days"].astype(float)
-                else:
-                    ES_sum += ES_df.to_numpy()[:, es_cols!="Days"].astype(float)
-                
+                            
+                            try:
+                                ES_df.drop(columns = "Unnamed: 0", inplace = True)
+                            except:
+                                pass
+                            
+                            es_cols = ES_df.columns
+                            ES_df = ES_df[ES_df['Days'].isin(t_dates)]
+                            ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
+                            run = True
+                        except:
+                             try:
+                                 ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+                                 num_avail +=1
+                                 try:
+                                     ES_df.drop(columns = "Unnamed: 0", inplace = True)
+                                 except:
+                                     pass
+                                    
+                                 es_cols = ES_df.columns
+                                 ES_df = ES_df[ES_df['Days'].isin(t_dates)]
+                                 ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
+                                
+                                 run = True
+                             except:
+                                print("Computation needed: Expected Susceptible file is not available for %s"%lineage)
+                                run = False
+            
+            # processing of Proportions data
+            if run:   
                 # change in relative frequency from genomic surveillance data 
-                
                 if lineage in list(Pseudogroup_dic.keys()):
                     lab_k = lineage + "*"+"/"
                     plot_prop.append(True)
@@ -210,17 +251,24 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                         Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"
                 
                 start +=1
-            
-        lab_k = lab_done[lineage_list[k]][:-1]
+                
+        if lineage_list[k][-3:] != "ALL":
+            lab_k = lab_done[lineage_list[k]][:-1]
+        else:
+            lab_k = lineage_list[k]
+        
         if lab_k[:3] == " + ":
             lab_k = lab_k[3:]
+        
+        lab_k_fn = lineage_list[k].replace("/", "_") ## for filename 
+        if len(lab_k_fn) > 30: # can't be too long
+            lab_k_fn = lab_k_fn[:-30] + "_et_al"
             
         if lab_k != "":
-            if num_avail !=0:
-                ES_ranges = ES_sum/num_avail# compute the mean
-                
+            if num_avail == len(ES_list):
+                ES_ranges= np.mean(np.array(ES_list), axis = 0) # compute the mean
             else:
-                print("Error: There are no E[Susceptible] files for any lineage in %s"%lineage)
+                sys.exit("E[Susceptible] files were loaded wrongly for %s"%lab_k)
             
             # calculation of relative fitness
             gamma_SI = np.zeros((len(t_dates), ES_ranges.shape[1]))
@@ -338,11 +386,11 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ax_k_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
             ax_k.set_ylabel("Relative fitness", fontsize = 20)
             ax_k_twin.set_ylabel("Variant abundance (daily)", fontsize = 20)
-            pdf_k = PdfPages(sys.argv[w_save]+"/relative_fitness_%s_vs_prop.pdf"%lineage_list[k].replace("/", "_"))
+            pdf_k = PdfPages(sys.argv[w_save]+"/relative_fitness_%s_vs_prop.pdf"%(lab_k_fn))
             pdf_k.savefig(fig_k, bbox_inches = "tight")
             pdf_k.close()
      
-            fig_k.savefig(sys.argv[w_save]+"/relative_fitness_%s_vs_prop.svg"%(lineage_list[k].replace("/", "_")), bbox_inches = "tight")
+            fig_k.savefig(sys.argv[w_save]+"/relative_fitness_%s_vs_prop.svg"%(lab_k_fn), bbox_inches = "tight")
             plt.close()
         
             ### Separate figure for relative fitness vs change in proportion
@@ -357,12 +405,12 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     gamma_prop[l] = (Pseudo_Prop[l+1]/Pseudo_Prop[l]) -1
             
             PreFig(xsize = 20, ysize = 20)
-            fig2 = plt.figure(figsize = (9, 7))
+            fig2 = plt.figure(figsize = (15, 7))
             ax2 = fig2.add_subplot(1, 1, 1)
             # different axis for proportions
             ax2_twin = ax2.twinx()
             
-            ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
+            ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = lab_k)
             ax2_twin.plot(t_prop, gamma_prop, color = "orange", label=lab_k)
             
             ax2.set_xticks(perday_orig)
@@ -374,19 +422,26 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 ax2_twin.set_xlim((x_min1, day_prop.index(t_dates[len(t_dates)-1])))
                 
             
-            #ymin2, ymax2 = ax2.get_ylim()
-            #ax2.set_ylim((ymin2, ymin2))
+            ymin1, ymax1 = ax2.get_ylim()
+            ymin2, ymax2 = ax2_twin.get_ylim()
+            ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
+            
             mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, 0.5)
+            
+            if (ymin1/ymin2 >0.5) or (ymax1/ymax2>0.5) or (ymin2/ymin1 >0.5) or (ymax2/ymax1>0.5):
+                ax2.set_ylim((ymin, ymax))
+                ax2_twin.set_ylim((ymin, ymax))   
+
             ax2.axhline(xmin = 0, xmax = len(day_prop), ls = "--", linewidth = 2, color = "black")
             ax2.set_ylabel("Relative fitness $\gamma_y$", fontsize = 20)
             ax2_twin.set_ylabel("Change in proportion $\gamma_{prop}$", fontsize = 20)
             ax2.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
             ax2_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
-            pdf_2 = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lineage_list[k].replace("/", "_"))
+            pdf_2 = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lab_k_fn)
             pdf_2.savefig(fig2, bbox_inches = "tight")
             pdf_2.close()
      
-            fig2.savefig(sys.argv[w_save]+"/relative_fitness_%s.svg"%(lineage_list[k].replace("/", "_")), bbox_inches = "tight")
+            fig2.savefig(sys.argv[w_save]+"/relative_fitness_%s.svg"%lab_k_fn, bbox_inches = "tight")
             plt.close()
             
             status_list.append("Done")

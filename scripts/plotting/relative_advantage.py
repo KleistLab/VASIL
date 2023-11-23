@@ -152,14 +152,16 @@ def plot_fit(ES_df, lineage, w_save = 6):
         rotation = 45, horizontalalignment = "right")
     
     
-    #ymin, ymax = ax.get_ylim()
-    #ax.set_ylim((ymin, ymax))
-    #ymin1, ymax1 = ax_twin.get_ylim()
-    #ax_twin.set_ylim((ymin1, ymax1))
+    ymin1, ymax1 = ax.get_ylim()
+    ymin2, ymax2 = ax_twin.get_ylim()
+    ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
+    mpl_axes_aligner.align.yaxes(ax, 0, ax_twin, 0, 0.5)
     # Align y = 0 of ax1 and ax2 with the center of figure.
     #loc0 = min(np.abs(ymin)/(np.abs(ymin)+np.abs(ymax)), np.abs(ymax)/(np.abs(ymin)+np.abs(ymax)))
     #mpl_axes_aligner.align.yaxes(ax, 0, ax_twin, 0, loc0)
-    mpl_axes_aligner.align.yaxes(ax, 0, ax_twin, 0, 0.5)
+    if (ymin1/ymin2 >0.5) or (ymax1/ymax2>0.5) or (ymin2/ymin1 >0.5) or (ymax2/ymax1>0.5):
+        ax.set_ylim((ymin, ymax))
+        ax_twin.set_ylim((ymin, ymax))        
     
     ax.set_ylabel("Relative fitness $\gamma_y$", fontsize = 20)
     ax_twin.set_ylabel("Change in proportion $\gamma_{prop}$", fontsize = 20)

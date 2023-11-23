@@ -20,6 +20,7 @@ import matplotlib
 import seaborn as sns
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
+import pickle
 import pdb
 #### Visualisation ###  
 def PreFig(xsize = 12, ysize = 12):
@@ -126,6 +127,10 @@ xval = "Days since antigen exposure"
 yval = "Virus neutralization\n probability"
 s = 0
 custom_col = sns.color_palette("Set2", 100) 
+
+file = open("Spikegroups_membership.pck", "rb")
+Pseudogroup_dic = pickle.load(file)
+file.close()  
 for i in range(num_groups):
     Lin_i_list = str(sys.argv[k+i])
     splited_var = np.array(Lin_i_list.split("/"))
@@ -138,7 +143,7 @@ for i in range(num_groups):
                 run=True
             except:
                 try:
-                    Pneut_df = pd.read_csv("results/Immunological_Landscape_ALL/P_neut_%s.csv"%Lin_i)
+                    Pneut_df = pd.read_csv("results/Immunological_Landscape_ALL/P_neut_%s.csv"%Pseudogroup_dic[Lin_i])
                     run=True
                 except:
                     try:
