@@ -135,59 +135,66 @@ for i in range(num_groups):
         try:
             try:
                 Pneut_df = pd.read_csv(P_neut_dir+"/P_neut_%s.csv"%Lin_i)
+                run=True
             except:
                 try:
                     Pneut_df = pd.read_csv("results/Immunological_Landscape_ALL/P_neut_%s.csv"%Lin_i)
+                    run=True
                 except:
                     try:
                         Pneut_df = pd.read_csv("results/Immunological_Landscape/P_neut_%s.csv"%Lin_i)
+                        run = True
                     except:
                         print("Computation needed: P_neut file is not available for %s"%Lin_i)
-            
-            try:
-                Pneut_df.drop(columns = "Unnamed: 0", inplace = True)
-            except:
-                pass
-            
-            t = Pneut_df["Day since infection"] ### must be the same in all the Pneut files (which is the case in our pipeline)
-
-            """Compute PNeut Envelope"""    
-            EnvO_Min, EnvO_Max = Pneut_df["Proba Neut Min\n vs. %s antigen"%antigen].to_numpy(), Pneut_df["Proba Neut Max\n vs. %s antigen"%antigen].to_numpy()
-            Min_list.append(EnvO_Min)
-            Max_list.append(EnvO_Max)
-            col_o = str(sys.argv[k+num_groups+i])
-            if col_o in col_list:
-                if s<len(custom_col):
-                    col_o = custom_col[s]
-                else:
-                    rand_num = np.random.choice(1, 100)
-                    col_o = sns.color_palette("rocked", rand_num)[0] 
-                s +=1
+                        run = False
+            if run:
+                try:
+                    Pneut_df.drop(columns = "Unnamed: 0", inplace = True)
+                except:
+                    pass
                 
-            
-            col_list.append(col_o)
-            is_log=False
-            
-            ### save individual plots
-            PreFig(xsize = 20, ysize = 20)
-            figsize = (10,7)
-            fig0 = plt.figure(figsize = figsize)
-            ax0 = fig0.add_subplot(1, 1, 1)
-             
-            fig0, ax0 = Display_Envelope(t, np.array([EnvO_Min]), np.array([EnvO_Max]), 
-                                      is_log, 
-                                      save_to = Res_dir+"/P_Neut_%s"%Lin_i,
-                                      xval = xval, yval = yval,
-                                      linewidth = 4,
-                                      color = [col_o],
-                                      alpha = 0.3,
-                                      fig = fig0,
-                                      ax = ax0,
-                                      labels = [Lin_i],
-                                      antigen = antigen) 
-
-            status.append("Done")
-            Lin_list.append(Lin_i)
+                
+                t = Pneut_df["Day since infection"] ### must be the same in all the Pneut files (which is the case in our pipeline)
+    
+                """Compute PNeut Envelope"""    
+                EnvO_Min, EnvO_Max = Pneut_df["Proba Neut Min\n vs. %s antigen"%antigen].to_numpy(), Pneut_df["Proba Neut Max\n vs. %s antigen"%antigen].to_numpy()
+                Min_list.append(EnvO_Min)
+                Max_list.append(EnvO_Max)
+                col_o = str(sys.argv[k+num_groups+i])
+                if col_o in col_list:
+                    if s<len(custom_col):
+                        col_o = custom_col[s]
+                    else:
+                        rand_num = np.random.choice(1, 100)
+                        col_o = sns.color_palette("rocked", rand_num)[0] 
+                    s +=1
+                    
+                
+                col_list.append(col_o)
+                is_log=False
+                
+                ### save individual plots
+                PreFig(xsize = 20, ysize = 20)
+                figsize = (10,7)
+                fig0 = plt.figure(figsize = figsize)
+                ax0 = fig0.add_subplot(1, 1, 1)
+                 
+                fig0, ax0 = Display_Envelope(t, np.array([EnvO_Min]), np.array([EnvO_Max]), 
+                                          is_log, 
+                                          save_to = Res_dir+"/P_Neut_%s"%Lin_i,
+                                          xval = xval, yval = yval,
+                                          linewidth = 4,
+                                          color = [col_o],
+                                          alpha = 0.3,
+                                          fig = fig0,
+                                          ax = ax0,
+                                          labels = [Lin_i],
+                                          antigen = antigen) 
+    
+                status.append("Done")
+                Lin_list.append(Lin_i)
+            else:
+                status.append("Not avail")
         except:
             status.append("Not avail")
             

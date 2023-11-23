@@ -73,16 +73,16 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
         try:
             jb_res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
             status = True
-            print("run joblib.Parallel")
+            #print("run joblib.Parallel")
         except:
             try:
                 jb_res = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
                 status=True
-                print("run joblib.Parallel")
+                #print("run joblib.Parallel")
             except:
                 jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
                 status=True
-                print("run joblib.Parallel")
+                #print("run joblib.Parallel")
         
         if status:
             for d in range(len(conditions)):
@@ -90,6 +90,7 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
                 Missing_cond_data[:, d] = np.array(jb_res[d][1])
         else:
             """ Brute force method """
+            print("joblib.Parallel failed running, using brute force looping")
             for d in range(len(conditions)):
                 #print(d+1, len(conditions))
                 Inter_Cond_Mut = Where_Mut & Where_Cond[np.newaxis, d, :]
@@ -97,6 +98,7 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
                 Missing_cond_data[:, d] = ~np.any(np.any(Where_Mut & Where_Cond[np.newaxis, d, :], axis = 2), axis = 1)
     else:
         """ Brute force method """
+        print("joblib.Parallel failed running, using brute force looping")
         for d in range(len(conditions)):
             #print(d+1, len(conditions))
             Inter_Cond_Mut = Where_Mut & Where_Cond[np.newaxis, d, :]
@@ -353,17 +355,20 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
         mut_x_sites_dic_updated = mut_x_sites_dic.copy()
         for j in range(len(Lin_list)):
             if Lin_list[j] not in list(Pseudogroup_dic.keys()):
-                mut_file = open(mut_sim[j], "r")
-                mut_lin0 = mut_file.readlines()
-                mut_file.close()
-                mut_Lin = []
-                for mut in mut_lin0:
-                    if mut[:3] not in ("DEL", "del"):
-                        if len(re.findall(r'\d+', mut))>0:
-                            mut_Lin.append(re.findall(r'\d+', mut)[0])       
-                            mut_Lin = list(np.unique(np.array(mut_Lin).astype(str)))
-                """Update mutation profile dictionary"""
-                mut_x_sites_dic_updated[Lin_list[j]] = mut_Lin
+                try:
+                    mut_file = open(mut_sim[j], "r")
+                    mut_lin0 = mut_file.readlines()
+                    mut_file.close()
+                    mut_Lin = []
+                    for mut in mut_lin0:
+                        if mut[:3] not in ("DEL", "del"):
+                            if len(re.findall(r'\d+', mut))>0:
+                                mut_Lin.append(re.findall(r'\d+', mut)[0])       
+                                mut_Lin = list(np.unique(np.array(mut_Lin).astype(str)))
+                    """Update mutation profile dictionary"""
+                    mut_x_sites_dic_updated[Lin_list[j]] = mut_Lin
+                except:
+                    pass
             else:
                 mut_x_sites_dic_updated[Lin_list[j]] = mut_x_sites_dic[Pseudogroup_dic[Lin_list[j]]]
                 
@@ -471,6 +476,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
                     else:
                         w_lin = list(variant_x_names_cross).index(Pseudogroup_dic[Lin_list[i]])
                         Cross_i["variant_list"] = list(variant_x_names_cross)
+                        Cross_i["variant_list"][w_lin] = Lin_list[i]
                         
                     for ab in Ab_global:  
                         if Pseudogroup_dic[Lin_list[i]] not in list(variant_x_names_cross):
@@ -517,6 +523,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
                 file0.close()
                 
             except:
+                print("Ignored Cross of %s: Give mutation file or chose a lineage with pseudogroup present in covsonar data"%Lin_list[i])
                 status_sim.append("No mutation profile for %s, give mutation file or chose a lineage present in covsonar data"%Lin_list[i])
                 
         stat_df = pd.DataFrame({"Lineages":Lin_list, "computed_cross":status_sim})

@@ -439,6 +439,7 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
     if antigen_list == ["ALL"]:
         antigen_list = np.array(SpikeGroups_list[var_list_index])
     
+
     if len(antigen_list) != 0:
         if save_pneut in ("TRUE", "True"):
             VE = {}
@@ -456,16 +457,16 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
             try:
                 jb_res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(antigen_list))))
                 status = True
-                print("run joblib.Parallel")
+                #print("run joblib.Parallel")
             except:
                 try:
                     jb_res = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc)(d) for d in range(len(antigen_list))))
                     status=True
-                    print("run joblib.Parallel")
+                    #print("run joblib.Parallel")
                 except:
                     jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(antigen_list))))
                     status=True
-                    print("run joblib.Parallel")
+                    #print("run joblib.Parallel")
             
             if status:
                  for i in range(len(antigen_list)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
@@ -476,7 +477,7 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
                          VE["Proba Neut Max\n vs. %s antigen"%antigen] = EnvD_Max
             
             else:
-               
+                print("joblib.Parallel failed running, using brute force looping")
                 for i in range(len(antigen_list)): ## "Wuhan-Hu-1" is always in each cross reactivity files produced by our pipeline
                     antigen = antigen_list[i]
                     EnvD_Min,EnvD_Max = PNeut_Envelope(1, t_conc, [Lin_name], variants_in_cross, Cross_react_dic, c_dframe_dic, IC50xx_dic, antigen_list = antigen_list, mean_IC50xx = True)
@@ -515,7 +516,7 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
 
         else:
             spikegroups_proportion_adjust = spikegroups_proportion_adjust
-        
+            
         for key in c_dframe_dic.keys():
             PK_dframe = c_dframe_dic[key]
             key_num = np.array(re.findall(r"\d+", key)).astype(int)
@@ -617,6 +618,7 @@ if Lin_name != "ALL":
                             Cross_dic = pickle.load(file1)
                             cross_list.append(Cross_dic)
                             file1.close()
+                            Lin_list.append(lin_sim)
                         except:
                             try:
                                 file1 = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") # Check that this is the file you want to load
@@ -650,18 +652,19 @@ if Lin_name != "ALL":
                     except:
                         k +=1
         
-        
         if len(not_pres)!=0:
-            to_print = "Some Lineage in group do not have a cross reactivity file and are not present in covsonar data nor in results/ folder:" + " ".join(["%s"%var for var in not_pres])
-            sys.exit(to_print)
+            to_print = "Ignored some Lineages in compute_groups (no cross reactivity file associated and not present in covsonar data nor in results/ folder): " + ", ".join(["%s"%var for var in not_pres])
+            print("-----------------------")
+            print(to_print)
+            print("-----------------------")
             
         antigen_list = []
         k = loc_num_anti + 1
-        while k<14+len(Lin_list)+num_antigen:
+        while k<14+len(Lin_list)+len(not_pres)+num_antigen:
             antigen = str(sys.argv[k])
             antigen_list.append(antigen)
             k +=1
-            
+
         for i in range(len(Lin_list)):
             lin_sim = Lin_list[i]
             Cross_react_dic = cross_list[i]
