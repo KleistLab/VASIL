@@ -384,7 +384,11 @@ conda install -c conda-forge -c bioconda -c anaconda python==3.11.3 numpy scipy 
 pip install mpl_axes_aligner
 ```
 
+If mpl_axes_aligner still cannot be found, please install it by:
 
+```
+conda install -c d-ice mpl_axes_aligner
+```
 
 
 
