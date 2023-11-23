@@ -91,14 +91,25 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     if joblib is not None:
         """Parallel codes --- macOS Monterey 12.5 crashes --- Not used by default """
         pfunc = partial(sub_Bind, tiled_esc = tiled_esc, Where_Mut = Where_Mut, Where_Cond = Where_Cond)
+        status = False
         try:
-            jb_res = list(jb.Parallel(n_jobs = -1)(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+            jb_res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+            status = True
+            #print("run joblib.Parallel")
         except:
-            jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+            try:
+                jb_res = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+                status=True
+                #print("run joblib.Parallel")
+            except:
+                jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+                status=True
+                #print("run joblib.Parallel")
         
-        for d in range(len(conditions)):
-            Bind_list[:, d]   = np.array(jb_res[d][0])
-            Missing_cond_data[:, d] = np.array(jb_res[d][1])
+        if status:
+            for d in range(len(conditions)):
+                Bind_list[:, d]   = np.array(jb_res[d][0])
+                Missing_cond_data[:, d] = np.array(jb_res[d][1])
     else:
         """ Brute force method """
         for d in range(len(conditions)):

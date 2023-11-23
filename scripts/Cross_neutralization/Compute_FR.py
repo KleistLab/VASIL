@@ -98,7 +98,7 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
                 Missing_cond_data[:, d] = ~np.any(np.any(Where_Mut & Where_Cond[np.newaxis, d, :], axis = 2), axis = 1)
     else:
         """ Brute force method """
-        print("joblib.Parallel failed running, using brute force looping")
+        print("Using brute force looping")
         for d in range(len(conditions)):
             #print(d+1, len(conditions))
             Inter_Cond_Mut = Where_Mut & Where_Cond[np.newaxis, d, :]
