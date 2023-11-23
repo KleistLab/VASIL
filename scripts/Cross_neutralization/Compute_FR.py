@@ -511,11 +511,11 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
                     a +=1 
                 
             status_sim.append("Done")
-            file0 = open(sys.argv[k+1]+"/Cross_%s.pck"%Lin_list[i], "wb") 
+            file0 = open(sys.argv[k]+"/Cross_%s.pck"%Lin_list[i], "wb") 
             pickle.dump(Cross_i, file0)
             file0.close()
         stat_df = pd.DataFrame({"Lineages":Lin_list, "computed_cross":status_sim})
-        stat_df.to_csv(sys.argv[k+1]+"/cross_status.csv")
+        stat_df.to_csv(sys.argv[k]+"/cross_status.csv")
 
 elif Lin_name == "ALL":  
     """Break runs into manageable pieces"""

@@ -53,9 +53,9 @@ for spike in sorted_cols:
         count +=1
 
 try:
-    ax.legend(loc = (1.2, 0), ncols = (np.ceil(count)//15).astype(int))
+    ax.legend(loc = (1.2, 0), ncols = (np.ceil(count/15)).astype(int))
 except:
-    ax.legend(loc = (1.2, 0), ncols = (np.ceil(count)//15).astype(int))
+    ax.legend(loc = (1.2, 0), ncols = (np.ceil(count/15)).astype(int))
 
 ax.set_title("Ordered Spikesgroups by total sum of proportions", fontsize = 20)
 pdf2 = PdfPages(sys.argv[2]+"/SpikeGroups_Props_overview.pdf")

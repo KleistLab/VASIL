@@ -377,6 +377,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             #ymin2, ymax2 = ax2.get_ylim()
             #ax2.set_ylim((ymin2, ymin2))
             mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, 0.5)
+            ax2.axhline(xmin = 0, xmax = len(day_prop), ls = "--", linewidth = 2, color = "black")
             ax2.set_ylabel("Relative fitness $\gamma_y$", fontsize = 20)
             ax2_twin.set_ylabel("Change in proportion $\gamma_{prop}$", fontsize = 20)
             ax2.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
@@ -394,7 +395,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             
             status_list.append("No data")
              
-    ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
+    ax.axhline(xmin = 0, xmax = len(day_prop), ls = "--", linewidth = 2, color = "black")
     
     ymin1, ymax1 = ax.get_ylim()
     ymin2, ymax2 = ax_twin.get_ylim()
@@ -479,7 +480,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     if (x_min is not None):
         ax.set_xlim((x_min, x_max))
         ax_twin.set_xlim((x_min1, x_max1))
-        
+    
     ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
     ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
     ax.set_ylabel("Relative fitness", fontsize = 20)
