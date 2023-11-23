@@ -376,6 +376,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ax_k.set_xticklabels(date_ticks,
                 rotation = 45, horizontalalignment = "right")
             
+            pdb.set_trace()
             if (x_min is not None):
                 ax_k.set_xlim((x_min, x_max))
                 ax_k_twin.set_xlim((x_min1, x_max1))
