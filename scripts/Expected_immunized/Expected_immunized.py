@@ -738,9 +738,9 @@ else:
             if add_print:
                 print("A smaller set of spikesgroups are being simulated for all_il = TRUE \n Make sure this is what you want otherwise first set the parameter cross_missing to TRUE")
                 miss_num = len(SpikeGroups_list)-len(SpikeGroups_list_index)-2
-                print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1: missing %d spikegroups)"%(SpikeGroups_list[i], i, len(SpikeGroups_list_index)-1, miss_num))
+                print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1: missing %d spikegroups)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list_index)-1, miss_num))
             else:
-                print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i, len(SpikeGroups_list)-1))
+                print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list)-1))
             status_var.append(ei_util(SpikeGroups_list[i], 
                                       variants_in_cross = variants_in_cross,
                                       antigen_list = antigen_list,

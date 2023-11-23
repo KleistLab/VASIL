@@ -403,90 +403,21 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
             except:
                 extract = False # file is not present and thus if must be recomputed
             
-            if (Lin_list[i] not in list(Pseudogroup_dic.keys())) or (not extract):
-                a = 1
-                for ab in Ab_classes:  
-                    if ab!= "NTD":
-                        if Lin_list[i] not in list(variant_x_names_cross):
+            try:
+                if (Lin_list[i] not in list(Pseudogroup_dic.keys())) or (not extract):
+                    a = 1
+                    for ab in Ab_classes:  
+                        if ab!= "NTD":
+                            if Lin_list[i] not in list(variant_x_names_cross):
+                                FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
+                            else:
+                                FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
+                                
                             FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
-                        else:
-                            FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
-                            
-                        FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
-                        print("Assess lineage %s| %d out of %d with the NTD-RBD mutation positions"%(Lin_list[i], i+1,len(Lin_list)), mut_x_sites_dic_updated[Lin_list[i]])
-                        print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes)) 
-                        for s in range(len(g)):
-                            Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_list[i]], g_var[s]), 
-                                       Escape_Fraction, 
-                                       [ab],
-                                       mut_x_sites_dic_updated)
-                            
-                           
-                            #Only the information for the specific lineage studied is required for immunological landscape calculation
-                            #the FRxy_ab matrix is kept only for compatibility with other codes
-                            
-                            FRxy_ab[w_lin, g[s]] = Cross_Lin[ab][0, :]
-                            FRxy_ab[g[s], w_lin] = Cross_Lin[ab][0, :]
-                
-                        Cross_i[ab] = FRxy_ab
-                    a +=1 
-                
-                """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""
-                print("Cross reactivity Epitope NTD")
-                n = len(Cross_i["variant_list"])
-                FR_NTD = np.ones((n, n))
-                for i1 in range(n):
-                    var_1 = Cross_i["variant_list"][i1]
-                    for j1 in range(n):
-                        if i1 > j1:
-                            var_2 = Cross_i["variant_list"][j1]
-                
-                            sites_1 = set(np.array(mut_x_sites_dic_updated[var_1]).astype(int))
-                            sites_2 = set(np.array(mut_x_sites_dic_updated[var_2]).astype(int))
-                
-                            sites = list(sites_1.symmetric_difference(sites_2))
-                            FR_sites = 1
-                            for s in sites:
-                                s = int(s)
-                                if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                    FR_sites *= 10
-                            FR_NTD[i1, j1] = FR_sites
-                            FR_NTD[j1, i1] = FR_sites
-                Cross_i["NTD"] = FR_NTD
-            else:
-                ### open global cross_reactivity file which must be present
-                a = 1  
-                print("Assess lineage %s| %d out of %d with the NTD-RBD mutation positions"%(Lin_list[i], i+1,len(Lin_list)), mut_x_sites_dic_updated[Lin_list[i]])
-                print("Load : %s is present in general file results/Cross_react_dic_spikegroups_ALL.pck"%Lin_list[i]) 
-                file_c = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") 
-                Cross_global = pickle.load(file_c)
-                variant_global = Cross_global["variant_list"]
-                Cross_global.pop("variant_list")
-                Ab_global = Cross_global.keys()
-                file_c.close()
-                if Lin_list[i] not in list(variant_x_names_cross):
-                    w_lin = len(variant_x_names_cross)
-                    Cross_i["variant_list"] = list(variant_x_names_cross) + [Lin_list[i]]
-                else:
-                    w_lin = list(variant_x_names_cross).index(Lin_list[i])
-                    Cross_i["variant_list"] = list(variant_x_names_cross)
-                    
-                for ab in Ab_global:  
-                    if Lin_list[i] not in list(variant_x_names_cross):
-                        FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
-                    else:
-                        FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
-                        
-                    for u1 in range(len(variant_x_names_cross)):
-                        v_u1 = variant_x_names_cross[u1]
-                        if v_u1 in variant_global:
-                            FRxy_ab[w_lin, u1] = Cross_global[ab][list(variant_global).index(Lin_list[i]), list(variant_global).index(v_u1)]
-                            FRxy_ab[u1, w_lin] = FRxy_ab[w_lin, u1]
-                        else:
-                            # recompute it, should not happen normaly
-                            # usefull when using previously computed cross reactivity file where all covsonar lineages (not only spikegroups) are present (assigned the FR of their spikegroups)
-                            if ab != "NTD":
-                                Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_list[i]], [v_u1]), 
+                            print("Assess lineage %s| %d out of %d with the NTD-RBD mutation positions"%(Lin_list[i], i+1,len(Lin_list)), mut_x_sites_dic_updated[Lin_list[i]])
+                            print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes)) 
+                            for s in range(len(g)):
+                                Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_list[i]], g_var[s]), 
                                            Escape_Fraction, 
                                            [ab],
                                            mut_x_sites_dic_updated)
@@ -494,26 +425,101 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
                                
                                 #Only the information for the specific lineage studied is required for immunological landscape calculation
                                 #the FRxy_ab matrix is kept only for compatibility with other codes
-                                FRxy_ab[w_lin, u1] = Cross_Lin[ab][0, 0]
-                                FRxy_ab[u1, w_lin] = FRxy_ab[w_lin, u1]
-                            else:
-                                sites_1 = set(np.array(mut_x_sites_dic_updated[Lin_list[i]]).astype(int))
-                                sites_2 = set(np.array(mut_x_sites_dic_updated[v_u1]).astype(int))
+                                
+                                FRxy_ab[w_lin, g[s]] = Cross_Lin[ab][0, :]
+                                FRxy_ab[g[s], w_lin] = Cross_Lin[ab][0, :]
+                    
+                            Cross_i[ab] = FRxy_ab
+                        a +=1 
+                    
+                    """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""
+                    print("Cross reactivity Epitope NTD")
+                    n = len(Cross_i["variant_list"])
+                    FR_NTD = np.ones((n, n))
+                    for i1 in range(n):
+                        var_1 = Cross_i["variant_list"][i1]
+                        for j1 in range(n):
+                            if i1 > j1:
+                                var_2 = Cross_i["variant_list"][j1]
+                    
+                                sites_1 = set(np.array(mut_x_sites_dic_updated[var_1]).astype(int))
+                                sites_2 = set(np.array(mut_x_sites_dic_updated[var_2]).astype(int))
+                    
                                 sites = list(sites_1.symmetric_difference(sites_2))
                                 FR_sites = 1
                                 for s in sites:
                                     s = int(s)
                                     if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                                         FR_sites *= 10
-                                FRxy_ab[w_lin, u1] = FR_sites
-                                FRxy_ab[u1, w_lin] = FR_sites
-                    Cross_i[ab] = FRxy_ab
-                    a +=1 
+                                FR_NTD[i1, j1] = FR_sites
+                                FR_NTD[j1, i1] = FR_sites
+                    Cross_i["NTD"] = FR_NTD
+                else:
+                    ### open global cross_reactivity file which must be present
+                    a = 1  
+                    print("Assess lineage %s| %d out of %d with the NTD-RBD mutation positions"%(Lin_list[i], i+1,len(Lin_list)), mut_x_sites_dic_updated[Lin_list[i]])
+                    print("Load : %s is present in general file results/Cross_react_dic_spikegroups_ALL.pck"%Lin_list[i]) 
+                    file_c = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") 
+                    Cross_global = pickle.load(file_c)
+                    variant_global = Cross_global["variant_list"]
+                    Cross_global.pop("variant_list")
+                    Ab_global = Cross_global.keys()
+                    file_c.close()
+                    if Pseudogroup_dic[Lin_list[i]] not in list(variant_x_names_cross):
+                        w_lin = len(variant_x_names_cross)
+                        Cross_i["variant_list"] = list(variant_x_names_cross) + [Lin_list[i]]
+                    else:
+                        w_lin = list(variant_x_names_cross).index(Pseudogroup_dic[Lin_list[i]])
+                        Cross_i["variant_list"] = list(variant_x_names_cross)
+                        
+                    for ab in Ab_global:  
+                        if Pseudogroup_dic[Lin_list[i]] not in list(variant_x_names_cross):
+                            FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
+                        else:
+                            FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
+                            
+                        for u1 in range(len(variant_x_names_cross)):
+                            v_u1 = variant_x_names_cross[u1]
+                            if v_u1 in variant_global:
+                                FRxy_ab[w_lin, u1] = Cross_global[ab][list(variant_global).index(Lin_list[i]), list(variant_global).index(v_u1)]
+                                FRxy_ab[u1, w_lin] = FRxy_ab[w_lin, u1]
+                            else:
+                                # recompute it, should not happen normaly
+                                # usefull when using previously computed cross reactivity file where all covsonar lineages (not only spikegroups) are present (assigned the FR of their spikegroups)
+                                if ab != "NTD":
+                                    Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_list[i]], [v_u1]), 
+                                               Escape_Fraction, 
+                                               [ab],
+                                               mut_x_sites_dic_updated)
+                                    
+                                   
+                                    #Only the information for the specific lineage studied is required for immunological landscape calculation
+                                    #the FRxy_ab matrix is kept only for compatibility with other codes
+                                    FRxy_ab[w_lin, u1] = Cross_Lin[ab][0, 0]
+                                    FRxy_ab[u1, w_lin] = FRxy_ab[w_lin, u1]
+                                else:
+                                    sites_1 = set(np.array(mut_x_sites_dic_updated[Lin_list[i]]).astype(int))
+                                    sites_2 = set(np.array(mut_x_sites_dic_updated[v_u1]).astype(int))
+                                    sites = list(sites_1.symmetric_difference(sites_2))
+                                    FR_sites = 1
+                                    for s in sites:
+                                        s = int(s)
+                                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                                            FR_sites *= 10
+                                    FRxy_ab[w_lin, u1] = FR_sites
+                                    FRxy_ab[u1, w_lin] = FR_sites
+                        Cross_i[ab] = FRxy_ab
+                        a +=1 
+                        
+                status_sim.append("Done")
+                file0 = open(sys.argv[k]+"/Cross_%s.pck"%Lin_list[i], "wb") 
+                pickle.dump(Cross_i, file0)
+                file0.close()
                 
-            status_sim.append("Done")
-            file0 = open(sys.argv[k]+"/Cross_%s.pck"%Lin_list[i], "wb") 
-            pickle.dump(Cross_i, file0)
-            file0.close()
+            except:
+                status_sim.append("No mutation profile for %s, give mutation file or chose a lineage present in covsonar data"%Lin_list[i])
+                
+            
         stat_df = pd.DataFrame({"Lineages":Lin_list, "computed_cross":status_sim})
         stat_df.to_csv(sys.argv[k]+"/cross_status.csv")
 
