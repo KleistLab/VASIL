@@ -553,11 +553,10 @@ elif Lin_name == "ALL":
     for ab in Ab_classes:
         if ab!= "NTD":
             FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
-            num_to_do = 0
             for s1 in range(len(g)):
                 print("Assess all spikegroups with the NTD-RBD mutation positions ")
                 print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes))
-                print("Run Cross for %d out of %d (to achieve %d/%d spikegroups)"%(s1+1, len(g), num_to_do+len(g[s1]), len(variant_x_names_cross)))
+                print("Run Cross for %d out of %d (to achieve %d/%d spikegroups)"%(s1+1, len(g), len(g[s1]), len(variant_x_names_cross)))
                 sub_FR = np.ones((len(g[s1]), len(variant_x_names_cross)))
                 for s2 in range(len(g)):
                     Cross_Lin, Missed, Greater_one = cross_reactivity((g_var[s1], g_var[s2]), 
@@ -566,9 +565,9 @@ elif Lin_name == "ALL":
                                                                        mut_x_sites_dic, joblib=True)
 
                     sub_FR[:, g[s2]] = Cross_Lin[ab]
-        
+                    
                 FRxy_ab[g[s1], :] = sub_FR
-                num_to_do +=len(g[s2])
+                
             Cross_react_dic[ab] = FRxy_ab
         a +=1
     
