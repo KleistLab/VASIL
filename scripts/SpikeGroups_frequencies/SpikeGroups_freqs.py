@@ -147,7 +147,7 @@ if "Wuhan-Hu-1" not in SpikeGroups_list:
 else:
     print("Number of Spikegroups: %d + 1 Wuhan-Hu-1"%(len(SpikeGroups_list) - 2))
 
-print("Number of lineages composing Spikegroups: %d"%len(list(SpikeGroups_dic).keys()))
+print("Number of lineages composing Spikegroups: %d"%len(list(SpikeGroups_dic.keys())))
 ### Save SpikeGroups_list and Mutation_Profiles
 spk_file = open(sys.argv[5], "wb")
 pickle.dump({"names":SpikeGroups_list}, spk_file)
