@@ -289,7 +289,7 @@ The plot for the estimation of change in absolute fitness should look like this:
 ![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/absolute/absolute_estimate.svg)
 
 The plot for the estimation of change in relative fitness should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative/relative_fitness_Spike. BA.4.svg)
+![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative_all/relative_fitness_Spike.%20BA.4.pdf)
 
 The plot for the estimation of change in relative fitness for compared groups should look like this:
 ![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative_groups/relative_fitness_groups.svg)
