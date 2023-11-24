@@ -266,7 +266,7 @@ The figures are located as follows
               c-d: MS_data/plots/P_neut_*/P_Neut_.pdf,svg*
 |-- Figure 4: a: MS_data/plots/P_neut_groups/P_Neut_.pdf/svg*         
               b: MS_data/plots/relative or relative_all/relative_fitness_*.pdf,svg 
-              c: MS_data/plots/relative_groups/relative_fitness_*.pdf,svg (available also separated)         
+              c: MS_data/plots/relative_groups/relative_fitness_groups.pdf,svg (available also separated)         
 |-- Figure 5: a: TBA
               b: TBA                                 
               c: MS_data/plots/absolute/absolute_estimate.pdf,svg
@@ -282,15 +282,17 @@ conda deactivate
 ```
 The result folder is created in the [`demo`](./demo) folder where you find the output files, as described above. 
 
-The plot for the estimation of change in absolute fitness of the demo sample should look like this:
+The plot for the cross reactivity to chosen major variants should look like this:
+![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/Cross_Major/major_Cross_React_AB_A.svg)
 
+The plot for the estimation of change in absolute fitness should look like this:
 ![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/absolute/absolute_estimate.svg)
 
-The plot for the estimation of change in relative fitness of the demo sample should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative/relative_fitness_BA_2_86.svg)
+The plot for the estimation of change in relative fitness should look like this:
+![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative/relative_fitness_BA.4.svg)
 
-The plot for the cross reactivity the demo sample should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/Cross_Major/major_Cross_React_AB_A.svg)
+The plot for the estimation of change in relative fitness for compared groups should look like this:
+![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative/relative_fitness_groups.svg)
 
 ## Caution
 Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present (unless an input file is updated by another rule), remove older files from the *results* folder when needed.
