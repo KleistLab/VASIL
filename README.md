@@ -153,28 +153,29 @@ The main pipeline (`config.yaml`) creates a folder *results*, containing all (in
 ```
 |-- Spikegroups_membership.pck # pickle python dictionary with lineages as keys, indicating the spikegroups of each lineages were assigned to
 |-- results
- 	|-- Cross_react_dic_spikegroups_ALL.pck	# Pairwise cross reactivity between spikegroups (can be provided as input, see config.yaml)
-	|-- Cross_react_dic_spikegroups_present.pck	# Pairwise cross reactivity between spikegroups (see config.yaml)
+ 	|-- Cross_react_dic_spikegroups_ALL.pck	# Pairwise cross reactivity between all spikegroups (can be provided as input, see config.yaml)
+	|-- Cross_react_dic_spikegroups_present.pck	# Pairwise cross reactivity between all spikegroups imputing a previous cross-file (e.g. from shorter timeframe runs) and only computing cross for missing spikegroups (see config.yaml)
 	|-- Cross_react_dic_spikegroups_*.pck   # Cross reactivity between lineage_focuss and spikegroups
 	|-- Cross_with_delta_validation.pck	# Cross reactivity between Delta variant and Wild Type (used of VE fitting)
 	|-- Cross_to_major_variants.pck	# Cross reactivity for major variants
-	|-- Daily_Lineages_Freq.csv		# Daily frequency of specific lineages (in percentage)
-	|-- Daily_SpikeGroups_Freqs.csv 	# Daily frequency of spikegroups (in percentage)
+	|-- Daily_Lineages_Freq.csv		# Daily frequency of all lineages present within the timeframe (in percentage)
+	|-- Daily_SpikeGroups_Freq.csv 	# Daily frequency of spikegroups exceeding a  chosen filter_out threshold (in percentage)
+	|-- Daily_Lineages_Freq_*_percent.csv 	# Daily frequency lineages composing the spikegroups exceeding a chosen (*) filter_out  (percentage)	
 	|-- Fold_Resistance_DMS_Sites_Epitopes.csv. # Fold resistance of all the sites present in the DMS data (FR_DMS_sites: TRUE)
-	|-- Mutation_Profile.pck	# Mutation profile of each spikegroups 
-	|-- SpikeGroups.pck		# List of all spikegroups names
+	|-- Mutation_Profile.pck	# Mutation profile of each spikegroups (post-processed from files in mutation_data/)
+	|-- SpikeGroups.pck		# List of all spikegroups names ((post-processed from files in mutation_data/))
 	|-- PK_for_all_Epitopes.csv    # Pharmacokynetics for any epitope class with all combinations of PK parameters
-	|-- Immunological_Landscape # for lineage_focus
+	|-- Immunological_Landscape # for lineage_focus (if requested)
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized for lineage_focuss with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible for lineage_focuss with all combinations of PK parameters
 		|-- simulation_status_*.csv  	      # Writes if Immunological Landscape "done" or "Error"
 		|-- P_neut_*.csv  	      # Virus neutralization probability against selected antigen present in covsonar data (if requested)
-	|-- Immunological_Landscape_ALL # for all variants in covsonar data
+	|-- Immunological_Landscape_ALL # for all spikesgroups extracted from covsonar data (if requested)
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible with all combinations of PK parameters
 		|-- simulation_status_*.csv	      # Write if Immunological Landscape "done" or "Error"
 		|-- P_neut_*.csv  	      # Virus neutralization probability against selected antigen present in covsonar data (if requested) 
-	|-- Immunological_Landscape_group # for compare_groups
+	|-- Immunological_Landscape_group # for compare_groups (if requested)
 		|-- Immunized_SpikeGroup_*_all_PK.csv # Expected number of immunized with all combinations of PK parameters
 		|-- Susceptible_SpikeGroup_*_all_PK   # Expected number of Susceptible with combinations of PK parameters
 		|-- simulation_status_*.csv	      # Write if Immunological Landscape "done" or "Error"
@@ -209,18 +210,15 @@ The figure pipeline (`config_plots.yaml`) add new data to *results* folder and c
         |-- relative_all # relative fitness for all spikegroups
 		|-- plot_status_all.csv	  	# Writes if plot is "done" or "Error"
 		|-- relative_fitness_*.pdf/svg	# relative growth advantage for all spikegroups present in data
-	|-- Cross_spikegroups
-		|-- Cross_React_AB_*.pdf/svg	# Heatmap FR for each epitope classes (max of 10 first spikegroups in covsonar data)
-	|-- Cross_Major
-		|-- major_Cross_React_AB_*.svg # Heatmap FR for each epitope classes (for major variant of your choice)		
-	|--- FR_sites
-		|--- foldresistance_DMS_sites_epitopes.pdf # Heatmap Fold resistance of all the sites present in the DMS data (FR_DMS_sites: TRUE)
-	|--- P_neut_PK
-		|--- PK_Epitope_ranges.pdf/svg# Pharmacokynetics of for any epitope class
+	|-- Cross_spikegroups # Heatmap FR for each epitope classes (max of the 10 first spikegroups)
+		|-- Cross_React_AB_*.pdf/svg	
+	|-- Cross_Major # Heatmap FR for each epitope classes (for major variants of your choice within spikegroups or with provided mutation data file)
+		|-- major_Cross_React_AB_*.svg 		
+	|--- FR_sites # Heatmap Fold resistance of all the sites present in the DMS data (FR_DMS_sites: TRUE)
+		|--- foldresistance_DMS_sites_epitopes.pdf 
+	|--- P_neut_PK_lineage_focus
+		|--- PK_Epitope_ranges.pdf/svg # Pharmacokynetics of for any epitope class
 		|--- P_Neut_*.pdf/svg # Virus neutralization probability against specific antigen (if requested)
-	|--- P_neut_PK_lineage_focuss
-		|--- PK_Epitope_ranges.pdf/svg# Pharmacokynetics of for any epitope class
-		|--- P_Neut_*.pdf/svg # Virus neutralization probability
 	|--- P_neut_PK_groups
 		|--- PK_Epitope_ranges.pdf/svg# Pharmacokynetics of for any epitope class
 		|--- P_Neut_*.pdf/svg # Virus neutralization probability against specific antigen (if requested)
