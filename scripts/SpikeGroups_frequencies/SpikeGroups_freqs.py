@@ -62,20 +62,10 @@ for x in range(len(Lineages_list)):
     variant = Lineages_list[x]
     x_lin = list(unique_lineage).index(variant)
     variant_proportion_orig[x, :] = proportion_lineage[x_lin, :]
-    
-    """
-    # used in previous versions, now obsolete, spikegroups and mutation profiles are restricted a specific timeline we do not need to care for those that have misssing mutation profiles
-    if (variant not in list(mut_x_sites_dic.keys())) & (variant not in Grouped_in_Spike):
-        prop_miss = proportion_lineage[x_lin, :]
-        missing_var_prop[variant] = prop_miss 
-        print("Missing mutation profile for variant %s :\n"%variant, "proportion (min, mean, max):", (np.min(prop_miss), np.mean(prop_miss), np.max(prop_miss)))
-    """
 
 NormProp = np.sum(variant_proportion_orig, axis = 0)
 prop_rounded = np.round(variant_proportion_orig, decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
-
-print("Number of lineages: %d"%len(Lineages_list))
 
 """ Merge proportions by Spike Groups"""
 SpikeGroups_list = []
@@ -88,43 +78,57 @@ variant_proportion = []
 SpikeGroups_dic  = {}
 SpikeGroups_dic["Wuhan-Hu-1"] = "Wuhan-Hu-1" ### place holder for wild type
 
-check_var = []
+
+"""Filter out if indicated"""
+try:
+    filt_params = float(sys.argv[7])/100. ### provided in percentage
+except:
+    filt_params = 0
+
+Lin_dic = {}
 for x in range(len(unique_group)):
     if "/" not in unique_group[x]:
         if unique_group[x] in Lineages_list:
             where_x = list(Lineages_list).index(unique_group[x])
-            variant_proportion.append(variant_proportion_orig[where_x, :])
-            SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
-            SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
-            check_var.append(unique_group[x])
+            prop_x = variant_proportion_orig[where_x, :]
+            if np.max(prop_x) > filt_params:
+                variant_proportion.append(prop_x)
+                SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
+                SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
+                Lin_dic[unique_group[x]] = prop_x
     else:
         splited_var = unique_group[x].split("/")
         where_x = []
         for var_x in splited_var:
             if var_x in Lineages_list:
                 where_x.append(list(Lineages_list).index(var_x))
-                check_var.append(var_x)
         
-        variant_proportion.append(np.sum(variant_proportion_orig[np.array(where_x), :], axis = 0))
-        SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
-        
-        for Om in splited_var:
-            SpikeGroups_dic[Om] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
+        prop_x = np.sum(variant_proportion_orig[np.array(where_x), :], axis = 0)
+        if np.max(prop_x) > filt_params:
+            variant_proportion.append(prop_x)
+            SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
+            
+            for s in range(len(splited_var)):
+                Om = splited_var[s]
+                Lin_dic[Om] = variant_proportion_orig[where_x[s], :]
+                SpikeGroups_dic[Om] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
 
 variant_proportion = np.array(variant_proportion)
-
-""" Check that all lineages were grouped  (obsolete) """ 
-"""
-test = False
-for x in check_var:
-    test = x not in Lineages_list
-    if test:
-        print("Lineage not included in pseudogroup list", x)
-"""
-
 NormProp = np.sum(variant_proportion, axis = 0)
 prop_rounded = np.round(variant_proportion,decimals = 10)
 variant_proportion = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
+
+try:
+   save_lin = str(sys.argv[8])
+   if save_lin in ("True", "TRUE", "1"):
+       Lin_df = pd.DataFrame(Lin_dic)
+       col_sums = Lin_df.sum(axis = 1).values
+       Lin_df = 100*Lin_df.divide(col_sums, axis="rows")
+       Lin_df["date"] = days_prop
+       Lin_df.to_csv("results/Daily_Lineages_Freq_%s_percent.csv"%str(filt_params))
+except:
+    pass
+    
 
 """ Save frequency pseudogroup data """
 freq_dic = {}
@@ -136,7 +140,6 @@ for x in range(len(SpikeGroups_list)):
 
 freq_df = pd.DataFrame(freq_dic, index = np.arange(0, len(days_prop)))
 freq_df.to_csv(sys.argv[4])
-
 if "Wuhan-Hu-1" not in SpikeGroups_list:
     freq_dic["Wuhan-Hu-1"] = np.zeros(variant_proportion.shape[1])
     SpikeGroups_list.append("Wuhan-Hu-1")
@@ -144,6 +147,7 @@ if "Wuhan-Hu-1" not in SpikeGroups_list:
 else:
     print("Number of Spikegroups: %d + 1 Wuhan-Hu-1"%(len(SpikeGroups_list) - 2))
 
+print("Number of lineages composing Spikegroups: %d"%len(list(SpikeGroups_dic).keys()))
 ### Save SpikeGroups_list and Mutation_Profiles
 spk_file = open(sys.argv[5], "wb")
 pickle.dump({"names":SpikeGroups_list}, spk_file)

@@ -1,8 +1,8 @@
 # 1. Full path to covsonar data
 covsonardata: "covsonar_mock.tsv"
 freq_lin: TRUE ## if FALSE results/Daily_Lineages_Freq.csv is required (set this TRUE only on first code run)
-filter_out: 0 ### percentage (between 0 and 100, do not add zeros after last decimal) filtering lineages that never appeared above it in any calendar week (requires that consonar data includes calendar weeks) -- set to 0 if no filtering is desired
-freq_lin_filt: FALSE ## if FALSE results/Daily_Lineages_Freq_%filter_out%_percent.csv is required (set this TRUE only on first code run when filter_out not 0)
+filter_out: 0 ### percentage (between 0 and 100, do not add zeros after last decimal) filtering spikegroups that never appeared above it in any calendar week (requires that consonar data includes calendar weeks) -- set to 0 if no filtering is desired
+freq_lin_filt: FALSE ## if TRUE results/Daily_Lineages_Freq_%filter_out%_percent.csv is provided for the lineages that correspond to the filtered spikegroups
 # prefix for mutation_data filename
 prefix: "mutationprofile"
 mutation_threshold: 0.75
@@ -19,7 +19,7 @@ VE_delta: "Clinical_Delta_VE.xlsx"
 # 5. Simulation Time frame 
 date_start: "2023-01-06" # must be included cases timeframe and in covsonar timeframe
 date_end: "2023-03-31" # must be included at least in covsonar timeframe
-# 6.a OPTIONAL: Get immunological landscape for lineage/spikegroup 
+# 6.a OPTIONAL: Get immunological landscape for 1 lineage focus
 focus_il: TRUE
 cross_focus: TRUE # if FALSE you must include file results/Cross_react_dic_spikegroups_*_pck" *=lineage_focus & results/Cross_with_delta_validation.pck (just rename previous file) or if they are present in covsonar data, it is extracted from there
 # 6.b if above is TRUE, provide name  --- please replace "." with "_" 
@@ -50,7 +50,7 @@ major_lineages: ["BA.5", "BQ.1", "EF.1", "XBB.1.5", "BA_2_86"]
 mut_major: ["avail", "avail", "avail", "avail", "BA.2.86_mutationsprofile_outbreak.info_28-8-23.txt"]
 # 11.OPTIONAL:Compute Immunological landscape for chosen variant groups for prediction comparison
 groups_il: TRUE
-compare_groups: ["BA.5", "BQ.1", "EF.1", "XBB.1.5", "BA_2_86"] ### can only be a list of lineages list this
+compare_groups: ["BA.5", "BQ.1", "EF.1", "XBB.1.5", "BA_2_86"] ### can only be a list of lineages
 cross_group: TRUE ### in FALSE, we need the files results/Cross_react_dic_groups/Cross_*.pck" *=lineage & results/Cross_with_delta_validation_again.pck (just rename previous file) or if they are present in covsonar data, it is extracted from there
 # if cross_group is TRUE, the mutation profiles files of any lineages that are not available in covsonar data, use a placeholder e.g.:"avail" otherwise 
 # cross is recomputed or directly extracted from results/Cross_react_dic_spikegroups_ALL.pck if it exists
