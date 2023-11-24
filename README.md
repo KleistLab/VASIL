@@ -284,10 +284,10 @@ The result folder is created in the [`demo`](./demo) folder where you find the o
 
 The plot for the estimation of change in absolute fitness of the demo sample should look like this:
 
-![alt text](https://github.com/KleistLab/VASIL/blob/main/demo/plots/absolute/absolute_estimate.svg)
+![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/absolute/absolute_estimate.svg)
 
 The plot for the estimation of change in relative fitness of the demo sample should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/demo/plots/relative/relative_fitness_BA_2_86.svg)
+![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative/relative_fitness_BA_2_86.svg)
 
 The plot for the cross reactivity the demo sample should look like this:
 ![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/Cross_Major/major_Cross_React_AB_A.svg)
