@@ -81,7 +81,7 @@ SpikeGroups_dic["Wuhan-Hu-1"] = "Wuhan-Hu-1" ### place holder for wild type
 
 """Filter out if indicated"""
 try:
-    filt_params = float(sys.argv[7])/100. ### provided in percentage
+    filt_params = int(sys.argv[7])/100. ### provided in percentage
 except:
     filt_params = 0
 
@@ -125,7 +125,7 @@ try:
        col_sums = Lin_df.sum(axis = 1).values
        Lin_df = 100*Lin_df.divide(col_sums, axis="rows")
        Lin_df["date"] = days_prop
-       Lin_df.to_csv("results/Daily_Lineages_Freq_%s_percent.csv"%str(filt_params))
+       Lin_df.to_csv("results/Daily_Lineages_Freq_%s_percent.csv"%str(int(filt_params*100)))
 except:
     pass
     

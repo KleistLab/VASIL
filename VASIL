@@ -14,6 +14,14 @@ rule_all_common = [
 if config["freq_lin"]:   
     rule_all_common.append("results/Daily_Lineages_Freq.csv")
 
+try:
+    save_lin = config["freq_lin_filt"]
+except:
+    save_lin = True
+
+if save_lin:
+    rule_all_common.append("results/Daily_Lineages_Freq_%s_percent.csv"%int(config["filter_out"]))
+    
 if config["cross_all"]:
     rule_all_common.append("results/Cross_react_dic_spikegroups_ALL.pck"),
 
@@ -107,11 +115,6 @@ rule get_mutation_and_spikegroups:
             "Rscript {workflow.basedir}/scripts/mutationprofile/mutation_profile.R {input.covsonar} {output.dir} {params.prefix} {params.mutation_threshold} {params.date_start} {params.date_end}"
 
 
-try:
-    save_lin = config["freq_lin_filt"]
-except:
-    save_lin = "True"
-
 rule get_spikegroups_frequencies:
         input:
             lins_freqs="results/Daily_Lineages_Freq.csv",
@@ -124,6 +127,7 @@ rule get_spikegroups_frequencies:
             spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
             spikes_dic="results/SpikeGroups.pck",
             mutations_dic="results/Mutation_Profiles.pck",
+            res="results/Daily_Lineages_Freq_%s_percent.csv"%int(config["filter_out"]),
         shell:
             "python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.spk_profiles} {input.spike_groups} {output.spikes_freqs} {output.spikes_dic} {output.mutations_dic} {params.filter_out} {params.get_freq_lin}"
 
