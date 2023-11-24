@@ -289,10 +289,10 @@ The plot for the estimation of change in absolute fitness should look like this:
 ![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/absolute/absolute_estimate.svg)
 
 The plot for the estimation of change in relative fitness should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative/relative_fitness_BA.4.svg)
+![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative/relative_fitness_Spike. BA.4.svg)
 
 The plot for the estimation of change in relative fitness for compared groups should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative/relative_fitness_groups.svg)
+![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative_groups/relative_fitness_groups.svg)
 
 ## Caution
 Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present (unless an input file is updated by another rule), remove older files from the *results* folder when needed.
