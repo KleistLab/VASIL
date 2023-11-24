@@ -5,7 +5,7 @@ cases_column: "minNTrue" ## provide the data column name of the case ascertainme
 total_population: 84334787
 # 1c. Fix time range for all figures
 time_start: "2022-03-01" ### show time range
-time_stop: "2023-05-27"  ### must be included at least in covsonar timeframe
+time_stop: "2023-07-27"  ### must be included at least in covsonar timeframe
 # 2.a OPTIONAL: Plot relative fitness for Focus lineage 
 fit_lineage_focus: TRUE
 # 2.b if above is TRUE Focus lineage name
