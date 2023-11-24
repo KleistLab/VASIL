@@ -187,8 +187,8 @@ variant_x_names_show = ["Wuhan-Hu-1", "Delta: B.1.617.2"]
 mut_dic_show = {"Wuhan-Hu-1":[], "Delta: B.1.617.2": [614, 950, 142, 452, 681, 19, 478]}
 
 Cross_with_delta_validation, Missed, Greater_one = cross_reactivity((variant_x_names_show,variant_x_names_show), 
-															 Escape_Fraction, Ab_classes, 
-                                                        	 mut_dic_show)
+															             Escape_Fraction, Ab_classes, 
+                                                        	             mut_dic_show,joblib=True)
 
 """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""  
 n = len(variant_x_names_show)
@@ -298,9 +298,10 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
                     
                 for s in range(len(g)):
                     Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_name], g_var[s]), 
-                               Escape_Fraction, 
-                               [ab],
-                               mut_x_sites_dic_updated)
+                                                                              Escape_Fraction, 
+                                                                              [ab],
+                                                                              mut_x_sites_dic_updated,
+                                                                              joblib=True)
                     
                     #Only the information for the specific lineage studied is required for immunological landscape calculation
                     #the FRxy_ab matrix is kept only for compatibility with other codes
@@ -423,9 +424,10 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
                             print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes)) 
                             for s in range(len(g)):
                                 Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_list[i]], g_var[s]), 
-                                           Escape_Fraction, 
-                                           [ab],
-                                           mut_x_sites_dic_updated)
+                                                                                      Escape_Fraction, 
+                                                                                      [ab],
+                                                                                      mut_x_sites_dic_updated,
+                                                                                      joblib=True)
                                 
                                
                                 #Only the information for the specific lineage studied is required for immunological landscape calculation
@@ -494,9 +496,10 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
                                 # usefull when using previously computed cross reactivity file where all covsonar lineages (not only spikegroups) are present (assigned the FR of their spikegroups)
                                 if ab != "NTD":
                                     Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_list[i]], [v_u1]), 
-                                               Escape_Fraction, 
-                                               [ab],
-                                               mut_x_sites_dic_updated)
+                                                                                          Escape_Fraction, 
+                                                                                          [ab],
+                                                                                          mut_x_sites_dic_updated,
+                                                                                          joblib=True)
                                     
                                    
                                     #Only the information for the specific lineage studied is required for immunological landscape calculation
@@ -653,20 +656,20 @@ elif Lin_name == "missing":
                     print("Assess missing | num %d vs (%d, %d (max %d)) with the NTD-RBD mutation positions"%(len(Lin_miss), s*cut_step, min((s+1)*cut_step, len(variants_in_global)),len(variants_in_global)))
                     print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_global)) 
                     Cross_Lin, Missed, Greater_one = cross_reactivity((Lin_miss, g_var[s]), 
-                               Escape_Fraction, 
-                               [ab],
-                               mut_x_sites_dic,
-                               joblib = True)
+                                                                      Escape_Fraction, 
+                                                                      [ab],
+                                                                      mut_x_sites_dic,
+                                                                      joblib = True)
                     
                     Cross_react_dic[ab][w_miss:, :w_miss][:, g[s]] = Cross_Lin[ab]
                     Cross_react_dic[ab][:w_miss, w_miss:][g[s], :] = Cross_Lin[ab].T
                 
                 print("Assess %d missing vs. %d missing with the NTD-RBD mutation positions"%(len(Lin_miss), len(Lin_miss)))
                 Cross_Lin, Missed, Greater_one = cross_reactivity((Lin_miss, Lin_miss), 
-                           Escape_Fraction, 
-                           [ab],
-                           mut_x_sites_dic,
-                           joblib = True)
+                                                                  Escape_Fraction, 
+                                                                  [ab],
+                                                                  mut_x_sites_dic,
+                                                                  joblib = True)
                 
                 Cross_react_dic[ab][w_miss:, w_miss:] = Cross_Lin[ab]
             else:
@@ -723,10 +726,10 @@ elif Lin_name == "FR_DMS_sites":
         ab = Ab_One_Mut[k]
         print("Cross reactivity DMS sites countdown %d out of %d epitope clases"%(k+1, len(Ab_One_Mut)))
         FR, missed, gOne = cross_reactivity((["WT"], One_mut_lin_new),
-                                            Escape_Fraction, 
-                                            [ab],
-                                            One_mut_dic,
-                                            joblib=joblib)
+                                                Escape_Fraction, 
+                                                [ab],
+                                                One_mut_dic,
+                                                joblib=True)
         
         FR_Sites_Ab[k, :] = FR[ab][0, :]
       

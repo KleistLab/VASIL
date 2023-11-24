@@ -255,9 +255,10 @@ if len(Top_Pseudo)!=0:
         print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))
         if ab!= "NTD":
             Cross_Lin, Missed, Greater_one = cross_reactivity((Top_Pseudo, Top_Pseudo), 
-                       Escape_Fraction, 
-                       [ab],
-                       mut_x_sites_dic_used)
+                                                                  Escape_Fraction, 
+                                                                  [ab],
+                                                                  mut_x_sites_dic_used,
+                                                                  joblib=True)
             
             FRxy_ab = Cross_Lin[ab]
             Cross_react_dic[ab] = FRxy_ab
