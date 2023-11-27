@@ -9,6 +9,27 @@ from functools import partial
 import sys
 import warnings
 import pdb
+
+"""
+#### Sys argv setup
+sys.argv[1] = case_ascertainement data             
+sys.argv[2] = cross_neutralization to delta VE validataion (obtained in pipeline or with specific formats)
+sys.argv[3] = Cross_reactivity.pck or a directory locations of Cross...pck for variant group simulation (obtained in pipeline or with specific formats)
+sys.argv[4] = Spikegroups frequencies (obtained in pipeline or with specific formats)
+sys.argv[5] = Spikegroups list as pck file (obtained in pipeline or with specific formats)
+sys.argv[6] = dms_per_ab_per_site.csv (obtained in pipeline or with specific formats)
+sys.argv[7] = vaccine efficacy data for IC50 parameter estimation
+sys.argv[8] = total population size
+sys.argv[9] = date_start simulation
+sys.argv[10] = date_end simulation
+sys.argv[11] = result directory
+sys.argv[12] = bool to save P_neut to antigen or not
+sys.argv[13] of sys.argv[13:13+num_groups] = one lineage (num_groups = 1),"ALL" for all spikegroups (num_groups = 1), list of lineages compare_groups params (num_groups != 0)
+sys.argv[13+num_groups] = number of antigens in antigen_list
+sys.argv[13+num_groups:14+num_groups+num_antigen] = antigen_list
+sys.argv[len(sys.argv) - 1] = str of column name used as case ascertainment
+"""
+
 """Load Infection Data"""
 Population_Data = pd.read_csv(sys.argv[1])
 
