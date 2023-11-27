@@ -421,7 +421,7 @@ for i in range(len(SpikeGroups_list)):
         for k in range(len(t)):
             if days_incidence[k] in list(frequency_spk_df["date"]): ### should always be true if data were well formated
                 ik = list(frequency_spk_df["date"]).index(days_incidence[k])
-                spikegroups_freq[i, ik] = frequency_spk_df["Spike. "+SpikeGroups_list[i]][ik]
+                spikegroups_freq[i, k] = frequency_spk_df["Spike. "+SpikeGroups_list[i]][ik]
 
 NormProp = np.sum(spikegroups_freq, axis = 0)
 prop_rounded = np.round(spikegroups_freq,decimals = 10)
