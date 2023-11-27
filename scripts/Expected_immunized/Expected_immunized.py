@@ -418,7 +418,10 @@ prop_start = list(frequency_spk_df["date"]).index(date_start)
 spikegroups_freq = np.zeros((len(SpikeGroups_list), len(t)))
 for i in range(len(SpikeGroups_list)):
     if SpikeGroups_list[i]!="Wuhan-Hu-1":
-        spikegroups_freq[i, :] = frequency_spk_df["Spike. "+SpikeGroups_list[i]][prop_start:prop_start+len(t)]
+        for k in range(len(t)):
+            if days_incidence[k] in list(frequency_spk_df["date"]): ### should always be true if data were well formated
+                ik = list(frequency_spk_df["date"]).index(days_incidence[k])
+                spikegroups_freq[i, ik] = frequency_spk_df["Spike. "+SpikeGroups_list[i]][ik]
 
 NormProp = np.sum(spikegroups_freq, axis = 0)
 prop_rounded = np.round(spikegroups_freq,decimals = 10)
