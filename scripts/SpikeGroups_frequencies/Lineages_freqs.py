@@ -36,6 +36,8 @@ lineages_all = covsonar_data["lineage"].values.astype(str)
 """Simulation timeframe"""
 date_start = sys.argv[2]
 
+pdb.set_trace()
+
 """Start computing Variant-proportions"""
 # iniializing variant proportion for all lineages
 unique_days_prop_all = list(np.unique(days_prop))
@@ -44,7 +46,7 @@ unique_days_prop_all = [x for x in unique_days_prop_all if x!= "nan"]
 unique_days_prop_all.sort(key = lambda date: datetime.strptime(date, "%Y-%m-%d")) 
 
 unique_days_prop = np.array(unique_days_prop_all[unique_days_prop_all.index(date_start):])
-
+lineages_all = np.array(lineages_all)[unique_days_prop_all.index(date_start):]
         
 def sub_func(s, x, days_prop, unique_days_prop, lineages_all, unique_lineage):
     res = np.sum((days_prop == unique_days_prop[s]) & (lineages_all == unique_lineage[x]))
