@@ -40,10 +40,6 @@ if (length(args)!=6) {
   date_end <- args[6]
 }
 
-## If actual data frame is smaller than start or end date:
-date_start <- max(date_start, min(D$date))
-date_end <- min(date_end, max(D$date))
-
 #Paper input:
 dir.create(outputdir, showWarnings = FALSE)
 
@@ -90,6 +86,10 @@ IsDate = function(x, format = NULL) {
 dates_ix <- which(IsDate(dates, format = "%Y-%m-%d"))
 D <- D[dates_ix,]
 dates <- D$date
+
+## If actual data frame is smaller than start or end date:
+if (!(date_start %in% D$date)){date_start = D$date[0]}
+if (!(date_end %in% D$date)){date_end = D$date[length(D$date)]}
 
 ### filter data to start and end date
 #dates <- D$date
