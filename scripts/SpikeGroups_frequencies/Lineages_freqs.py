@@ -17,8 +17,6 @@ from functools import partial
 import sys
 import pdb
 
-pdb.set_trace()
-
 """Load covsonar_data"""
 try:
 	covsonar_data = pd.read_csv(sys.argv[1], sep = "\t")
@@ -34,13 +32,22 @@ lineages_all = covsonar_data["lineage"].values.astype(str)
 """Simulation timeframe"""
 date_start = sys.argv[2]
 
-pdb.set_trace()
 """Start computing Variant-proportions"""
 # iniializing variant proportion for all lineages
 unique_days_prop_all = list(np.unique(days_prop))
 ### make sure that dates are sorted and not nan
+
 unique_days_prop_all = [x for x in unique_days_prop_all if x!= "nan"]
-unique_days_prop_all.sort(key = lambda date: datetime.strptime(date, "%Y-%m-%d")) 
+unique_days_prop_sub = []
+for i in range(len(unique_days_prop_all)):
+    try:
+        try_this = datetime.strptime(unique_days_prop_all[i], "%Y-%m-%d") 
+        unique_days_prop_sub.append(unique_days_prop_all[i])
+    except:
+        pass
+
+unique_days_prop_sub.sort(key = lambda date: datetime.strptime(date, "%Y-%m-%d")) 
+unique_days_prop_all = unique_days_prop_sub
 
 unique_days_prop = np.array(unique_days_prop_all[unique_days_prop_all.index(date_start):])
 lineages_all = np.array(lineages_all)[unique_days_prop_all.index(date_start):]
@@ -49,7 +56,7 @@ def sub_func(s, x, days_prop, unique_days_prop, lineages_all, unique_lineage):
     res = np.sum((days_prop == unique_days_prop[s]) & (lineages_all == unique_lineage[x]))
     return res
 
-
+print("Timeline of lineage proportions: %s -- %s"%(unique_days_prop[0], unique_days_prop[-1]))
 unique_lineage_timeframe = np.unique(lineages_all)
 """ Remove NONE and UNASSIGNED """
 if "NONE" in unique_lineage_timeframe:
