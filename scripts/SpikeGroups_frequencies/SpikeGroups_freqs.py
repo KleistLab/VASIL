@@ -108,8 +108,8 @@ for x in range(len(unique_group)):
             variant_proportion.append(prop_x)
             SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
             
-            for s in range(len(splited_var)):
-                Om = splited_var[s]
+            for s in range(len(where_x)):
+                Om = Lineages_list[where_x[s]]
                 Lin_dic[Om] = variant_proportion_orig[where_x[s], :]
                 SpikeGroups_dic[Om] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
 
