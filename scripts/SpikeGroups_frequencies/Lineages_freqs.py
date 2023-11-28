@@ -36,7 +36,6 @@ lineages_all = covsonar_data["lineage"].values.astype(str)
 """Simulation timeframe"""
 date_start = sys.argv[2]
 
-pdb.set_trace()
 
 """Start computing Variant-proportions"""
 # iniializing variant proportion for all lineages
