@@ -94,7 +94,7 @@ if compute_lin_freq:
         output:
             result="results/Daily_Lineages_Freq.csv",
         shell:
-            "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs_new.py {input.covsonar} {params.date_start} {output.result}"
+            "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.covsonar} {params.date_start} {output.result}"
 
 
 rule get_mutation_and_spikegroups:
