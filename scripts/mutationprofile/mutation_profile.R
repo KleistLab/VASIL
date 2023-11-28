@@ -39,11 +39,12 @@ if (length(args)!=6) {
   date_start <- args[5]
   date_end <- args[6]
 }
+
+## If actual data frame is smaller than start or end date:
+date_start <- max(date_start, min(D$date))
+date_end <- min(date_end, max(D$date))
+
 #Paper input:
-#input_datafile_covsonar <- "DATA/Stichprobe_RKI-JUL21toMay23_merged.tsv"
-#outputdir <- "results_mutationprofiles/"
-#output_prefix_for_file <- "mutationprofileJul21May23"
-#threshold <- 0.75  #mutations should be present in at least 75% of all samples
 dir.create(outputdir, showWarnings = FALSE)
 
 ## Outputfiles:
@@ -78,19 +79,23 @@ D <- read.csv(input_datafile_covsonar, sep = "\t")
 ### order dates
 D <- D[order(D$date),]
 
-### filter data to start and end date
+## Check dates:
 dates <- D$date
+IsDate = function(x, format = NULL) {
+  formatted = try(as.Date(x, format), silent = TRUE)
+  is_date = as.character(formatted) == x & !is.na(formatted)  # valid and identical to input
+  is_date[is.na(x)] = NA  # Insert NA for NA in x
+  return(is_date)
+}
+dates_ix <- which(IsDate(dates, format = "%Y-%m-%d"))
+D <- D[dates_ix,]
+dates <- D$date
+
+### filter data to start and end date
+#dates <- D$date
 u_dates <- unique(dates)
 id_dates <- 1:length(u_dates)
 between_dates <- subset(u_dates, (id_dates >= match(date_start, u_dates))&(id_dates <= match(date_end, u_dates)))
-#to_keep <- c()
-#for (i in 1:length(dates)){
-#  if (dates[i] %in% between_dates){
-#    to_keep <- append(to_keep, i)
-#  }
-#}
-#D <- D[to_keep,]
-#print(D$date)
 D <- D[D$date %in% between_dates, ]
 sprintf("Timeframe of extracted mutation profiles %s to %s", unique(D$date)[1], unique(D$date)[length(unique(D$date))])
 
@@ -329,3 +334,4 @@ if (length(MP2_zoom)>=2){
            annotation_col = mydf3)
   dev.off()
 }
+
