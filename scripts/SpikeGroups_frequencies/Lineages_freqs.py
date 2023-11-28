@@ -17,6 +17,8 @@ from functools import partial
 import sys
 import pdb
 
+pdb.set_trace()
+
 """Load covsonar_data"""
 try:
 	covsonar_data = pd.read_csv(sys.argv[1], sep = "\t")
@@ -24,17 +26,15 @@ except:
 	covsonar_data = pd.read_csv(sys.argv[1])
 
 try:
-    days_prop = covsonar_data["Date"].values.astype(str)
+    days_prop = covsonar_data["date"].values.astype(str)
 except:
-    try:
-        days_prop = covsonar_data["date"].values.astype(str)
-    except:
-        sys.exit("Date or date column not found in covsonar data")
+    sys.exit("date column not found in covsonar data")
     
 lineages_all = covsonar_data["lineage"].values.astype(str)
 """Simulation timeframe"""
 date_start = sys.argv[2]
 
+pdb.set_trace()
 """Start computing Variant-proportions"""
 # iniializing variant proportion for all lineages
 unique_days_prop_all = list(np.unique(days_prop))
