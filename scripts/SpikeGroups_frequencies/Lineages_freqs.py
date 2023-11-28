@@ -17,8 +17,6 @@ from functools import partial
 import sys
 import pdb
 
-pdb.set_trace()
-
 """Load covsonar_data"""
 try:
 	covsonar_data = pd.read_csv(sys.argv[1], sep = "\t")
@@ -37,7 +35,6 @@ lineages_all = covsonar_data["lineage"].values.astype(str)
 """Simulation timeframe"""
 date_start = sys.argv[2]
 
-pdb.set_trace()
 """Start computing Variant-proportions"""
 # iniializing variant proportion for all lineages
 unique_days_prop_all = list(np.unique(days_prop))
