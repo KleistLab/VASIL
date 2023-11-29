@@ -40,6 +40,7 @@ if (length(args)!=6) {
   date_end <- args[6]
 }
 
+
 #Paper input:
 dir.create(outputdir, showWarnings = FALSE)
 
@@ -75,6 +76,14 @@ D <- read.csv(input_datafile_covsonar, sep = "\t")
 ### order dates
 D <- D[order(D$date),]
 
+## If actual data frame is smaller than start or end date:
+#date_start <- max(date_start, min(D$date))
+#date_end <- min(date_end, max(D$date))
+if (!(date_start %in% D$date)){date_start = D$date[0]}
+if (!(date_end %in% D$date)){date_end = D$date[length(D$date)]}
+
+
+
 ## Check dates:
 dates <- D$date
 IsDate = function(x, format = NULL) {
@@ -86,10 +95,6 @@ IsDate = function(x, format = NULL) {
 dates_ix <- which(IsDate(dates, format = "%Y-%m-%d"))
 D <- D[dates_ix,]
 dates <- D$date
-
-## If actual data frame is smaller than start or end date:
-if (!(date_start %in% D$date)){date_start = D$date[0]}
-if (!(date_end %in% D$date)){date_end = D$date[length(D$date)]}
 
 ### filter data to start and end date
 #dates <- D$date
@@ -313,19 +318,23 @@ lineages_tb <- data.frame(table(D$lineage))
 # random selection:
 # zoom_in_lineages <- sample(lineages_tb$Var1,3)
 # take the top 3:
-zoom_in_lineages <- lineages_tb[order(lineages_tb$Freq, decreasing = TRUE)[1:3],1]
+#zoom_in_lineages <- lineages_tb[order(lineages_tb$Freq, decreasing = TRUE)[1:3],1]
+# take the top 3 of differentially mutated profiles of the RBD region:
+MP3 <- MP2[,unlist(lapply(intersect(rownames(mydf3),colnames(MP2)),function(x) which(colnames(MP2) == x)))]
+MP3_uniq <- unique(MP3)
+lineags_tb2 <- subset(lineages_tb, Var1 %in% row.names(MP3_uniq))
+zoom_in_lineages <- lineags_tb2[order(lineags_tb2$Freq, decreasing = TRUE)[1:3],1]
 
-
-MP2_zoom <- MP2[unlist(lapply(zoom_in_lineages, function(x) which(rownames(MP2) == x))),]
+MP3_zoom <- MP3[unlist(lapply(zoom_in_lineages, function(x) which(rownames(MP3) == x))),]
 #keep only those sites with at least one mutations among the lineages
-MP2_zoom <- MP2_zoom[,which(apply(MP2_zoom,2,sum)>0)]
+MP3_zoom <- MP3_zoom[,which(apply(MP3_zoom,2,sum)>0)]
 #keep only RBD and NTD regions:
-MP2_zoom <- MP2_zoom[,unlist(lapply(intersect(rownames(mydf3),colnames(MP2_zoom)),
-                                    function(x) which(colnames(MP2_zoom) == x)))]
+#MP3_zoom <- MP3_zoom[,unlist(lapply(intersect(rownames(mydf3),colnames(MP3_zoom)),
+#                                    function(x) which(colnames(MP2_zoom) == x)))]
 
-if (length(MP2_zoom)>=2){
+if (length(MP3_zoom)>=2){
   pdf(paste0(outputdir,"/",stringr::str_replace(outputfile_mutationprofile_plot,".pdf","_zoom.pdf")),height = 3, width = 10)
-  pheatmap(as.matrix(MP2_zoom), 
+  pheatmap(as.matrix(MP3_zoom), 
            main = paste("Zoom Mutation Profile of",paste(zoom_in_lineages,collapse = ",")), 
            col=c("white","red"),
            cluster_cols = F, cluster_rows = T,
