@@ -47,6 +47,7 @@ col_sums = freqs.sum(axis = 1).values
 freqs = freqs.divide(col_sums, axis="rows")
 freqs = freqs.fillna(0)
 lineage_freq.loc[:, lineage_freq.columns != 'date'] = freqs
+day_prop = lineage_freq["date"].tolist()
 
 import matplotlib
 def PreFig(xsize = 12, ysize = 12):
@@ -88,12 +89,17 @@ def plot_fit(ES_df, lineage, w_save = 6):
         Pseudo_Prop = np.zeros(len(t_dates))
     
     gamma_prop = np.zeros(len(t_dates))
+    Pseudo_Prop = list(Pseudo_Prop)
     for l in range(len(t_dates)-1):
-        if Pseudo_Prop[l] == 0 or Pseudo_Prop[l+1] == 0:
-            gamma_prop[l] = float('nan')
+        if t_dates[l] in day_prop:
+            w_l = list(day_prop).index(t_dates[l])
+            if Pseudo_Prop[w_l] == 0 or Pseudo_Prop[w_l+1] == 0:
+                gamma_prop[l] = float('nan')
+            else:
+                gamma_prop[l] = (Pseudo_Prop[w_l+1]/Pseudo_Prop[w_l]) - 1
         else:
-            gamma_prop[l] = Pseudo_Prop[l+1]/Pseudo_Prop[l] -1
-    
+            gamma_prop[l] = float('nan')
+
     # plotting
     PreFig(xsize = 20, ysize = 20)
     fig = plt.figure(figsize = (15, 7))

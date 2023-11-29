@@ -360,12 +360,16 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             if x_min is not None:
                 perday_orig = []
                 for i in range(len(np.array(date_ticks)[:change])):
-                    perday_orig.append(list(t_dates).index(date_ticks[i]))
-                try:
-                    for j in range(len(np.array(date_ticks[change:]))):
+                    try:
+                        perday_orig.append(list(t_dates).index(date_ticks[i]))
+                    except:
+                        perday_orig.append(np.nan)
+                
+                for j in range(len(np.array(date_ticks[change:]))):
+                    try:
                         perday_orig.append(list(day_prop).index(date_ticks[change+j]))
-                except:
-                    pass
+                    except:
+                        perday_orig.append(np.nan)
             else:
                 perday_orig = perday
                 
@@ -392,15 +396,20 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         
             ### Separate figure for relative fitness vs change in proportion
             # calculation of change in relative frequency from model
+            Pseudo_Prop[Pseudo_Prop < 0.05] = 0
+            Pseudo_Prop = list(Pseudo_Prop)
             gamma_prop = np.zeros(len(t_prop))
             for l in range(len(t_dates)-1):
-                Pseudo_Prop[Pseudo_Prop < 0.05] = 0
                 #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
-                if Pseudo_Prop[l] == 0 or Pseudo_Prop[l+1] == 0:
-                    gamma_prop[l] = float('nan')
+                if t_dates[l] in day_prop:
+                    w_l = list(day_prop).index(t_dates[l])
+                    if Pseudo_Prop[w_l] == 0 or Pseudo_Prop[w_l+1] == 0:
+                        gamma_prop[l] = float('nan')
+                    else:
+                        gamma_prop[l] = (Pseudo_Prop[w_l+1]/Pseudo_Prop[w_l]) - 1
                 else:
-                    gamma_prop[l] = (Pseudo_Prop[l+1]/Pseudo_Prop[l]) -1
-            
+                    gamma_prop[l] = float('nan')
+                
             PreFig(xsize = 20, ysize = 20)
             fig2 = plt.figure(figsize = (15, 7))
             ax2 = fig2.add_subplot(1, 1, 1)
@@ -517,12 +526,16 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     if x_min is not None:
         perday_orig = []
         for i in range(len(np.array(date_ticks)[:change])):
-            perday_orig.append(list(t_dates).index(date_ticks[i]))
-        try:
-            for j in range(len(np.array(date_ticks[change:]))):
+            try:
+                perday_orig.append(list(t_dates).index(date_ticks[i]))
+            except:
+                perday_orig.append(np.nan)
+       
+        for j in range(len(np.array(date_ticks[change:]))):
+            try:
                 perday_orig.append(list(day_prop).index(date_ticks[change+j]))
-        except:
-            pass
+            except:
+                perday_orig.append(np.nan)
     else:
         perday_orig = perday
     
@@ -584,7 +597,10 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     if x_min1 is not None:
         perday_orig = []
         for i in range(len(np.array(date_ticks))):
-            perday_orig.append(list(day_prop).index(date_ticks[i]))
+            try:
+                perday_orig.append(list(day_prop).index(date_ticks[i]))
+            except:
+                perday_orig.append(np.nan)
     else:
         perday_orig = perday
     
