@@ -288,8 +288,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ### Plot spikegroups frequencies
             if np.all(plot_prop):
                 ax_prop.plot(t_prop, 100*Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
-            else:
-                already_prop = np.zeros((len(t_prop))) ### prop was not plotted if any of the variants are not in dataset, thus even the prop of present variant in the group must be discarded
             
             ax_k.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
             ax_k_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
@@ -448,7 +446,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         else:
             
             status_list.append("No data")
-             
+    
+    
     ax.axhline(xmin = 0, xmax = len(day_prop), ls = "--", linewidth = 2, color = "black")
     
     ymin1, ymax1 = ax.get_ylim()
@@ -595,7 +594,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     
     if (x_min1 is not None):
         ax_prop.set_xlim((x_min1, x_max1))
-        
+    
+    
     return status_list, already_prop, ax_prop, perday_orig, fig_prop
 
 num_groups = int(sys.argv[7])
