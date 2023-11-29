@@ -87,31 +87,32 @@ except:
 
 Lin_dic = {}
 for x in range(len(unique_group)):
-    if "/" not in unique_group[x]:
-        if unique_group[x] in Lineages_list:
-            where_x = list(Lineages_list).index(unique_group[x])
-            prop_x = variant_proportion_orig[where_x, :]
+    if unique_group[x] != "nan":
+        if "/" not in unique_group[x]:
+            if unique_group[x] in Lineages_list:
+                where_x = list(Lineages_list).index(unique_group[x])
+                prop_x = variant_proportion_orig[where_x, :]
+                if np.max(prop_x) > filt_params:
+                    variant_proportion.append(prop_x)
+                    SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
+                    SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
+                    Lin_dic[unique_group[x]] = prop_x
+        else:
+            splited_var = unique_group[x].split("/")
+            where_x = []
+            for var_x in splited_var:
+                if var_x in Lineages_list:
+                    where_x.append(list(Lineages_list).index(var_x))
+            
+            prop_x = np.sum(variant_proportion_orig[np.array(where_x), :], axis = 0)
             if np.max(prop_x) > filt_params:
                 variant_proportion.append(prop_x)
                 SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
-                SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
-                Lin_dic[unique_group[x]] = prop_x
-    else:
-        splited_var = unique_group[x].split("/")
-        where_x = []
-        for var_x in splited_var:
-            if var_x in Lineages_list:
-                where_x.append(list(Lineages_list).index(var_x))
-        
-        prop_x = np.sum(variant_proportion_orig[np.array(where_x), :], axis = 0)
-        if np.max(prop_x) > filt_params:
-            variant_proportion.append(prop_x)
-            SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
-            
-            for s in range(len(where_x)):
-                Om = Lineages_list[where_x[s]]
-                Lin_dic[Om] = variant_proportion_orig[where_x[s], :]
-                SpikeGroups_dic[Om] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
+                
+                for s in range(len(where_x)):
+                    Om = Lineages_list[where_x[s]]
+                    Lin_dic[Om] = variant_proportion_orig[where_x[s], :]
+                    SpikeGroups_dic[Om] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
 
 variant_proportion = np.array(variant_proportion)
 NormProp = np.sum(variant_proportion, axis = 0)
