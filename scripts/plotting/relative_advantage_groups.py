@@ -270,6 +270,26 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             else:
                 sys.exit("E[Susceptible] files were loaded wrongly for %s"%lab_k)
             
+            # calculation of change in relative frequency from model
+            Pseudo_Prop2 = Pseudo_Prop.copy()
+            Pseudo_Prop2[Pseudo_Prop2 < 0.05] = 0
+            Pseudo_Prop2 = list(Pseudo_Prop2)
+            gamma_prop = np.zeros(len(t_dates)-1)
+            min_SI_mask = np.zeros(len(t_dates)).astype(bool)
+            max_SI_mask = np.zeros(len(t_dates)).astype(bool)
+            for l in range(len(t_dates)-1):
+                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+                if t_dates[l] in day_prop:
+                    w_l = list(day_prop).index(t_dates[l])
+                    if Pseudo_Prop2[w_l] == 0 or Pseudo_Prop2[w_l+1] == 0:
+                        gamma_prop[l] = float('nan')
+                    else:
+                        gamma_prop[l] = (Pseudo_Prop2[w_l+1]/Pseudo_Prop2[w_l]) - 1
+                else:
+                    gamma_prop[l] = float('nan')
+                    min_SI_mask[l] = True
+                    max_SI_mask[l] = True
+            
             # calculation of relative fitness
             gamma_SI = np.zeros((len(t_dates), ES_ranges.shape[1]))
             for i in range(ES_ranges.shape[1]):
@@ -280,8 +300,10 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             
             # get min max gamma over PK at each timepoints
             gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
-            
             inds_dates = np.arange(0,len(t_dates),1)
+            gamma_SI_min = ma.masked_array(gamma_SI_min, mask = min_SI_mask)
+            gamma_SI_max = ma.masked_array(gamma_SI_max, mask = max_SI_mask)
+            
             ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
             ax_twin.plot(t_prop, Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
             
@@ -300,6 +322,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             #ax_k_twin.set_ylim((ymin, ymax))
             loc0k = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
             mpl_axes_aligner.align.yaxes(ax_k, 0, ax_k_twin, 0, loc0k)
+            
             try:
                 if str(sys.argv[5]) in list(t_dates):
                     x_min = list(t_dates).index(str(sys.argv[5]))
@@ -356,23 +379,21 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     date_ticks = date_ticks[:-1]
                 date_ticks.append(day_prop[check_last])
                 perday = np.append(perday, check_last)
-        
-            if x_min is not None:
-                perday_orig = []
-                for i in range(len(np.array(date_ticks)[:change])):
-                    try:
-                        perday_orig.append(list(t_dates).index(date_ticks[i]))
-                    except:
-                        perday_orig.append(np.nan)
-                
-                for j in range(len(np.array(date_ticks[change:]))):
-                    try:
-                        perday_orig.append(list(day_prop).index(date_ticks[change+j]))
-                    except:
-                        perday_orig.append(np.nan)
-            else:
-                perday_orig = perday
-                
+            
+            
+            perday_orig = []
+            for i in range(len(np.array(date_ticks)[:change])):
+                try:
+                    perday_orig.append(list(t_dates).index(date_ticks[i]))
+                except:
+                    perday_orig.append(np.nan)
+            
+            for j in range(len(np.array(date_ticks[change:]))):
+                try:
+                    perday_orig.append(list(day_prop).index(date_ticks[change+j]))
+                except:
+                    perday_orig.append(np.nan)
+            
             ax_k.set_xticks(perday_orig)
             ax_k.set_xticklabels(date_ticks,
                 rotation = 45, horizontalalignment = "right")
@@ -395,27 +416,14 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             plt.close()
         
             ### Separate figure for relative fitness vs change in proportion
-            # calculation of change in relative frequency from model
-            Pseudo_Prop[Pseudo_Prop < 0.05] = 0
-            Pseudo_Prop = list(Pseudo_Prop)
-            gamma_prop = np.zeros(len(t_prop))
-            for l in range(len(t_dates)-1):
-                #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
-                if t_dates[l] in day_prop:
-                    w_l = list(day_prop).index(t_dates[l])
-                    if Pseudo_Prop[w_l] == 0 or Pseudo_Prop[w_l+1] == 0:
-                        gamma_prop[l] = float('nan')
-                    else:
-                        gamma_prop[l] = (Pseudo_Prop[w_l+1]/Pseudo_Prop[w_l]) - 1
-                else:
-                    gamma_prop[l] = float('nan')
-                
             PreFig(xsize = 20, ysize = 20)
             fig2 = plt.figure(figsize = (15, 7))
             ax2 = fig2.add_subplot(1, 1, 1)
             # different axis for proportions
             ax2_twin = ax2.twinx()
             
+            gamma_SI_min = ma.masked_array(gamma_SI_min, mask = min_SI_mask)
+            gamma_SI_max = ma.masked_array(gamma_SI_max, mask = max_SI_mask)
             ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = lab_k)
             ax2_twin.plot(t_prop, gamma_prop, color = "orange", label=lab_k)
             
@@ -523,21 +531,19 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         date_ticks.append(day_prop[check_last])
         perday = np.append(perday, check_last)
 
-    if x_min is not None:
-        perday_orig = []
-        for i in range(len(np.array(date_ticks)[:change])):
-            try:
-                perday_orig.append(list(t_dates).index(date_ticks[i]))
-            except:
-                perday_orig.append(np.nan)
-       
-        for j in range(len(np.array(date_ticks[change:]))):
-            try:
-                perday_orig.append(list(day_prop).index(date_ticks[change+j]))
-            except:
-                perday_orig.append(np.nan)
-    else:
-        perday_orig = perday
+    
+    perday_orig = []
+    for i in range(len(np.array(date_ticks)[:change])):
+        try:
+            perday_orig.append(list(t_dates).index(date_ticks[i]))
+        except:
+            perday_orig.append(np.nan)
+   
+    for j in range(len(np.array(date_ticks[change:]))):
+        try:
+            perday_orig.append(list(day_prop).index(date_ticks[change+j]))
+        except:
+            perday_orig.append(np.nan)
     
     ax.set_xticks(perday_orig)
     ax.set_xticklabels(date_ticks,

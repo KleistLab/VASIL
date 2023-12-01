@@ -90,6 +90,8 @@ def plot_fit(ES_df, lineage, w_save = 6):
     
     gamma_prop = np.zeros(len(t_dates))
     Pseudo_Prop = list(Pseudo_Prop)
+    min_SI_mask = np.zeros(len(t_dates)).astype(bool)
+    max_SI_mask = np.zeros(len(t_dates)).astype(bool)
     for l in range(len(t_dates)-1):
         if t_dates[l] in day_prop:
             w_l = list(day_prop).index(t_dates[l])
@@ -99,13 +101,17 @@ def plot_fit(ES_df, lineage, w_save = 6):
                 gamma_prop[l] = (Pseudo_Prop[w_l+1]/Pseudo_Prop[w_l]) - 1
         else:
             gamma_prop[l] = float('nan')
-
+            min_SI_mask[l] = True
+            max_SI_mask[l] = True
+            
     # plotting
     PreFig(xsize = 20, ysize = 20)
     fig = plt.figure(figsize = (15, 7))
     ax = fig.add_subplot(1, 1, 1)
     ax_twin = ax.twinx()
     
+    gamma_SI_min = ma.masked_array(gamma_SI_min, mask = min_SI_mask)
+    gamma_SI_max = ma.masked_array(gamma_SI_max, mask = max_SI_mask)
     ax.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = "$\gamma_{%s}$"%lineage)
     #more smoothing
     #gamma_prop = moving_average(gamma_prop, window = 14)
