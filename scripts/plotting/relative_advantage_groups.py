@@ -388,13 +388,13 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 try:
                     perday_orig.append(list(t_dates).index(date_ticks[i]))
                 except:
-                    perday_orig.append(np.nan)
+                    perday_orig.append(perday[i])
             
             for j in range(len(np.array(date_ticks[change:]))):
                 try:
                     perday_orig.append(list(day_prop).index(date_ticks[change+j]))
                 except:
-                    perday_orig.append(np.nan)
+                    perday_orig.append(perday[change+j])
             
             ax_k.set_xticks(perday_orig)
             ax_k.set_xticklabels(date_ticks,
@@ -434,8 +434,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 rotation = 45, horizontalalignment = "right")
             
             if x_min is not None:
-                ax2.set_xlim((x_min, list(t_dates).index(t_dates[len(t_dates)-1])))
-                ax2_twin.set_xlim((x_min1, day_prop.index(t_dates[len(t_dates)-1])))
+                ax2.set_xlim((x_min, x_max))
+                ax2_twin.set_xlim((x_min1, x_max1))
                 
             
             ymin1, ymax1 = ax2.get_ylim()
@@ -539,13 +539,13 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         try:
             perday_orig.append(list(t_dates).index(date_ticks[i]))
         except:
-            perday_orig.append(np.nan)
+            perday_orig.append(perday[i])
    
     for j in range(len(np.array(date_ticks[change:]))):
         try:
             perday_orig.append(list(day_prop).index(date_ticks[change+j]))
         except:
-            perday_orig.append(np.nan)
+            perday_orig.append(perday[change+j])
     
     ax.set_xticks(perday_orig)
     ax.set_xticklabels(date_ticks,
@@ -602,16 +602,13 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         date_ticks.append(day_prop[check_last])
         perday = np.append(perday, check_last)
         
-    if x_min1 is not None:
-        perday_orig = []
-        for i in range(len(np.array(date_ticks))):
-            try:
-                perday_orig.append(list(day_prop).index(date_ticks[i]))
-            except:
-                perday_orig.append(np.nan)
-    else:
-        perday_orig = perday
-    
+    perday_orig = []
+    for i in range(len(np.array(date_ticks))):
+        try:
+            perday_orig.append(list(day_prop).index(date_ticks[i]))
+        except:
+            perday_orig.append(np.nan)
+            
     ax_prop.set_xticks(perday_orig)
     ax_prop.set_xticklabels(date_ticks,
         rotation = 45, horizontalalignment = "right")
