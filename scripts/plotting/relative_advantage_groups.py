@@ -263,11 +263,9 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         lab_k_fn = (lab_k.replace("/", "_")).replace("*","") ## for filename 
         if len(lab_k_fn) > 30: # can't be too long
             lab_k_fn = lab_k_fn[:-30] + "_et_al"
-        
-        if not (lab_k != "" and num_avail != 0):
-            print("No lineages in group %s have E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k])
-        else:
+         
             
+        if (lab_k != "" and num_avail != 0):
             if (num_avail == len(ES_list)):
                 ES_ranges= np.mean(np.array(ES_list), axis = 0) # compute the mean
             else:
@@ -465,7 +463,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             status_list.append("Done")
         
         else:
-            
+            print("No lineages in group %s have E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k])
             status_list.append("No data")
     
     
