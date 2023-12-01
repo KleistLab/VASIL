@@ -49,7 +49,10 @@ for i in range(len(unique_days_prop_all)):
 unique_days_prop_sub.sort(key = lambda date: datetime.strptime(date, "%Y-%m-%d")) 
 unique_days_prop_all = unique_days_prop_sub
 
-unique_days_prop = np.array(unique_days_prop_all[unique_days_prop_all.index(date_start):])
+if date_start in unique_days_prop_all:
+    unique_days_prop = np.array(unique_days_prop_all[unique_days_prop_all.index(date_start):])
+else:
+    unique_days_prop = np.array(unique_days_prop_all)
         
 def sub_func(s, x, days_prop, unique_days_prop, lineages_all, unique_lineage):
     res = np.sum((days_prop == unique_days_prop[s]) & (lineages_all == unique_lineage[x]))

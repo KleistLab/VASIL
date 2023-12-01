@@ -1,6 +1,7 @@
 # Main workflow of VASIL
 import os
 
+
 report: "report/workflow.rst"
 
 
@@ -11,7 +12,7 @@ rule_all_common = [
     "results/epitope_data/dms_per_ab_per_site.csv",
 ]
 
-if config["freq_lin"]:   
+if config["freq_lin"]:
     rule_all_common.append("results/Daily_Lineages_Freq.csv")
 
 try:
@@ -20,8 +21,10 @@ except:
     save_lin = True
 
 if save_lin:
-    rule_all_common.append("results/Daily_Lineages_Freq_%s_percent.csv"%int(config["filter_out"]))
-    
+    rule_all_common.append(
+        "results/Daily_Lineages_Freq_%s_percent.csv" % int(config["filter_out"])
+    )
+
 if config["cross_all"]:
     rule_all_common.append("results/Cross_react_dic_spikegroups_ALL.pck"),
 
@@ -86,6 +89,7 @@ else:
     compute_lin_freq = True
 
 if compute_lin_freq:
+
     rule get_lineages_frequencies:
         input:
             covsonar=config["covsonardata"],
@@ -98,36 +102,37 @@ if compute_lin_freq:
 
 
 rule get_mutation_and_spikegroups:
-        input:
-            covsonar=config["covsonardata"],
-        params:
-            prefix=config["prefix"],
-            mutation_threshold=config["mutation_threshold"],
-            date_start=config["date_start"],
-            date_end=config["date_end"],
-        output:
-            dir=directory("results/mutation_data"),
-            spk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
-            spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
-        shell:
-            "Rscript {workflow.basedir}/scripts/mutationprofile/mutation_profile.R {input.covsonar} {output.dir} {params.prefix} {params.mutation_threshold} {params.date_start} {params.date_end}"
+    input:
+        covsonar=config["covsonardata"],
+    params:
+        prefix=config["prefix"],
+        mutation_threshold=config["mutation_threshold"],
+        date_start=config["date_start"],
+        date_end=config["date_end"],
+    output:
+        dir=directory("results/mutation_data"),
+        spk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
+        spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
+    shell:
+        "Rscript {workflow.basedir}/scripts/mutationprofile/mutation_profile.R {input.covsonar} {output.dir} {params.prefix} {params.mutation_threshold} {params.date_start} {params.date_end}"
 
 
 rule get_spikegroups_frequencies:
-        input:
-            lins_freqs="results/Daily_Lineages_Freq.csv",
-            spk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
-            spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
-        params:
-            filter_out=config["filter_out"],
-            get_freq_lin=save_lin,
-        output:
-            spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
-            spikes_dic="results/SpikeGroups.pck",
-            mutations_dic="results/Mutation_Profiles.pck",
-            res="results/Daily_Lineages_Freq_%s_percent.csv"%int(config["filter_out"]),
-        shell:
-            "python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.spk_profiles} {input.spike_groups} {output.spikes_freqs} {output.spikes_dic} {output.mutations_dic} {params.filter_out} {params.get_freq_lin}"
+    input:
+        cases=config["cases"],
+        lins_freqs="results/Daily_Lineages_Freq.csv",
+        spk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
+        spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
+    params:
+        filter_out=config["filter_out"],
+        get_freq_lin=save_lin,
+    output:
+        spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
+        spikes_dic="results/SpikeGroups.pck",
+        mutations_dic="results/Mutation_Profiles.pck",
+        res="results/Daily_Lineages_Freq_%s_percent.csv" % int(config["filter_out"]),
+    shell:
+        "python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.spk_profiles} {input.spike_groups} {output.spikes_freqs} {output.spikes_dic} {output.mutations_dic} {params.filter_out} {params.get_freq_lin} {input.cases}"
 
 
 if config["cross_focus"]:

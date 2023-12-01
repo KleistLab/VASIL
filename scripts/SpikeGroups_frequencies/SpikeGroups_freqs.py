@@ -6,6 +6,7 @@ import pickle
 import re
 import sys
 import pdb
+from datetime import datetime, timedelta
 #import pdb
 
 """ Loads lineage frequency data aready matched with timeline of infection """
@@ -54,14 +55,34 @@ for i in range(len(unique_muts)):
 NormProp = np.sum(frequency_lineage, axis = 0)
 prop_rounded = np.round(frequency_lineage,decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
-"""Finalizing variant proportion parameter """
+"""Finalizing variant proportion parameter and aligning with case ascertainement timeline if parameter is given"""
+#try:
+"""Load Infection Data"""
+Population_Data = pd.read_csv(sys.argv[9])
+days_incidence = list(Population_Data['date'])
+if days_incidence[len(days_incidence) - 1] < days_prop[len(days_prop) - 1]:
+    sdate = datetime.strptime(days_incidence[len(days_incidence) - 1], "%Y-%m-%d")
+    edate = datetime.strptime(days_prop[len(days_prop) - 1], "%Y-%m-%d")
+    date_list = list(days_incidence)[:-1]+pd.date_range(sdate,edate-timedelta(days=1),freq='d').strftime('%Y-%m-%d').tolist()
+else:
+    date_list = list(days_incidence)
+
+N_days = len(date_list)
+
+#except:
+#    N_days = len(days_prop)
+
 Lineages_list = list(unique_lineage)
-variant_proportion_orig = np.zeros((len(Lineages_list), len(days_prop)))
+variant_proportion_orig = np.zeros((len(Lineages_list), N_days))
 #missing_var_prop = {}
 for x in range(len(Lineages_list)):
     variant = Lineages_list[x]
     x_lin = list(unique_lineage).index(variant)
-    variant_proportion_orig[x, :] = proportion_lineage[x_lin, :]
+    for k in range(len(date_list)):
+        date = date_list[k]
+        if date in list(days_prop):
+            ik = list(days_prop).index(date)
+            variant_proportion_orig[x, k] = proportion_lineage[x_lin, ik]
 
 NormProp = np.sum(variant_proportion_orig, axis = 0)
 prop_rounded = np.round(variant_proportion_orig, decimals = 10)
@@ -140,13 +161,13 @@ except:
 
 """ Save frequency pseudogroup data """
 freq_dic = {}
-freq_dic["date"] = days_prop
+freq_dic["date"] = date_list
 for x in range(len(SpikeGroups_list)):
     if SpikeGroups_list[x]!= "Wuhan-Hu-1":
         freq_dic["Spike. "+SpikeGroups_list[x]] = variant_proportion[x, :]*100 
 
 
-freq_df = pd.DataFrame(freq_dic, index = np.arange(0, len(days_prop)))
+freq_df = pd.DataFrame(freq_dic, index = np.arange(0, len(date_list)))
 freq_df.to_csv(sys.argv[4])
 if "Wuhan-Hu-1" not in SpikeGroups_list:
     freq_dic["Wuhan-Hu-1"] = np.zeros(variant_proportion.shape[1])

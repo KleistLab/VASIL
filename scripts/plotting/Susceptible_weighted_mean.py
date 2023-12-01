@@ -53,46 +53,52 @@ p_prop = np.zeros(pS_all.shape)
 
 for x in range(len(SpikeGroups_list)):
     if SpikeGroups_list[x] != "Wuhan-Hu-1":
+       
+        EI_df = pd.read_csv(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%SpikeGroups_list[x])
         try:
-            EI_df = pd.read_csv(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%SpikeGroups_list[x])
-            try:
-                EI_df.drop(columns = "Unnamed: 0", inplace = True) ## column corresponds to indexes
-            except:
-                pass
-            
-            ei_cols = EI_df.columns
-            EI_ranges = EI_df.to_numpy()[:, ei_cols!="Days"].astype(float) # all t_half, t_max simulations on the columns
-            days = list(EI_df["Days"])
-            
-            #Compute timeline prop group (for pseudogroups, this is thee same as loading proportion data)
-            Pseudo_Prop = frequency_spk_df["Spike. "+SpikeGroups_list[x]]
-            Pseudo_Prop = list(Pseudo_Prop)
-            
-            gamma_prop = np.zeros(len(t)-1)
-            Prop_sub = np.zeros(len(t)-1)
-            mask_ind = []
-            for l in range(len(t)-1):
-                if days[l] in list(days_prop):
-                    w_l = list(days_prop).index(days[l])
+            EI_df.drop(columns = "Unnamed: 0", inplace = True) ## column corresponds to indexes
+        except:
+            pass
+        
+        ei_cols = EI_df.columns
+        EI_ranges = EI_df.to_numpy()[:, ei_cols!="Days"].astype(float) # all t_half, t_max simulations on the columns
+        days = list(EI_df["Days"])
+        
+        #Compute timeline prop group (for pseudogroups, this is thee same as loading proportion data)
+        Pseudo_Prop = frequency_spk_df["Spike. "+SpikeGroups_list[x]]
+        Pseudo_Prop = list(Pseudo_Prop)
+        
+        gamma_prop = np.zeros(len(t)-1)
+        Prop_sub = np.zeros(len(t)-1)
+        mask_ind = []
+        for l in range(len(t)-1):
+            if days[l] in list(days_prop):
+                w_l = list(days_prop).index(days[l])
+                try: # should work if proportions date where proprerly aligned with incidence data
                     if Pseudo_Prop[w_l] == 0 or Pseudo_Prop[w_l+1] == 0:
                         gamma_prop[l] = float('nan')
                     else:
                         gamma_prop[l] = Pseudo_Prop[w_l+1]/Pseudo_Prop[w_l] -1
-                    mask_ind.append(False)
-                    Prop_sub[l] = Pseudo_Prop[w_l]
-                else:
-                    gamma_prop[l] = float('nan')
-                    mask_ind.append(True)
-            
-            dprop_all[:, x] = gamma_prop
-            Pseudo_Prop_Masked = ma.masked_array(Prop_sub, mask = mask_ind)
-            #dprop_all[:, x] = np.diff(np.log(Pseudo_Prop[:len(t)][0]))
-            #Estimated susceptible
-            for i in range(EI_ranges.shape[1]):
-                S_i = (N_pop - EI_ranges[:, i])
-                pS_all[:, x, i] = Pseudo_Prop_Masked*S_i[:len(t)-1] ### weighted susceptible, remove the last value to be comparable the prop change timeline
-            
+                except:
+                    gamma_prop[l] = float("nan")
+                    
+                mask_ind.append(False)
+                Prop_sub[l] = Pseudo_Prop[w_l]
+            else:
+                gamma_prop[l] = float('nan')
+                mask_ind.append(True)
+        
+        dprop_all[:, x] = gamma_prop
+        Pseudo_Prop_Masked = ma.masked_array(Prop_sub, mask = mask_ind)
+        #dprop_all[:, x] = np.diff(np.log(Pseudo_Prop[:len(t)][0]))
+        #Estimated susceptible
+        for i in range(EI_ranges.shape[1]):
+            S_i = (N_pop - EI_ranges[:, i])
+            pS_all[:, x, i] = Pseudo_Prop_Masked*S_i[:len(t)-1] ### weighted susceptible, remove the last value to be comparable the prop change timeline
+        
+        """
         except:
+            
             print(SpikeGroups_list[x], "File not found")
             a = np.empty(len(dprop_all[:, x]))
             b = np.empty(pS_all[:, x, :].shape)
@@ -102,7 +108,7 @@ for x in range(len(SpikeGroups_list)):
             dprop_all[:, x] = a
             pS_all[:, x, :] = b
             p_prop[:, x, :] = c
-        
+        """
 ### Mean timecourse over the pseudogroups for all 
 pS_all =  ma.masked_array(pS_all, mask=np.isnan(pS_all))
 pS_all_mean = np.sum(pS_all, axis = 1) ## if already weighted

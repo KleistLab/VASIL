@@ -112,6 +112,7 @@ def plot_fit(ES_df, lineage, w_save = 6):
     
     gamma_SI_min = ma.masked_array(gamma_SI_min, mask = min_SI_mask)
     gamma_SI_max = ma.masked_array(gamma_SI_max, mask = max_SI_mask)
+    gamma_prop = ma.masked_array(gamma_prop, mask = max_SI_mask)
     ax.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = "$\gamma_{%s}$"%lineage)
     #more smoothing
     #gamma_prop = moving_average(gamma_prop, window = 14)
@@ -147,14 +148,17 @@ def plot_fit(ES_df, lineage, w_save = 6):
     perday = np.arange(0,len(t_dates_show), pp)
     date_ticks = t_dates_show[perday].tolist()
     if t_dates[len(t_dates) - 1] not in date_ticks:
-        n=list(t_dates).index(date_ticks[-1])+pp
-        while n<len(t_dates)-1:
-            date_ticks.append(t_dates[n])
-            perday = np.append(perday, n)
-            n += pp
-        date_ticks.append(t_dates[len(t_dates) - 1])
-        perday = np.append(perday, len(t_dates) - 1)
-    
+        try:
+            n=list(t_dates).index(date_ticks[-1])+pp
+            while n<len(t_dates)-1:
+                date_ticks.append(t_dates[n])
+                perday = np.append(perday, n)
+                n += pp
+            date_ticks.append(t_dates[len(t_dates) - 1])
+            perday = np.append(perday, len(t_dates) - 1)
+        except:
+            pass
+        
     if x_min is not None:
         perday_orig = []
         for i in range(len(date_ticks)):

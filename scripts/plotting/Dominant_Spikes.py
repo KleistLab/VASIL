@@ -12,6 +12,7 @@ import sys
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 import seaborn as sns
+import numpy.ma as ma
 
 lineage_freq = pd.read_csv(sys.argv[1])
 
@@ -45,11 +46,13 @@ ax = fig.add_subplot(1, 1, 1)
 
 ### Sort lineage_freqs
 sorted_cols = lineage_freq.columns[np.argsort(np.sum(lineage_freq.to_numpy().astype(float),  axis = 0))[::-1]] ## sort in descending order of total proportions over the entire timeframe
+missing_data = np.all(lineage_freq.to_numpy().astype(float) == 0.0,  axis = 1)
 cols = sns.color_palette("husl", len(sorted_cols)) 
 count = 0
 for spike in sorted_cols:
     if max(lineage_freq[spike]) > 0:
-        ax.plot(lineage_freq[spike], label = spike, linewidth = 3, color = cols[count])
+        masked_lin = ma.masked_array(lineage_freq[spike], mask = missing_data)
+        ax.plot(masked_lin, label = spike, linewidth = 3, color = cols[count])
         count +=1
 
 try:

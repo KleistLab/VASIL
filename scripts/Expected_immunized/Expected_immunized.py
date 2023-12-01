@@ -67,6 +67,9 @@ Load_Delta = pd.read_excel(sys.argv[7], engine='openpyxl')
 total_population = float(sys.argv[8])
 
 date_start = str(sys.argv[9])
+if date_start not in list(Population_Data['date']):
+    date_start = list(Population_Data['date'])[0]
+    
 Population_Data = Population_Data.drop(index = Population_Data.index[:list(Population_Data['date']).index(date_start)])
 
 date_end = sys.argv[10]
@@ -440,7 +443,7 @@ spikegroups_freq = np.zeros((len(SpikeGroups_list), len(t)))
 for i in range(len(SpikeGroups_list)):
     if SpikeGroups_list[i]!="Wuhan-Hu-1":
         for k in range(len(t)):
-            if days_incidence[k] in list(frequency_spk_df["date"]): ### should always be true if data were well formated
+            if days_incidence[k] in list(frequency_spk_df["date"]): ### should always be true if data date were well aligned
                 ik = list(frequency_spk_df["date"]).index(days_incidence[k])
                 spikegroups_freq[i, k] = frequency_spk_df["Spike. "+SpikeGroups_list[i]][ik]
 
@@ -463,6 +466,8 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
     if antigen_list == ["ALL"]:
         antigen_list = np.array(SpikeGroups_list[var_list_index])
     
+    if antigen_list == ["none"]:
+        antigen_list = []
 
     if len(antigen_list) != 0:
         if save_pneut in ("TRUE", "True"):
