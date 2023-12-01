@@ -589,7 +589,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     perday = np.arange(0,len(t_show), pp)
     date_ticks = np.array(t_show)[perday].tolist()
     
-    
     if day_prop[check_last] not in date_ticks:
         n=list(day_prop).index(date_ticks[-1])+pp
         while n<len(day_prop)-1:
@@ -601,13 +600,14 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             date_ticks = date_ticks[:-1]
         date_ticks.append(day_prop[check_last])
         perday = np.append(perday, check_last)
-        
+    
+    
     perday_orig = []
     for i in range(len(np.array(date_ticks))):
         try:
             perday_orig.append(list(day_prop).index(date_ticks[i]))
         except:
-            perday_orig.append(np.nan)
+            perday_orig.append(perday[i])
             
     ax_prop.set_xticks(perday_orig)
     ax_prop.set_xticklabels(date_ticks,
