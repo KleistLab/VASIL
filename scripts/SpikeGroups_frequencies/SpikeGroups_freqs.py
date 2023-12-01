@@ -72,6 +72,10 @@ SpikeGroups_list = []
 Pseudogroups = pd.read_csv(sys.argv[3])
 variant_x_pseudo = np.array(Pseudogroups["lineage"].values).astype(str)
 pseudo_members = np.array(Pseudogroups["group"].values).astype(str)
+### remove nans
+where_not_nans = variant_x_pseudo != "nan"
+variant_x_pseudo = variant_x_pseudo[where_not_nans]
+pseudo_members = pseudo_members[where_not_nans]
 
 unique_group = np.unique(pseudo_members)
 variant_proportion = []
@@ -85,10 +89,11 @@ try:
 except:
     filt_params = 0
 
+
 Lin_dic = {}
 for x in range(len(unique_group)):
-    if unique_group[x] != "nan":
-        if "/" not in unique_group[x]:
+    if "/" not in unique_group[x]:
+        if unique_group[x] != "nan":
             if unique_group[x] in Lineages_list:
                 where_x = list(Lineages_list).index(unique_group[x])
                 prop_x = variant_proportion_orig[where_x, :]
@@ -97,13 +102,15 @@ for x in range(len(unique_group)):
                     SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
                     SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
                     Lin_dic[unique_group[x]] = prop_x
-        else:
-            splited_var = unique_group[x].split("/")
-            where_x = []
-            for var_x in splited_var:
-                if var_x in Lineages_list:
+    else:
+        splited_var = unique_group[x].split("/")
+        where_x = []
+        for var_x in splited_var:
+            if var_x in Lineages_list:
+                if var_x!="nan":
                     where_x.append(list(Lineages_list).index(var_x))
-            
+        
+        if len(where_x)!=0:
             prop_x = np.sum(variant_proportion_orig[np.array(where_x), :], axis = 0)
             if np.max(prop_x) > filt_params:
                 variant_proportion.append(prop_x)
