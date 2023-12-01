@@ -52,13 +52,14 @@ count = 0
 for spike in sorted_cols:
     if max(lineage_freq[spike]) > 0:
         masked_lin = ma.masked_array(lineage_freq[spike], mask = missing_data)
-        ax.plot(masked_lin, label = spike, linewidth = 3, color = cols[count])
+        ax.plot(lineage_freq.index, masked_lin, label = spike, linewidth = 3, color = cols[count])
+        ax.scatter(lineage_freq.index, masked_lin, marker = ".", color = cols[count])
         count +=1
 
 try:
-    ax.legend(loc = (1.2, 0), ncols = (np.ceil(count/15)).astype(int))
+    ax.legend(loc = (1.2, 0), ncols = (np.ceil(count/25)).astype(int))
 except:
-    ax.legend(loc = (1.2, 0), ncols = (np.ceil(count/15)).astype(int))
+    ax.legend(loc = (1.2, 0), ncols = (np.ceil(count/25)).astype(int))
 
 ax.set_title("Ordered Spikesgroups by total sum of proportions", fontsize = 20)
 pdf2 = PdfPages(sys.argv[2]+"/SpikeGroups_Props_overview.pdf")

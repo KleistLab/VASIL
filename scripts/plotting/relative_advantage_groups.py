@@ -15,6 +15,7 @@ import pdb
 import seaborn as sns
 import pickle
 import mpl_axes_aligner
+import re
 
 
 def moving_average(X, window = 7):
@@ -48,8 +49,8 @@ except:
 
 lineage_freq = lineage_freq#[lineage_freq['date'].isin(t_dates)]
 freqs = lineage_freq.loc[:, lineage_freq.columns != 'date']
-
 # imputing frequencies below threshold and normalization
+prop_mask = np.all(lineage_freq.loc[:, lineage_freq.columns != 'date'] == 0.0, axis = 1)
 freqs = freqs.mask(freqs < threshold)
 freqs = freqs.fillna(0)
 col_sums = freqs.sum(axis = 1).values
@@ -58,7 +59,6 @@ freqs = freqs.fillna(0)
 lineage_freq.loc[:, lineage_freq.columns != 'date'] = freqs
 day_prop = lineage_freq["date"].tolist()
 t_prop = np.arange(len(day_prop)).astype(int)
-prop_mask = np.all(lineage_freq.loc[:, lineage_freq.columns != 'date'] == 0, axis = 1)
 
 import matplotlib
 def PreFig(xsize = 12, ysize = 12):
@@ -90,7 +90,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     Pseudo_done_global = []
     
     for k in range(len(lineage_list)):
-        if lineage_list[k][-4:] == ".ALL":
+        if lineage_list[k][-4:] == ".ALL" and not re.search("/", lineage_list[k]):
             splited_var = []
             for x in list(Pseudogroup_dic.keys()):
                 if x[:len(lineage_list[k][:-4])] == lineage_list[k][:-4]:
@@ -99,6 +99,16 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             splited_var = np.array(lineage_list[k].split("/"))
             splited_var = splited_var[~(splited_var == "")]
             splited_var = splited_var[~(splited_var == " ")]
+         
+        splited_var0 = np.array(splited_var).copy()
+        splited_var = []
+        for var in splited_var0:
+            if var[-4:] == ".ALL":
+                for x in list(Pseudogroup_dic.keys()):
+                    if x[:len(var[:-4])] == var[:-4]:
+                        splited_var.append(x)
+            else:
+                splited_var.append(var)
         
         num_avail = 0
         # plotting
@@ -121,7 +131,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         start = 0
         ES_list = []
         for x in range(len(splited_var)):
-            lineage = splited_var[x]
+            lineage = splited_var[x]                
             try:
                 if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
                     ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
@@ -253,7 +263,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 
                 start +=1
                 
-        if lineage_list[k][-3:] != "ALL":
+        if not re.search(".ALL",lineage_list[k]):
             lab_k = lab_done[lineage_list[k]][:-1]
         else:
             lab_k = lineage_list[k]
@@ -261,9 +271,9 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         if lab_k[:3] == " + ":
             lab_k = lab_k[3:]
         
-        lab_k_fn = (lab_k.replace("/", "_")).replace("*","") ## for filename 
-        if len(lab_k_fn) > 30: # can't be too long
-            lab_k_fn = lab_k_fn[:-30] + "_et_al"
+        lab_k_fn = (lab_k.replace("/", "_")).replace("*","").replace("+", "_") ## for filename 
+        if len(lab_k_fn) > 10: # can't be too long
+            lab_k_fn = lab_k_fn[:10] + "_et_al"
          
             
         if (lab_k != "" and num_avail != 0):
@@ -295,15 +305,15 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     gamma_prop[l] = float('nan')
                     SI_mask[l] = True
             
-            prop_mask = np.zeros(len(t_dates)).astype(bool)
-            prop_mask[:-1] = SI_mask[:-1]
+            prop_mask_0 = np.zeros(len(t_dates)).astype(bool)
+            prop_mask_0[:-1] = SI_mask[:-1]
             if t_dates[len(t_dates)-1] in day_prop:
                 w_l = list(day_prop).index(t_dates[len(t_dates)-1])
                 Prop_aligned[-1] = Pseudo_Prop[w_l]
             else:
-                prop_mask[-1] = True
+                prop_mask_0[-1] = True
             
-            Prop_aligned = ma.masked_array(Prop_aligned, mask = prop_mask)
+            Prop_aligned = ma.masked_array(Prop_aligned, mask = prop_mask_0)
             # calculation of relative fitness
             gamma_SI = np.zeros((len(t_dates), ES_ranges.shape[1]))
             for i in range(ES_ranges.shape[1]):
@@ -313,20 +323,27 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 gamma_SI[:, i] = np.divide(S_x - S_mean, S_mean, out = S_x, where = S_mean != 0)
             
             # get min max gamma over PK at each timepoints
-            gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
             inds_dates = np.arange(0,len(t_dates),1)
+            SI_mask = np.array(SI_mask) + prop_mask[:len(inds_dates)] ### props are already aligned with indicence date
+            gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
             gamma_SI_min = ma.masked_array(gamma_SI_min, mask = SI_mask)
             gamma_SI_max = ma.masked_array(gamma_SI_max, mask = SI_mask)
-            
+            Prop_aligned = ma.masked_array(Prop_aligned, mask = SI_mask)
+
             ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
             ax_twin.plot(inds_dates, Prop_aligned, linewidth = 3, color = color_list[k], label = lab_k)
-            
+            ax_twin.scatter(inds_dates, Prop_aligned, marker = ".", color = color_list[k])
+
             ### Plot spikegroups frequencies
             if np.all(plot_prop):
-                ax_prop.plot(t_prop, 100*Pseudo_Prop, linewidth = 3, color = color_list[k], label = lab_k)
+                Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop, mask=prop_mask)
+                ax_prop.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
+                ax_prop.scatter(t_prop, 100*Pseudo_Prop_masked, marker = ".", color = color_list[k])
+
             
             ax_k.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
             ax_k_twin.plot(inds_dates, Prop_aligned, linewidth = 3, color = color_list[k], label = lab_k)
+            ax_k_twin.scatter(inds_dates, Prop_aligned, marker = ".", color = color_list[k])
             ax_k.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
             
             ymin1, ymax1 = ax_k.get_ylim()
@@ -440,7 +457,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             # different axis for proportions
             ax2_twin = ax2.twinx()
             
-            SI_mask = np.array(SI_mask) + prop_mask
             gamma_SI_min = ma.masked_array(gamma_SI_min, mask = SI_mask)
             gamma_SI_max = ma.masked_array(gamma_SI_max, mask = SI_mask)
             gamma_prop = ma.masked_array(gamma_prop, mask = SI_mask)
@@ -642,7 +658,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     if (x_min1 is not None):
         ax_prop.set_xlim((x_min1, x_max1))
     
-    
+    already_prop = ma.masked_array(already_prop, mask=prop_mask)
     return status_list, already_prop, ax_prop, perday_orig, fig_prop
 
 num_groups = int(sys.argv[7])
@@ -668,6 +684,7 @@ for i in range(num_groups):
 status_list, already_prop, ax_prop, perday_orig, fig_prop = plot_fit(ES_lin_dir, lineage_list, color_list, w_save, already_prop = np.zeros((len(t_prop))))
 ### Group Plot proportion of all other spikegroups
 ax_prop.plot(t_prop, (100 - 100*already_prop), linewidth = 3, color = "grey", label = "Other")
+ax_prop.scatter(t_prop, (100 - 100*already_prop), marker = ".", color = "grey")
 ymin, ymax = ax_prop.get_ylim()
 ax_prop.set_ylim(((0, 1.1*ymax)))
 ax_prop.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))

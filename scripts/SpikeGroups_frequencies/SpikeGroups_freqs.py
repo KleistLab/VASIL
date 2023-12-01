@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import numpy as np
+import numpy.ma as ma
 import pickle
 import re
 import sys
@@ -74,6 +75,7 @@ N_days = len(date_list)
 
 Lineages_list = list(unique_lineage)
 variant_proportion_orig = np.zeros((len(Lineages_list), N_days))
+mask_missing = np.zeros((len(Lineages_list), N_days)).astype(bool)
 #missing_var_prop = {}
 for x in range(len(Lineages_list)):
     variant = Lineages_list[x]
@@ -83,7 +85,10 @@ for x in range(len(Lineages_list)):
         if date in list(days_prop):
             ik = list(days_prop).index(date)
             variant_proportion_orig[x, k] = proportion_lineage[x_lin, ik]
-
+        else:
+            mask_missing[x, k] = True
+        
+variant_proportion_orig = ma.masked_array(variant_proportion_orig, mask = mask_missing)
 NormProp = np.sum(variant_proportion_orig, axis = 0)
 prop_rounded = np.round(variant_proportion_orig, decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)

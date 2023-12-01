@@ -46,6 +46,7 @@ frequency_spk_df = frequency_spk_df.fillna(0)
 col_sums = frequency_spk_df.sum(axis = 1).values
 frequency_spk_df = frequency_spk_df.divide(col_sums, axis="rows")
 frequency_spk_df = frequency_spk_df.fillna(0)
+prop_mask = np.all(frequency_spk_df.loc[:, frequency_spk_df.columns != 'date'] == 0, axis = 1)
 
 pS_all = np.zeros((len(t)-1, len(SpikeGroups_list[SpikeGroups_list!="Wuhan-Hu-1"]), len(pk_cols[pk_cols!="Days"])))
 dprop_all = np.zeros((len(t)-1, len(SpikeGroups_list[SpikeGroups_list!="Wuhan-Hu-1"])))
@@ -88,6 +89,7 @@ for x in range(len(SpikeGroups_list)):
                 gamma_prop[l] = float('nan')
                 mask_ind.append(True)
         
+        mask_ind = np.array(mask_ind) + prop_mask[:len(t)-1]
         dprop_all[:, x] = gamma_prop
         Pseudo_Prop_Masked = ma.masked_array(Prop_sub, mask = mask_ind)
         #dprop_all[:, x] = np.diff(np.log(Pseudo_Prop[:len(t)][0]))
