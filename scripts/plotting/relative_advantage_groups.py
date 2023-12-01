@@ -264,17 +264,18 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         if len(lab_k_fn) > 30: # can't be too long
             lab_k_fn = lab_k_fn[:-30] + "_et_al"
             
-        if lab_k != "":
-            if num_avail == len(ES_list):
+        if lab_k != "" and num_avail != 0:
+            
+            if (num_avail == len(ES_list)):
                 ES_ranges= np.mean(np.array(ES_list), axis = 0) # compute the mean
             else:
-                sys.exit("E[Susceptible] files were loaded wrongly for %s"%lab_k)
+                sys.exit("Loaded E[Susceptible] files were more than what is available for groups %s, recheck the loading process script/plotting/relative_advantage_groups.py Line 122-196"%lineage_list[k])
             
             # calculation of change in relative frequency from model
             Pseudo_Prop2 = Pseudo_Prop.copy()
             Pseudo_Prop2[Pseudo_Prop2 < 0.05] = 0
             Pseudo_Prop2 = list(Pseudo_Prop2)
-            gamma_prop = np.zeros(len(t_dates)-1)
+            gamma_prop = np.zeros(len(t_dates))
             min_SI_mask = np.zeros(len(t_dates)).astype(bool)
             max_SI_mask = np.zeros(len(t_dates)).astype(bool)
             for l in range(len(t_dates)-1):
@@ -292,6 +293,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             
             # calculation of relative fitness
             gamma_SI = np.zeros((len(t_dates), ES_ranges.shape[1]))
+            
             for i in range(ES_ranges.shape[1]):
                 S_x = ES_ranges[:, i]
                 S_mean = S_all_mean[:, i]
@@ -425,7 +427,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             gamma_SI_min = ma.masked_array(gamma_SI_min, mask = min_SI_mask)
             gamma_SI_max = ma.masked_array(gamma_SI_max, mask = max_SI_mask)
             ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = lab_k)
-            ax2_twin.plot(t_prop, gamma_prop, color = "orange", label=lab_k)
+            ax2_twin.plot(inds_dates, gamma_prop, color = "orange", label=lab_k)
             
             ax2.set_xticks(perday_orig)
             ax2.set_xticklabels(date_ticks,
