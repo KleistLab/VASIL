@@ -215,10 +215,10 @@ Pseudo_keys = list(Pseudogroup_dic.keys())
 
 for spklin in lineages_sim:
     if spklin in Pseudo_keys:
-        Top_Pseudo.append(spklin)
+        Top_Pseudo.append(spklin + "*")
         mut_maj = mut_x_sites_dic[Pseudogroup_dic[spklin]]
         """Update mutation profile dictionary"""        
-        mut_x_sites_dic_updated[spklin] = mut_maj
+        mut_x_sites_dic_updated[spklin + "*"] = mut_maj
     else:           
         try:
             mut_file = open(mut_sim[lineages_sim.index(spklin)], "r")

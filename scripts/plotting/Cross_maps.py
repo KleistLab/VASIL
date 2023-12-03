@@ -80,7 +80,7 @@ if plot_major not in ("True"):
     
     Pseudo_lab_cross = []
     for i in range(len(Top_Pseudo)):
-        if Top_Pseudo[:7] == "Spike. ":
+        if Top_Pseudo[i][:7] == "Spike. ":
             Pseudo_lab_cross.append(Top_Pseudo[i][7:])
         else:
             Pseudo_lab_cross.append(Top_Pseudo[i])
