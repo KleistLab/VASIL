@@ -68,12 +68,16 @@ if plot_major not in ("True"):
     Cross_Epitope_Dic_orig = pickle.load(cross_file)
     cross_file.close()
     
-    Top_Pseudo = np.array(Cross_Epitope_Dic_orig["variant_list"][:10])
+    Top_Pseudo = np.array(Cross_Epitope_Dic_orig["variant_list"][:12])
     if "Wuhan-Hu-1" not in Top_Pseudo:
         Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[:-1])
     else:
         Top_Pseudo = ["Wuhan-Hu-1"] + list(Top_Pseudo[Top_Pseudo!="Wuhan-Hu-1"])
-        
+    
+    Top_Pseudo = np.array(Top_Pseudo)
+    if "nan" in Top_Pseudo:
+        Top_Pseudo = list(Top_Pseudo[Top_Pseudo!="nan"])
+    
     Pseudo_lab_cross = []
     for i in range(len(Top_Pseudo)):
         if Top_Pseudo[:7] == "Spike. ":
@@ -163,9 +167,11 @@ if plot_major not in ("True"):
         fig_fr = plt.figure(figsize = (16*u, 13*u))
         ax_fr = fig_fr.add_subplot(1, 1, 1)
         
+        # Specify spike group
+        Pseudo_lab_cross = np.array(Pseudo_lab_cross)
+        Pseudo_lab_cross[1:] = np.array([Pseudo_lab_cross[i]+"*" for i in range(1, len(Pseudo_lab_cross))])
         
         dLab = "Cross-Resistance to %s"%ab
-        
         if ab in list(cmap_dic.keys()):
             cMap = sns.heatmap(data = Cross_sub,
                         mask = mask_triup, 
