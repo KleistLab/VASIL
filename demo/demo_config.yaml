@@ -28,7 +28,7 @@ lineage_focus: "BA_2_86"
 mutation_focus: "BA.2.86_mutationsprofile_outbreak.info_28-8-23.txt"
 # 6.d OPTIONAL:Compute neutralization proba for lineage_focus for a desired antigen list
 p_neut: TRUE
-antigen: ["Wuhan-Hu-1", "BA.5", "BA.5/XBT", "BA.5=0.75/XBT=0.25"] ### if not "Wuhan-Hu-1", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if focus_il is TRUE.
+antigen: ["Wuhan-Hu-1", "BA.5", "BA.5/XBT", "BA.5=0.75/XBT=0.25"] ### if not "Wuhan-Hu-1" or "none", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if focus_il is TRUE.
 # set antigen to ["ALL"] you need the p_neut for all spikegroups of covsonar data (might take a while)
 # 7. OPTIONAL: Get Immunological landscape for all spikegroups in simulation timeframe TRUE/FALSE
 cross_all: TRUE
@@ -39,7 +39,7 @@ cross_missing: FALSE # compute cross for missing spikegroups (error if there is 
 all_il: TRUE # get all immunological landscapes (requiring the cross files above)
 # 8. OPTIONAL:Compute neutralization for all spikegroups in simulation timeframe TRUE/FALSE
 p_neut_all: TRUE
-antigen_all: ["Wuhan-Hu-1", "BA.5", "BA.5/XBT", "BA.5=0.75/XBT=0.25"] ### if not "Wuhan-Hu-1", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if all_il is TRUE.
+antigen_all: ["Wuhan-Hu-1", "BA.5", "BA.5/XBT", "BA.5=0.75/XBT=0.25"] ### if not "Wuhan-Hu-1" or "none", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if all_il is TRUE.
 # set antigen to ["ALL"] you need the p_neut for all the spikegroups of covsonar data (very long time run)
 # 9. Get Fold resistance of all mutation sites present in the DMS data
 FR_DMS_sites: TRUE
@@ -56,4 +56,4 @@ cross_group: TRUE ### in FALSE, we need the files results/Cross_react_dic_groups
 # cross is recomputed or directly extracted from results/Cross_react_dic_spikegroups_ALL.pck if it exists
 mut_groups: ["avail", "avail", "avail", "avail", "BA.2.86_mutationsprofile_outbreak.info_28-8-23.txt"]
 p_neut_groups: TRUE ### Compute Neut proba for each lineages in groups
-antigen_groups: ["Wuhan-Hu-1", "BA.5", "BA.5/XBT", "BA.5=0.75/XBT=0.25"] ### if not "Wuhan-Hu-1", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if groups_il is TRUE.
+antigen_groups: ["Wuhan-Hu-1", "BA.5", "BA.5/XBT", "BA.5=0.75/XBT=0.25"] ### if not "Wuhan-Hu-1" or "none", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if groups_il is TRUE.
