@@ -672,6 +672,7 @@ elif Lin_name == "ALL":
                 FR_NTD[j, i] = FR_sites
         
     Cross_react_dic["NTD"] = FR_NTD
+    Cross_react_dic["Mutations"] = mut_x_sites_dic
     file0 = open(sys.argv[7], "wb") 
     pickle.dump(Cross_react_dic, file0)
     file0.close()
