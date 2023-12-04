@@ -47,7 +47,7 @@ def sub_Bind(d, tiled_esc, Where_Mut, Where_Cond):
     return [Bind_list_d, Missing_cond_data_d]
 
 
-def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, EF_func = "MEAN", GM = False, quiet = True, joblib = None):
+def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, EF_func = "MEAN", GM = False, quiet = True, joblib = None, cluster=False, n_jobs = 10):
     vars_num = mut_bool_g2.shape[0]
     
     test_i = np.tile(mut_bool_g1[i, :], (vars_num, 1))
@@ -70,20 +70,33 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
         """Parallel codes --- macOS Monterey 12.5 crashes --- Not used by default """
         pfunc = partial(sub_Bind, tiled_esc = tiled_esc, Where_Mut = Where_Mut, Where_Cond = Where_Cond)
         status = False
-        try:
-            jb_res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
-            status = True
-            #print("run joblib.Parallel")
-        except:
+        if not cluster:
             try:
-                jb_res = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
-                status=True
+                jb_res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+                status = True
                 #print("run joblib.Parallel")
             except:
-                jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
-                status=True
-                #print("run joblib.Parallel")
-        
+                try:
+                    jb_res = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+                    status=True
+                    #print("run joblib.Parallel")
+                except:
+                    jb_res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+                    status=True
+                    #print("run joblib.Parallel")
+        else:
+            #print("run cluster")
+            try:
+                jb_res = list(jb.Parallel(n_jobs = n_jobs, backend = "multiprocessing")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+                status = True
+            except:
+                try:
+                    jb_res = list(jb.Parallel(n_jobs = n_jobs, backend = "loky")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+                    status=True
+                    #print("run joblib.Parallel")
+                except:
+                    jb_res = list(jb.Parallel(n_jobs = n_jobs, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(conditions))))
+                    status=True
         if status:
             for d in range(len(conditions)):
                 Bind_list[:, d]   = np.array(jb_res[d][0])
@@ -117,7 +130,7 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     
     return FR_ab, Missed, Greater_one 
 
-def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_variant, EF_func = "MEAN", GM = False, quiet = True, joblib = None):
+def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_variant, EF_func = "MEAN", GM = False, quiet = True, joblib = None, cluster = False, n_jobs = 10):
     FRxy = {}
     Missed = []
     Greater_one = []
@@ -159,7 +172,7 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
         escape_ab_dic["escape_data_ab"] = escape_data[where_ab_group]
         
         for i in range(len(variants_g1)):
-            FR, missed, gOne = FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, mut_sites_per_variant, GM = GM, quiet = quiet, joblib = joblib)
+            FR, missed, gOne = FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, mut_sites_per_variant, GM = GM, quiet = quiet, joblib = joblib, cluster = cluster, n_jobs = n_jobs)
             if EF_func == "MEAN":
                 FRxy_ab[i, :] = np.mean(FR, axis = 1)
                 
@@ -226,9 +239,18 @@ AB = ""
 a = 1
 print("Cross reactivity computation might take a while")
 try:
-    joblib = str(sys.argv[8])
+    cluster = str(sys.argv[8])
+    if cluster in ("cluster_True", "True", "TRUE"):
+        cluster = True
+    else:
+        cluster = False
 except:
-    joblib = None
+    cluster = False
+    
+try:
+    n_jobs = int(sys.argv[9])
+except:
+    n_jobs = -1
 
 """Load lineage name to assess and it's mutation profile"""
 try:
@@ -553,6 +575,7 @@ elif Lin_name == "ALL":
     else:
         g.append(inds)
         g_var.append(variant_x_names_cross)
+        
     """ 
     # If FR is not symmetric, this code block must be used
     for ab in Ab_classes:
@@ -578,7 +601,6 @@ elif Lin_name == "ALL":
     """
     
     # If FR is symmetric, computing the upper diagonal or the lower diagonal is enough, thus reducing compuation time to half
-    triUp = np.triu_indices(len(variant_x_names_cross), k = 1)
     for ab in Ab_classes:
         if ab!= "NTD":
             FRxy_ab = np.zeros((len(variant_x_names_cross), len(variant_x_names_cross)))
@@ -612,7 +634,9 @@ elif Lin_name == "ALL":
                         Cross_Lin, Missed, Greater_one = cross_reactivity(([g_var[s1][j]], g2_var[s2]), 
                                                                        Escape_Fraction, 
                                                                        [ab],
-                                                                       mut_x_sites_dic, joblib=True)
+                                                                       mut_x_sites_dic, joblib=True, 
+                                                                       cluster = cluster,
+                                                                       n_jobs = n_jobs)
     
                         sub_FR[j, g2[s2]] = Cross_Lin[ab][0, :]
                     
@@ -639,7 +663,9 @@ elif Lin_name == "ALL":
                     Cross_Lin, Missed, Greater_one = cross_reactivity((g_var[s1], g2_var[s2]), 
                                                                    Escape_Fraction, 
                                                                    [ab],
-                                                                   mut_x_sites_dic, joblib=True)
+                                                                   mut_x_sites_dic, joblib=True, 
+                                                                   cluster = cluster,
+                                                                   n_jobs = n_jobs)
 
                     sub_FR[:, g2[s2]] = Cross_Lin[ab]
                 
