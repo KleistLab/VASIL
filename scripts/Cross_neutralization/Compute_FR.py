@@ -770,7 +770,8 @@ elif Lin_name == "missing":
             
             Cross_react_dic[ab][:len(variants_in_global), :len(variants_in_global)] = Cross_global[ab][w_global, :][:, w_global]
             a +=1 
-    
+        
+    Cross_react_dic["Mutations"] = mut_x_sites_dic
     file0 = open(sys.argv[7], "wb") 
     pickle.dump(Cross_react_dic, file0)
     file0.close()
