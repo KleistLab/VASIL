@@ -24,7 +24,7 @@ added_cross: TRUE
 added_lineage: "BA_2_86"
 Cross_Lin_file: "results/Cross_react_dic_spikegroups_BA_2_86.pck"
 # 8. OPTIONAL: Plot relative fitness for all spikegroups in Data
-all_fit: TRUE
+all_fit: FALSE
 S_ALL: "results/Immunological_Landscape_ALL"
 # 9a. OPTIONAL: Plot neutralization against specific antigen for lineage focus, PK figure is plotted alongside
 p_neut: TRUE

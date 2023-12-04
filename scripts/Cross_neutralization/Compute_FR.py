@@ -534,9 +534,11 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
 
 elif Lin_name == "ALL":  
     """Break runs into manageable pieces"""
+    
     g = []
     g_var =[]
     inds = np.arange(0, len(variant_x_names_cross)).astype(int)
+    
     cut_step = 200
     if len(variant_x_names_cross)>cut_step:
         cut1 = 0
@@ -551,8 +553,8 @@ elif Lin_name == "ALL":
     else:
         g.append(inds)
         g_var.append(variant_x_names_cross)
-    
-          
+    """ 
+    # If FR is not symmetric, this code block must be used
     for ab in Ab_classes:
         if ab!= "NTD":
             FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
@@ -573,8 +575,79 @@ elif Lin_name == "ALL":
                 
             Cross_react_dic[ab] = FRxy_ab
         a +=1
+    """
     
+    # If FR is symmetric, computing the upper diagonal or the lower diagonal is enough, thus reducing compuation time to half
+    triUp = np.triu_indices(len(variant_x_names_cross), k = 1)
+    for ab in Ab_classes:
+        if ab!= "NTD":
+            FRxy_ab = np.zeros((len(variant_x_names_cross), len(variant_x_names_cross)))
+            for s1 in range(len(g)):
+                print("Assess all spikegroups with the NTD-RBD mutation positions ")
+                print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes))
+                print("Run Cross for %d out of %d (to achieve %d/%d spikegroups)"%(s1+1, len(g), len(g[s1]), len(variant_x_names_cross)))
+                sub_FR = np.zeros((len(g[s1]), len(variant_x_names_cross)))
+                
+                ## deal with diagonal block
+                for j in range(len(g[s1])):
+                    var_sub = np.array(variant_x_names_cross)[g[s1][j]+1:]
+                    inds_sub = inds[g[s1][j]+1:]
+                    g2 = []
+                    g2_var = []
+                    if len(var_sub)>cut_step:
+                        cut1 = 0
+                        cut2 = cut_step
+                        while cut2<len(var_sub):
+                            g2.append(inds_sub[cut1:cut2])
+                            g2_var.append(list(var_sub[cut1:cut2]))
+                            cut1 = cut2
+                            cut2 += min(cut_step, len(var_sub) - cut2)
+                        g2.append(inds_sub[cut1:cut2])
+                        g2_var.append(list(var_sub[cut1:cut2]))
+                    else:
+                        g2.append(inds_sub)
+                        g2_var.append(var_sub)
+                    
+                    for s2 in range(len(g2)):
+                        Cross_Lin, Missed, Greater_one = cross_reactivity(([g_var[s1][j]], g2_var[s2]), 
+                                                                       Escape_Fraction, 
+                                                                       [ab],
+                                                                       mut_x_sites_dic, joblib=True)
     
+                        sub_FR[j, g2[s2]] = Cross_Lin[ab][0, :]
+                    
+                # deal with off-diagonal block
+                var_sub = np.array(variant_x_names_cross)[g[s1][-1]+1:]
+                inds_sub = inds[g[s1][-1]+1:]
+                g2 = []
+                g2_var = []
+                if len(var_sub)>cut_step:
+                    cut1 = 0
+                    cut2 = cut_step
+                    while cut2<len(var_sub):
+                        g2.append(inds_sub[cut1:cut2])
+                        g2_var.append(list(var_sub[cut1:cut2]))
+                        cut1 = cut2
+                        cut2 += min(cut_step, len(var_sub) - cut2)
+                    g2.append(inds_sub[cut1:cut2])
+                    g2_var.append(list(var_sub[cut1:cut2]))
+                else:
+                    g2.append(inds_sub)
+                    g2_var.append(var_sub)
+                
+                for s2 in range(len(g2)):
+                    Cross_Lin, Missed, Greater_one = cross_reactivity((g_var[s1], g2_var[s2]), 
+                                                                   Escape_Fraction, 
+                                                                   [ab],
+                                                                   mut_x_sites_dic, joblib=True)
+
+                    sub_FR[:, g2[s2]] = Cross_Lin[ab]
+                
+                FRxy_ab[g[s1], :] = sub_FR
+            
+            Cross_react_dic[ab] = FRxy_ab + FRxy_ab.T + np.diag(np.ones(len(variant_x_names_cross)))
+        a +=1
+        
     Cross_react_dic["variant_list"] = list(variant_x_names_cross)
     """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""  
     print("Cross reactivity spikegroups for Epitope NTD")

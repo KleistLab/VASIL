@@ -47,7 +47,8 @@ try:
 except:
     pass
 
-lineage_freq = lineage_freq#[lineage_freq['date'].isin(t_dates)]
+### Drop proportions column that does not start with correspond to E[Susceptible] files
+lineage_freq = lineage_freq.drop(index = lineage_freq.index[:list(lineage_freq['date']).index(S_mean_df["Days"][0])])
 freqs = lineage_freq.loc[:, lineage_freq.columns != 'date']
 # imputing frequencies below threshold and normalization
 prop_mask = np.all(lineage_freq.loc[:, lineage_freq.columns != 'date'] == 0.0, axis = 1)
@@ -287,13 +288,11 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             Pseudo_Prop2[Pseudo_Prop2 < 0.05] = 0
             Pseudo_Prop2 = list(Pseudo_Prop2)
             gamma_prop = np.zeros(len(t_dates))
-            Prop_aligned = np.zeros(len(t_dates))
             SI_mask = np.zeros(len(t_dates)).astype(bool)
             for l in range(len(t_dates)-1):
                 #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
                 if t_dates[l] in day_prop:
                     w_l = list(day_prop).index(t_dates[l])
-                    Prop_aligned[l] = Pseudo_Prop[w_l]
                     try:
                         if Pseudo_Prop2[w_l] == 0 or Pseudo_Prop2[w_l+1] == 0:
                             gamma_prop[l] = float('nan')
@@ -309,30 +308,26 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             prop_mask_0[:-1] = SI_mask[:-1]
             if t_dates[len(t_dates)-1] in day_prop:
                 w_l = list(day_prop).index(t_dates[len(t_dates)-1])
-                Prop_aligned[-1] = Pseudo_Prop[w_l]
             else:
                 prop_mask_0[-1] = True
             
-            Prop_aligned = ma.masked_array(Prop_aligned, mask = prop_mask_0)
             # calculation of relative fitness
             gamma_SI = np.zeros((len(t_dates), ES_ranges.shape[1]))
             for i in range(ES_ranges.shape[1]):
                 S_x = ES_ranges[:, i]
                 S_mean = S_all_mean[:, i]
-                
                 gamma_SI[:, i] = np.divide(S_x - S_mean, S_mean, out = S_x, where = S_mean != 0)
             
             # get min max gamma over PK at each timepoints
             inds_dates = np.arange(0,len(t_dates),1)
             SI_mask = np.array(SI_mask) + prop_mask[:len(inds_dates)] ### props are already aligned with indicence date
             gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
-            gamma_SI_min = ma.masked_array(gamma_SI_min, mask = SI_mask)
             gamma_SI_max = ma.masked_array(gamma_SI_max, mask = SI_mask)
-            Prop_aligned = ma.masked_array(Prop_aligned, mask = SI_mask)
+            Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop, mask = prop_mask)
 
             ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
-            ax_twin.plot(inds_dates, Prop_aligned, linewidth = 3, color = color_list[k], label = lab_k)
-            ax_twin.scatter(inds_dates, Prop_aligned, marker = ".", color = color_list[k])
+            ax_twin.plot(t_prop, Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
+            ax_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
 
             ### Plot spikegroups frequencies
             if np.all(plot_prop):
@@ -342,8 +337,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
 
             
             ax_k.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
-            ax_k_twin.plot(inds_dates, Prop_aligned, linewidth = 3, color = color_list[k], label = lab_k)
-            ax_k_twin.scatter(inds_dates, Prop_aligned, marker = ".", color = color_list[k])
+            ax_k_twin.plot(t_prop, Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
+            ax_k_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
             ax_k.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
             
             ymin1, ymax1 = ax_k.get_ylim()
@@ -457,9 +452,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             # different axis for proportions
             ax2_twin = ax2.twinx()
             
-            gamma_SI_min = ma.masked_array(gamma_SI_min, mask = SI_mask)
-            gamma_SI_max = ma.masked_array(gamma_SI_max, mask = SI_mask)
-            gamma_prop = ma.masked_array(gamma_prop, mask = SI_mask)
             ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = lab_k)
             ax2_twin.plot(inds_dates, gamma_prop, color = "orange", label=lab_k)
             
@@ -523,6 +515,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             x_max1 = day_prop.index(str(sys.argv[6]))
         else:
             x_max1 = len(day_prop) - 1
+            
         if str(sys.argv[6]) not in list(t_dates):
             x_max = (len(t_dates) - 1) + (x_max1 - day_prop.index(t_dates[len(t_dates) - 1]))
         else:
@@ -565,6 +558,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             date_ticks.append(day_prop[n])
             perday = np.append(perday, n)
             n += pp
+            
         if check_last-perday[-1]<np.ceil(pp/5):
             perday = perday[:-1]
             date_ticks = date_ticks[:-1]
