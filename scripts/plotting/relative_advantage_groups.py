@@ -264,7 +264,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 
                 start +=1
         
-        lab_status = lab_k
+        lab_status = lab_done[lineage_list[k]][:-1]
         if not re.search(".ALL",lineage_list[k]):
             lab_k = lab_done[lineage_list[k]][:-1]
         else:
@@ -272,7 +272,10 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         
         if lab_k[:3] == " + ":
             lab_k = lab_k[3:]
-        
+            
+        if lab_status[:3] == " + ":
+            lab_status = lab_status[3:]    
+            
         lab_k_fn = (lab_k.replace("/", "_")).replace("*","").replace("+", "_") ## for filename 
         if len(lab_k_fn) > 10: # can't be too long
             lab_k_fn = lab_k_fn[:10] + "_et_al"
