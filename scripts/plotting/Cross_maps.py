@@ -87,6 +87,11 @@ if plot_major not in ("True"):
     
     All_Pseudo = list(Cross_Epitope_Dic_orig["variant_list"])
     Cross_Epitope_Dic_orig.pop("variant_list")
+    try:
+        Cross_Epitope_Dic_orig.pop("Mutations")
+    except:
+        pass
+
     choosen_Ab = list(Cross_Epitope_Dic_orig.keys())
     
     Cross_Epitope_Dic = {}
@@ -97,6 +102,7 @@ if plot_major not in ("True"):
             for j in range(len(Top_Pseudo)):
                 w_j = All_Pseudo.index(Top_Pseudo[j])
                 Cross[i,j] = Cross_Epitope_Dic_orig[ab][w_i, w_j]
+                
         Cross_Epitope_Dic[ab] = Cross
         
     try:
@@ -260,12 +266,12 @@ else:
                         Top_Pseudo.append(Pseudogroup_dic[spklin])
                         Pseudo_done.append(Pseudogroup_dic[spklin])
                         if Pseudogroup_dic[spklin] != spklin:
-                            Top_lab.append(Pseudogroup_dic[spklin]+"/"+spklin)
+                            Top_lab.append(Pseudogroup_dic[spklin]+"/"+spklin+"*")
                         else:
-                            Top_lab.append(spklin)
+                            Top_lab.append(spklin+"*")
                     else:
                         ix = Pseudo_done.index(Pseudogroup_dic[spklin])
-                        Top_lab[ix] = Top_lab[ix]+"/"+spklin
+                        Top_lab[ix] = Top_lab[ix]+"/"+spklin+"*"
                 else:
                     Top_Pseudo.append(spklin)
                     Top_lab.append(spklin) 
