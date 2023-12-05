@@ -263,7 +263,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                         Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"
                 
                 start +=1
-                
+        
+        lab_status = lab_k
         if not re.search(".ALL",lineage_list[k]):
             lab_k = lab_done[lineage_list[k]][:-1]
         else:
@@ -486,7 +487,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             fig2.savefig(sys.argv[w_save]+"/relative_fitness_%s.svg"%lab_k_fn, bbox_inches = "tight")
             plt.close()
             
-            status_list.append("Done")
+            status_list.append(lab_status)
         
         else:
             print("No lineages in group %s have E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k])
