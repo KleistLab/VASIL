@@ -692,7 +692,7 @@ pdf2.savefig(fig_prop, bbox_inches = "tight")
 fig_prop.savefig(sys.argv[w_save]+"/Groups_proportions.svg")
 pdf2.close()
 
-status = pd.DataFrame({"lineage":lineage_list, "relative_advantage":status_list})
+status = pd.DataFrame({"lineage":lineage_list, "spikegroups_found":status_list})
 status.to_csv(sys.argv[w_save]+"/plot_status.csv")
  
 
