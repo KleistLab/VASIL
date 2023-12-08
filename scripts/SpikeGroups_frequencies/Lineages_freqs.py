@@ -61,11 +61,12 @@ def sub_func(s, x, days_prop, unique_days_prop, lineages_all, unique_lineage):
 print("Timeline of lineage proportions: %s -- %s"%(unique_days_prop[0], unique_days_prop[-1]))
 unique_lineage_timeframe = np.unique(lineages_all)
 """ Remove NONE and UNASSIGNED """
+"""
 if "NONE" in unique_lineage_timeframe:
     unique_lineage_timeframe = np.array(unique_lineage_timeframe)[np.array(unique_lineage_timeframe) != "NONE"]
 if "UNASSIGNED" in unique_lineage_timeframe:
     unique_lineage_timeframe = np.array(unique_lineage_timeframe)[np.array(unique_lineage_timeframe) != "UNASSIGNED"]
-
+"""
 
 """Compute lineage frequencies"""
 frequency_lineage = np.zeros((len(unique_lineage_timeframe), len(unique_days_prop))) # indexing of t correspondis to timeline of infection days_incidence
