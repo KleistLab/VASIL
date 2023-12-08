@@ -264,30 +264,54 @@ if config["groups_il"]:
 
 
 if config["all_il"]:
-
-    rule get_Immunological_Landscape_all:
-        input:
-            cases=config["cases"],
-            cross_delta="results/Cross_with_delta_validation_recomputed.pck",
-            cross_spk="results/Cross_react_dic_spikegroups_ALL.pck",
-            spikes_dic="results/SpikeGroups.pck",
-            spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
-            dms_data_regrouped="results/epitope_data/dms_per_ab_per_site.csv",
-            VE_delta=config["VE_delta"],
-        params:
-            total_pop=config["total_population"],
-            date_start=config["date_start"],
-            date_end=config["date_end"],
-            lineage_focus="ALL",
-            save_neut=config["p_neut_all"],
-            antigen=config["antigen_all"],
-            num_antigen=len(config["antigen_all"]),
-            cases_column=config["cases_column"],
-        output:
-            resultdir=directory("results/Immunological_Landscape_ALL"),
-            results_done="results/Immunological_Landscape_ALL/simulation_status_ALL.csv",
-        shell:
-            "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {output.resultdir} {params.save_neut} {params.lineage_focus} {params.num_antigen} {params.antigen} {params.cases_column}"
+    if not config["cross_missing"]:
+        rule get_Immunological_Landscape_all:
+            input:
+                cases=config["cases"],
+                cross_delta="results/Cross_with_delta_validation_recomputed.pck",
+                cross_spk="results/Cross_react_dic_spikegroups_ALL.pck",
+                spikes_dic="results/SpikeGroups.pck",
+                spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
+                dms_data_regrouped="results/epitope_data/dms_per_ab_per_site.csv",
+                VE_delta=config["VE_delta"],
+            params:
+                total_pop=config["total_population"],
+                date_start=config["date_start"],
+                date_end=config["date_end"],
+                lineage_focus="ALL",
+                save_neut=config["p_neut_all"],
+                antigen=config["antigen_all"],
+                num_antigen=len(config["antigen_all"]),
+                cases_column=config["cases_column"],
+            output:
+                resultdir=directory("results/Immunological_Landscape_ALL"),
+                results_done="results/Immunological_Landscape_ALL/simulation_status_ALL.csv",
+            shell:
+                "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {output.resultdir} {params.save_neut} {params.lineage_focus} {params.num_antigen} {params.antigen} {params.cases_column}"
+    else:
+        rule get_Immunological_Landscape_all:
+            input:
+                cases=config["cases"],
+                cross_delta="results/Cross_with_delta_validation_recomputed.pck",
+                cross_spk="results/Cross_react_dic_spikegroups_present.pck",
+                spikes_dic="results/SpikeGroups.pck",
+                spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
+                dms_data_regrouped="results/epitope_data/dms_per_ab_per_site.csv",
+                VE_delta=config["VE_delta"],
+            params:
+                total_pop=config["total_population"],
+                date_start=config["date_start"],
+                date_end=config["date_end"],
+                lineage_focus="ALL",
+                save_neut=config["p_neut_all"],
+                antigen=config["antigen_all"],
+                num_antigen=len(config["antigen_all"]),
+                cases_column=config["cases_column"],
+            output:
+                resultdir=directory("results/Immunological_Landscape_ALL"),
+                results_done="results/Immunological_Landscape_ALL/simulation_status_ALL.csv",
+            shell:
+                "python {workflow.basedir}/scripts/Expected_immunized/Expected_immunized.py {input.cases} {input.cross_delta} {input.cross_spk} {input.spikes_dic} {input.spikes_freqs} {input.dms_data_regrouped} {input.VE_delta} {params.total_pop} {params.date_start} {params.date_end} {output.resultdir} {params.save_neut} {params.lineage_focus} {params.num_antigen} {params.antigen} {params.cases_column}"
 
 
 if config["Cross_major"]:
