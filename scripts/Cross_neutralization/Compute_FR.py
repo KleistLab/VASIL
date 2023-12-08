@@ -47,7 +47,7 @@ def sub_Bind(d, tiled_esc, Where_Mut, Where_Cond):
     return [Bind_list_d, Missing_cond_data_d]
 
 
-def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, EF_func = "MEAN", GM = False, quiet = True, joblib = None, cluster=False, n_jobs = -1):
+def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, EF_func = "MEAN", GM = False, quiet = True, joblib = None, cluster=False, n_jobs = 10):
     vars_num = mut_bool_g2.shape[0]
     
     test_i = np.tile(mut_bool_g1[i, :], (vars_num, 1))
@@ -130,7 +130,7 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     
     return FR_ab, Missed, Greater_one 
 
-def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_variant, EF_func = "MEAN", GM = False, quiet = True, joblib = None, cluster = False, n_jobs = -1):
+def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_variant, EF_func = "MEAN", GM = False, quiet = True, joblib = None, cluster = False, n_jobs = 10):
     FRxy = {}
     Missed = []
     Greater_one = []
@@ -708,6 +708,11 @@ elif Lin_name == "missing":
     Cross_global = pickle.load(file_c)
     variant_global = list(Cross_global["variant_list"])
     Cross_global.pop("variant_list")
+    try:
+        Cross_global.pop("Mutations")
+    except:
+        pass
+    
     Ab_global = Cross_global.keys()
     file_c.close()
     
@@ -721,7 +726,7 @@ elif Lin_name == "missing":
         else:
             loc_in_cross.append(list(variant_x_names_cross).index(lin))
             loc_not_miss.append(list(variant_global).index(lin))
-            
+    
     if len(Lin_miss) == 0:
         Cross_react_dic = Cross_global.copy()
     else:
@@ -750,7 +755,7 @@ elif Lin_name == "missing":
         w_global = np.arange(0, len(variant_global)).astype(int)[np.array(loc_not_miss)] ## location of variant_x_names cross in global file
         for ab in Ab_global:
             Cross_react_dic[ab] = np.ones((len(variants_in_global)+len(Lin_miss), len(variants_in_global)+len(Lin_miss)))
-            if ab != "NTD":
+            if (ab != "NTD") and (ab in Ab_classes):
                 w_miss = len(variants_in_global)
                 for s in range(len(g)):
                     print("Assess missing | num %d vs (%d, %d (max %d)) with the NTD-RBD mutation positions"%(len(Lin_miss), s*cut_step, min((s+1)*cut_step, len(variants_in_global)),len(variants_in_global)))
@@ -759,7 +764,8 @@ elif Lin_name == "missing":
                                                                       Escape_Fraction, 
                                                                       [ab],
                                                                       mut_x_sites_dic,
-                                                                      joblib = True)
+                                                                      joblib = True,
+                                                                      cluster = False)
                     
                     Cross_react_dic[ab][w_miss:, :w_miss][:, g[s]] = Cross_Lin[ab]
                     Cross_react_dic[ab][:w_miss, w_miss:][g[s], :] = Cross_Lin[ab].T
@@ -769,10 +775,11 @@ elif Lin_name == "missing":
                                                                   Escape_Fraction, 
                                                                   [ab],
                                                                   mut_x_sites_dic,
-                                                                  joblib = True)
+                                                                  joblib = True,
+                                                                  cluster = False)
                 
                 Cross_react_dic[ab][w_miss:, w_miss:] = Cross_Lin[ab]
-            else:
+            elif ab == "NTD":
                 n = len(Cross_react_dic["variant_list"])
                 FR_NTD = np.ones((n, n))
                 for i in range(len(variants_in_global), n):
@@ -830,7 +837,8 @@ elif Lin_name == "FR_DMS_sites":
                                                 Escape_Fraction, 
                                                 [ab],
                                                 One_mut_dic,
-                                                joblib=True)
+                                                joblib=True,
+                                                cluster = False)
         
         FR_Sites_Ab[k, :] = FR[ab][0, :]
       
