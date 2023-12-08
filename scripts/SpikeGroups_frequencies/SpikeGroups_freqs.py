@@ -21,12 +21,14 @@ fq_cols = frequency_lineage_df.columns.astype(str)
 days_prop = frequency_lineage_df["date"] ### already matched with timeline of infection -- including excess
 
 """ Remove NONE and UNASSIGNED """
+"""
 if "NONE" in fq_cols:
     frequency_lineage_df.drop(columns = "NONE", inplace = True)
     fq_cols = frequency_lineage_df.columns.astype(str)
 if "UNASSIGNED" in fq_cols:
     frequency_lineage_df.drop(columns = "UNASSIGNED", inplace = True)
     fq_cols = frequency_lineage_df.columns.astype(str)
+"""
 
 if "week_num" in list(fq_cols):
     unique_lineage = fq_cols[(fq_cols != "date")&(fq_cols != "week_num")]
@@ -88,7 +90,6 @@ for x in range(len(Lineages_list)):
         else:
             mask_missing[x, k] = True
         
-variant_proportion_orig = ma.masked_array(variant_proportion_orig, mask = mask_missing)
 NormProp = np.sum(variant_proportion_orig, axis = 0)
 prop_rounded = np.round(variant_proportion_orig, decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
@@ -99,15 +100,15 @@ Pseudogroups = pd.read_csv(sys.argv[3])
 variant_x_pseudo = np.array(Pseudogroups["lineage"].values).astype(str)
 pseudo_members = np.array(Pseudogroups["group"].values).astype(str)
 ### remove nans
+"""
 where_not_nans = variant_x_pseudo != "nan"
 variant_x_pseudo = variant_x_pseudo[where_not_nans]
 pseudo_members = pseudo_members[where_not_nans]
-
+"""
 unique_group = np.unique(pseudo_members)
 variant_proportion = []
 SpikeGroups_dic  = {}
 SpikeGroups_dic["Wuhan-Hu-1"] = "Wuhan-Hu-1" ### place holder for wild type
-
 
 """Filter out if indicated"""
 try:
@@ -115,26 +116,25 @@ try:
 except:
     filt_params = 0
 
-
 Lin_dic = {}
 for x in range(len(unique_group)):
     if "/" not in unique_group[x]:
-        if unique_group[x] != "nan":
-            if unique_group[x] in Lineages_list:
-                where_x = list(Lineages_list).index(unique_group[x])
-                prop_x = variant_proportion_orig[where_x, :]
-                if np.max(prop_x) > filt_params:
-                    variant_proportion.append(prop_x)
-                    SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
-                    SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
-                    Lin_dic[unique_group[x]] = prop_x
+        #if unique_group[x] != "nan":
+        if unique_group[x] in Lineages_list:
+            where_x = list(Lineages_list).index(unique_group[x])
+            prop_x = variant_proportion_orig[where_x, :]
+            if np.max(prop_x) > filt_params:
+                variant_proportion.append(prop_x)
+                SpikeGroups_list.append(variant_x_pseudo[pseudo_members == unique_group[x]][0])
+                SpikeGroups_dic[unique_group[x]] = variant_x_pseudo[pseudo_members == unique_group[x]][0]
+                Lin_dic[unique_group[x]] = prop_x
     else:
         splited_var = unique_group[x].split("/")
         where_x = []
         for var_x in splited_var:
             if var_x in Lineages_list:
-                if var_x!="nan":
-                    where_x.append(list(Lineages_list).index(var_x))
+                #if var_x!="nan":
+                where_x.append(list(Lineages_list).index(var_x))
         
         if len(where_x)!=0:
             prop_x = np.sum(variant_proportion_orig[np.array(where_x), :], axis = 0)
@@ -162,14 +162,21 @@ try:
        Lin_df.to_csv("results/Daily_Lineages_Freq_%s_percent.csv"%str(int(filt_params*100)))
 except:
     pass
-    
+
+"""Interpolating missing proportion data """
+#inds_missing = np.arange(0, len(date_list), 1).astype(int)[mask_missing]
+#variant_proportion_interpolated = np.zeros(variant_proportion.shape)
+#for i in range(len(date_list)):
+#    variant_proportion_interpolated[]
+
+variant_proportion_interpolated = variant_proportion
 
 """ Save frequency pseudogroup data """
 freq_dic = {}
 freq_dic["date"] = date_list
 for x in range(len(SpikeGroups_list)):
     if SpikeGroups_list[x]!= "Wuhan-Hu-1":
-        freq_dic["Spike. "+SpikeGroups_list[x]] = variant_proportion[x, :]*100 
+        freq_dic["Spike. "+SpikeGroups_list[x]] = variant_proportion_interpolated[x, :]*100 
 
 
 freq_df = pd.DataFrame(freq_dic, index = np.arange(0, len(date_list)))
