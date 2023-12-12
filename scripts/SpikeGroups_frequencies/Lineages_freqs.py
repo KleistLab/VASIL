@@ -16,6 +16,8 @@ import joblib as jb
 from functools import partial
 import sys
 import pdb
+import re
+import pickle
 
 """Load covsonar_data"""
 try:
@@ -111,3 +113,18 @@ for x in range(len(unique_lineage_timeframe)):
 
 freq_df = pd.DataFrame(freq_dic, index = np.arange(0, len(freq_dic["date"])))
 freq_df.to_csv(sys.argv[3]) ### output file
+
+if len(sys.argv) > 3:
+    variant_mut_data = pd.read_csv(sys.argv[4])
+    variant_x_name_orig = np.array(variant_mut_data["lineage"].values).astype(str)
+    mut_x_sites_orig = np.array(variant_mut_data["RBD_NTD_mutations"].values).astype(str)
+    mut_x_sites_dic = {}
+    for i in range(len(variant_x_name_orig)):
+        mut_i = re.findall(r'\d+', mut_x_sites_orig[i])
+        mut_x_sites_dic[variant_x_name_orig[i]] = mut_i
+    
+    mut_file = open(sys.argv[5], "wb")
+    pickle.dump({"positions": mut_x_sites_dic, "Group":variant_x_name_orig}, mut_file)
+    mut_file.close()
+    
+        
