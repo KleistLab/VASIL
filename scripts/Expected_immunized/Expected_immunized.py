@@ -527,6 +527,10 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
             for j in range(len(SpikeGroups_list)):
                 if SpikeGroups_list[j] in variants_in_cross:
                     SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))
+                elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
+                    w_j = [list(variants_in_cross).index(x) for x in list(Pseudogroup_dic.keys()) if x in variants_in_cross][0]
+                    SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[w_j]))
+                    
             SpikeGroups_list_index = np.array(SpikeGroups_list_index)
         else:
             SpikeGroups_list_index = var_list_index
@@ -535,7 +539,10 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
             if len(SpikeGroups_list_index)!=len(SpikeGroups_list):
                 spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
                 for j in range(len(SpikeGroups_list_index)):
-                    w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+                    if SpikeGroups_list[j] in variants_in_cross:
+                        w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+                    elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
+                        w_j = list(SpikeGroups_list).index(Pseudogroup_dic[variants_in_cross[SpikeGroups_list_index[j]]])
                     spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
                 
                 # renormalization
@@ -583,7 +590,7 @@ file = open("Spikegroups_membership.pck", "rb")
 Pseudogroup_dic = pickle.load(file)
 file.close()
 if Lin_name != "ALL":
-    if not run_group:
+    if not run_group or str(sys.argv[3][:31]) == "results/Cross_react_dic_groups_":
         num_antigen = int(sys.argv[14])
         k=15
         antigen_list = []
@@ -591,9 +598,23 @@ if Lin_name != "ALL":
             antigen = str(sys.argv[k])
             antigen_list.append(antigen)
             k+=1
-        
-        if Lin_name not in Pseudogroup_dic.keys():
-            status_var = ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save) 
+            
+        Grouped = False
+        if Lin_name not in list(Pseudogroup_dic.keys()):
+            if str(sys.argv[3][:31]) == "results/Cross_react_dic_groups_":
+                file1 = open(sys.argv[3]+"/Cross_%s.pck"%Lin_name, "rb") # load cross reactivity if parameter is not a directory
+                Cross_react_dic = pickle.load(file1)
+                variants_in_cross = Cross_react_dic["variant_list"]
+                Cross_react_dic.pop("variant_list")
+                file1.close()
+                
+                lineages = Cross_react_dic["Group"]
+                status_var = []
+                for var in lineages:
+                    status_var.append(ei_util(var, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save))
+                Group = True
+            else:
+                status_var = ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save) 
         else:
             try:
                 file1 = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") # Check that this is the file you want to load
@@ -615,7 +636,11 @@ if Lin_name != "ALL":
                 except:
                     pass
         # Save file as a placeholder for exectuted codes, required for snakemake
-        sim_df = pd.DataFrame({"Lineage":[Lin_name], "Simulation status":[status_var]})
+        if not Grouped:
+            sim_df = pd.DataFrame({"Lineage":[Lin_name], "Simulation status":[status_var]})
+        else:
+            sim_df = pd.DataFrame({"Lineage":lineages, "Simulation status":status_var})
+            
         sim_df.to_csv(sys.argv[w_save]+"/simulation_status_%s.csv"%Lin_name)
     else:
         Lin_list = []
@@ -726,6 +751,10 @@ else:
     for j in range(len(SpikeGroups_list)):
         if SpikeGroups_list[j] in variants_in_cross:
             SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
+        elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
+            w_j = [list(variants_in_cross).index(x) for x in list(Pseudogroup_dic.keys()) if x in variants_in_cross][0]
+            SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[w_j]))  
+    
     SpikeGroups_list_index = np.array(SpikeGroups_list_index)
     add_print = False
     if len(SpikeGroups_list_index)!=len(SpikeGroups_list):
@@ -747,7 +776,10 @@ else:
                 add_print = True
                 spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
                 for j in range(len(SpikeGroups_list_index)):
-                    w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+                    if SpikeGroups_list[j] in variants_in_cross:
+                        w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+                    elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
+                        w_j = list(SpikeGroups_list).index(Pseudogroup_dic[variants_in_cross[SpikeGroups_list_index[j]]])
                     spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
                 
                 # renormalization
@@ -757,7 +789,11 @@ else:
             add_print = True
             spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
             for j in range(len(SpikeGroups_list_index)):
-                w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+                if SpikeGroups_list[j] in variants_in_cross:
+                    w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+                elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
+                    w_j = list(SpikeGroups_list).index(Pseudogroup_dic[variants_in_cross[SpikeGroups_list_index[j]]])
+                    
                 spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
             
             # renormalization
