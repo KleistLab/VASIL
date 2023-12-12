@@ -486,6 +486,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     else:
                         Lin_list_i_spk = Lin_list_i
                         spk_adjust = False
+                        inds_spk = np.arange(len(Lin_list_i_spk)).astype(int)
                     
                    
                     for k in range(len(Lin_list_i_spk)):
@@ -556,6 +557,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                             if len(w_global)>0:
                                 for ex in range(len(w_cross)):
                                     sub_FR[w_cross[ex], w_cross] = Cross_global[ab][w_global[ex], w_global[ex]]
+                                    
                             
                             for s in range(len(g)):
                                 Cross_Lin, Missed, Greater_one = cross_reactivity((Lin_list_i_spk_reduced, g_var[s]), 
