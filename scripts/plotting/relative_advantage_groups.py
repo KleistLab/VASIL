@@ -94,8 +94,13 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         if lineage_list[k][-4:] == ".ALL" and not re.search("/", lineage_list[k]):
             splited_var = []
             for x in list(Pseudogroup_dic.keys()):
-                if x[:len(lineage_list[k][:-4])] == lineage_list[k][:-4]:
-                    splited_var.append(x)
+                if (x[:len(lineage_list[k][:-4])] == lineage_list[k][:-4]):
+                    if len(x) == len(lineage_list[k][:-4]):
+                        splited_var.append(x)
+                    elif len(x)>len(lineage_list[k][:-4]):
+                        if x[len(lineage_list[k][:-4]) + 1] == ".":
+                            splited_var.append(x)
+                        
         else:
             splited_var = np.array(lineage_list[k].split("/"))
             splited_var = splited_var[~(splited_var == "")]
@@ -106,8 +111,12 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         for var in splited_var0:
             if var[-4:] == ".ALL":
                 for x in list(Pseudogroup_dic.keys()):
-                    if x[:len(var[:-4])] == var[:-4]:
-                        splited_var.append(x)
+                    if x[:len(var[:-4])]+"." == var[:-4]+".":
+                        if len(x) == len(var[:-4]):
+                            splited_var.append(x)
+                    elif len(x)>len(var[:-4]):
+                        if x[len(var[:-4])+1] == ".":
+                            splited_var.append(x)
             else:
                 splited_var.append(var)
         
@@ -131,6 +140,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         Pseudo_Prop = np.zeros((len(t_prop)))
         start = 0
         ES_list = []
+        prop_list = []
         for x in range(len(splited_var)):
             lineage = splited_var[x]                
             try:
@@ -216,6 +226,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     if "Spike. " + Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
                         if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
                             sub_prop = moving_average(lineage_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)
+                            prop_list.append(sub_prop)
                             Pseudo_Prop += sub_prop
                             lab_done[lineage_list[k]] = lab_done[lineage_list[k]][:-1] + " + "+lab_k
                             if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
@@ -226,6 +237,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     elif Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
                         if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
                             sub_prop = moving_average(lineage_freq[Pseudogroup_dic[lineage]], window = 14)
+                            prop_list.append(sub_prop)
                             Pseudo_Prop += sub_prop
                             lab_done[lineage_list[k]] = lab_done[lineage_list[k]][:-1] + " + "+lab_k
                             if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
@@ -243,6 +255,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                         plot_prop.append(True)
                         if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
                             sub_prop = moving_average(lineage_freq[lineage], window = 14)
+                            prop_list.append(sub_prop)
                             Pseudo_Prop += sub_prop
                             lab_done[lineage_list[k]] = lab_done[lineage_list[k]][:-1] + " + "+lab_k
                             if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
@@ -283,7 +296,10 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             
         if (lab_k != "" and num_avail != 0):
             if (num_avail == len(ES_list)):
-                ES_ranges= np.mean(np.array(ES_list), axis = 0) # compute the mean
+                #ES_ranges= np.mean(np.array(ES_list), axis = 0) # compute the mean
+                Props = np.array(prop_list)[:, :ES_list[0].shape[1]]
+                Props_normed = Props/np.sum(Props, axis = 0)
+                ES_ranges = np.sum(np.array(ES_list)*Props_normed[:, :, np.newaxis], axis = 0) ## weighted mean
             else:
                 sys.exit("Loaded E[Susceptible] files were more than what is available for groups %s, recheck the loading process script/plotting/relative_advantage_groups.py Line 122-196"%lineage_list[k])
             
