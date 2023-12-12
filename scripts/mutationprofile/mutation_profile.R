@@ -331,6 +331,7 @@ MP3_zoom <- MP3_zoom[,which(apply(MP3_zoom,2,sum)>0)]
 #MP3_zoom <- MP3_zoom[,unlist(lapply(intersect(rownames(mydf3),colnames(MP3_zoom)),
 #                                    function(x) which(colnames(MP2_zoom) == x)))]
 
+
 if (length(MP3_zoom)>=2){
   pdf(paste0(outputdir,"/",stringr::str_replace(outputfile_mutationprofile_plot,".pdf","_zoom.pdf")),height = 3, width = 10)
   pheatmap(as.matrix(MP3_zoom), 
