@@ -259,7 +259,7 @@ try:
 except:
     Lin_name = sys.argv[4]
 
-if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
+if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
     if Lin_name != "Groups":
         try:
             mut_file = open(sys.argv[5], "r")
@@ -363,7 +363,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
         file = open("Spikegroups_membership.pck", "rb")
         Pseudogroup_dic = pickle.load(file)
         file.close()
-
+        
         k = 5
         Lin_list = []
         while k<(n_groups+5):
@@ -376,7 +376,11 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
             k +=1
         
         mut_x_sites_dic_updated = mut_x_sites_dic.copy()
+        Grouped = []
+        Lin_exists = []
+        single_lin = 0
         for j in range(len(Lin_list)):
+            Lin_list_grouped = {Lin_list[j]:[Lin_list[j]]}
             if Lin_list[j] not in list(Pseudogroup_dic.keys()):
                 try:
                     mut_file = open(mut_sim[j], "r")
@@ -390,15 +394,54 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
                                 mut_Lin = list(np.unique(np.array(mut_Lin).astype(str)))
                     """Update mutation profile dictionary"""
                     mut_x_sites_dic_updated[Lin_list[j]] = mut_Lin
+                    Grouped.append(False)
+                    Lin_exists.append(Lin_list[j])
                 except:
-                    pass
+                    try:
+                        mutation_data_file = open(mut_sim[j], "rb")
+                        mutation_loaded = pickle.load(mutation_data_file)
+                        mutation_data = mutation_loaded["positions"]
+                        variants = mutation_loaded["Group"]
+                        mut_sub = []
+                        for i in range(len(variants)):
+                            var = variants[i]
+                            if var in list(Pseudogroup_dic.keys()):
+                                mut_x_sites_dic_updated[var] = mut_x_sites_dic[Pseudogroup_dic[var]]
+                            else:
+                                mut_x_sites_dic_updated[var] = mutation_data[var]
+                            mut_sub.append("/".join(mut_x_sites_dic_updated[var]))
+                        inds_spk = []
+                        variants_spk = []
+                        mut_sub = np.array(mut_sub)
+                        for mut in np.unique(mut_sub):
+                            var_0 = np.array(variants)[mut_sub == mut][0]
+                            variants_spk.append(var_0)
+                            inds_spk +=[list(variants).index(var_0)]*np.sum(mut_sub == mut)
+
+                        Lin_list_grouped[Lin_list[j]] = variants
+                        Lin_list_grouped[Lin_list[j]+"_spk"] = variants_spk
+                        Lin_list_grouped["inds"] = inds_spk
+                        Grouped.append(True)
+                        Lin_exists.append(Lin_list[j])
+                        single_lin += len(variants_spk)
+                    except:
+                        pass
             else:
                 mut_x_sites_dic_updated[Lin_list[j]] = mut_x_sites_dic[Pseudogroup_dic[Lin_list[j]]]
-                
+                Grouped.append(False)
+                Lin_exists.append(Lin_list[j])
+        
+        ### Update to available data
+        Lin_list = Lin_exists
+        
         g = []
         g_var =[]
         inds = np.arange(0, len(variant_x_names_cross)).astype(int)
-        cut_step = 300
+        if single_lin<100:
+            cut_step = 300
+        else:
+            cut_step = 50
+            
         if len(variant_x_names_cross)>cut_step:
             cut1 = 0
             cut2 = cut_step
@@ -414,15 +457,14 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
             g_var.append(variant_x_names_cross)
         
         status_sim = []
+        
         for i in range(len(Lin_list)):
             Cross_i = {}
-                        
-            if Lin_list[i] not in list(variant_x_names_cross):
-                w_lin = len(variant_x_names_cross)
-                Cross_i["variant_list"] = list(variant_x_names_cross) + [Lin_list[i]]
-            else:
-                w_lin = list(variant_x_names_cross).index(Lin_list[i])
-                Cross_i["variant_list"] = list(variant_x_names_cross)
+            Cross_i["variant_list"] = list(variant_x_names_cross)
+            Lin_list_i = Lin_list_grouped[Lin_list[i]]
+            
+            if Grouped[i]:
+                Cross_i["Group"] = Lin_list_i
             
             try:
                 file_test = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb")
@@ -433,19 +475,90 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
             
             try:
                 if (Lin_list[i] not in list(Pseudogroup_dic.keys())) or (not extract):
+                    
+                    w_lin_i = []
+                    add_lin = 0
+                    
+                    if Lin_list[i]+"_spk" in list(Lin_list_grouped.keys()):
+                        Lin_list_i_spk = Lin_list_grouped[Lin_list[i]+"_spk"]
+                        inds_spk = np.array(Lin_list_grouped["inds"])
+                        spk_adjust = True
+                    else:
+                        Lin_list_i_spk = Lin_list_i
+                        spk_adjust = False
+                    
+                   
+                    for k in range(len(Lin_list_i_spk)):
+                        var = Lin_list_i_spk[k]
+                        if var not in list(variant_x_names_cross):
+                            if not spk_adjust:
+                                w_lin_i.append(len(variant_x_names_cross)+add_lin)
+                                Cross_i["variant_list"].append(var)
+                                add_lin +=1
+                            else:
+                                where_var = inds_spk == list(Lin_list_i).index(var)
+                                w_lin_i += [len(variant_x_names_cross) + j for j in range(add_lin, add_lin+np.sum(where_var))]
+                                Cross_i["variant_list"] += list(np.array(Lin_list_i)[where_var])
+                                add_lin += np.sum(where_var)
+                            
+                        else:
+                            w_lin = list(variant_x_names_cross).index(var)
+                            if not spk_adjust:
+                                w_lin_i.append(w_lin)
+                            else:
+                                where_var = (inds_spk == list(Lin_list_i).index(var))&(np.array(Lin_list_i) != var)
+                                w_lin_i += [len(variant_x_names_cross) + j for j in range(add_lin, add_lin+np.sum(where_var))]
+                                Cross_i["variant_list"] += list(np.array(Lin_list_i)[where_var])
+                                add_lin += np.sum(where_var)
+                    
+                    
+                    try:
+                        file_c = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") 
+                        Cross_global = pickle.load(file_c)
+                        variant_global = list(Cross_global["variant_list"])
+                        Cross_global.pop("variant_list")
+                        file_c.close()
+                        Lin_list_i_spk_reduced = []
+                        w_global = []
+                        w_cross = []
+                        for x in Lin_list_i_spk:
+                            if x in list(Pseudogroup_dic.keys()):
+                                if Pseudogroup_dic[x] in variant_global:
+                                    w_global.append(variant_global.index(Pseudogroup_dic[x]))
+                                    w_cross.append(list(Cross_i["variant_list"]).index(x))
+                                else:
+                                    Lin_list_i_spk_reduced.append(x)
+                            else:
+                                Lin_list_i_spk_reduced.append(x)
+                        w_global = np.array(w_global)
+                        w_cross = np.array(w_cross)
+                    except:
+                        Lin_list_i_spk_reduced = Lin_list_i_spk
+                        w_global = []
+                        
                     a = 1
                     for ab in Ab_classes:  
                         if ab!= "NTD":
                             if Lin_list[i] not in list(variant_x_names_cross):
-                                FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
+                                FRxy_ab = np.ones((len(variant_x_names_cross)+add_lin, len(variant_x_names_cross)+add_lin))
                             else:
                                 FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
                                 
-                            FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
-                            print("Assess lineage %s| %d out of %d with the NTD-RBD mutation positions"%(Lin_list[i], i+1,len(Lin_list)), mut_x_sites_dic_updated[Lin_list[i]])
+                            try:
+                                print("Assess lineage %s| %d out of %d with the NTD-RBD mutation positions"%(Lin_list[i], i+1,len(Lin_list)), mut_x_sites_dic_updated[Lin_list[i]])
+                            except:
+                                print("Assess lineage %s (%d spikesgroups, %d lineages)| %d out of %d with the NTD-RBD mutation positions"%(Lin_list[i], len(Lin_list_i_spk_reduced), len(Lin_list_i), i+1,len(Lin_list)))
+                            
                             print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes)) 
+                            sub_FR = np.ones((len(Cross_i["variant_list"]), len(Cross_i["variant_list"])))
+                            where_spk_s = np.array([list(Cross_i["variant_list"]).index(Lin_list_i_spk_reduced[k]) for k in range(len(Lin_list_i_spk_reduced))]) 
+                            
+                            if len(w_global)>0:
+                                for ex in range(len(w_cross)):
+                                    sub_FR[w_cross[ex], w_cross] = Cross_global[ab][w_global[ex], w_global[ex]]
+                            
                             for s in range(len(g)):
-                                Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_list[i]], g_var[s]), 
+                                Cross_Lin, Missed, Greater_one = cross_reactivity((Lin_list_i_spk_reduced, g_var[s]), 
                                                                                       Escape_Fraction, 
                                                                                       [ab],
                                                                                       mut_x_sites_dic_updated,
@@ -454,10 +567,42 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
                                
                                 #Only the information for the specific lineage studied is required for immunological landscape calculation
                                 #the FRxy_ab matrix is kept only for compatibility with other codes
+                                locs = np.array([list(Cross_i["variant_list"]).index(g[s][k]) for k in range(len(g[s]))])
                                 
-                                FRxy_ab[w_lin, g[s]] = Cross_Lin[ab][0, :]
-                                FRxy_ab[g[s], w_lin] = Cross_Lin[ab][0, :]
-                    
+                                for k in range(len(Lin_list_i_spk_reduced)):
+                                    sub_FR[where_spk_s[k], locs] = Cross_Lin[ab][k, :]
+                            
+                            if len(Lin_list_i_spk_reduced)>1:
+                                for k in range(len(Lin_list_i_spk_reduced)):
+                                    Cross_Lin, Missed, Greater_one = cross_reactivity(([Lin_list_i_spk_reduced[k]], Lin_list_i_spk_reduced[k+1:]), 
+                                                                                  Escape_Fraction, 
+                                                                                  [ab],
+                                                                                  mut_x_sites_dic_updated,
+                                                                                  joblib=True)
+                                
+                                    sub_FR[where_spk_s[k], where_spk_s[k+1:]] = Cross_Lin[ab][k, :]
+                                    sub_FR[where_spk_s[k+1:], where_spk_s[k]] = sub_FR[where_spk_s[k], where_spk_s[k+1:]]
+                                
+                            if not spk_adjust:
+                                FRxy_ab[np.array(w_lin_i), :] = sub_FR
+                                if len(w_lin_i)==1:
+                                    FRxy_ab[:, np.array(w_lin_i)] = sub_FR
+                                else:
+                                    FRxy_ab[:, np.array(w_lin_i)] = sub_FR.T
+                            else:
+                                for w_spk in range(len(Lin_list_i_spk)):
+                                    pdb.set_trace()
+                                    where_spk = inds_spk == list(Lin_list_i).index(Lin_list_i_spk[w_spk])
+                                    cross_spk = np.row_stack(tuple([sub_FR[w_spk, :]]*np.sum(where_spk)))
+                                        
+                                    Lins = np.array(Lin_list_i)[where_spk]
+                                    where_spk_cross = np.array([w_lin_i[list(Cross_i["variant_list"]).index(Lins[k])] for k in range(len(Lins))]) 
+                                    FRxy_ab[where_spk_cross, :] = cross_spk[where_spk_cross, :]
+                                    if len(where_spk_cross)==1:
+                                        FRxy_ab[:, where_spk_cross] = cross_spk[where_spk_cross, :]
+                                    else:
+                                        FRxy_ab[:, where_spk_cross] = cross_spk[where_spk_cross, :].T
+
                             Cross_i[ab] = FRxy_ab
                         a +=1 
                     
@@ -488,12 +633,14 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing"):
                     a = 1  
                     print("Assess lineage %s| %d out of %d with the NTD-RBD mutation positions"%(Lin_list[i], i+1,len(Lin_list)), mut_x_sites_dic_updated[Lin_list[i]])
                     print("Load : %s is present in general file results/Cross_react_dic_spikegroups_ALL.pck"%Lin_list[i]) 
+                
                     file_c = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") 
                     Cross_global = pickle.load(file_c)
                     variant_global = Cross_global["variant_list"]
                     Cross_global.pop("variant_list")
                     Ab_global = Cross_global.keys()
                     file_c.close()
+                    
                     if Pseudogroup_dic[Lin_list[i]] not in list(variant_x_names_cross):
                         w_lin = len(variant_x_names_cross)
                         Cross_i["variant_list"] = list(variant_x_names_cross) + [Lin_list[i]]
@@ -720,12 +867,15 @@ elif Lin_name == "missing":
     Lin_miss = []
     loc_not_miss = []
     loc_in_cross = []
+    
+   
     for lin in variant_x_names_cross:
         if lin not in variant_global:
             Lin_miss.append(lin)
         else:
             loc_in_cross.append(list(variant_x_names_cross).index(lin))
-            loc_not_miss.append(list(variant_global).index(lin))
+            loc_not_miss.append(list(variant_global).index(lin))          
+
     
     if len(Lin_miss) == 0:
         Cross_react_dic = Cross_global.copy()
