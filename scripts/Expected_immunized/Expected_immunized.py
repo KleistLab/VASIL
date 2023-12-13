@@ -528,8 +528,10 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
                 if SpikeGroups_list[j] in variants_in_cross:
                     SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))
                 elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
-                    w_j = [list(variants_in_cross).index(x) for x in list(Pseudogroup_dic.keys()) if (x in variants_in_cross & Pseudogroup_dic[x] == Pseudogroup_dic[SpikeGroups_list[j]])][0]
-                    SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[w_j]))
+                    w_j_list = [list(variants_in_cross).index(x) for x in list(Pseudogroup_dic.keys()) if (x in variants_in_cross and Pseudogroup_dic[x] == Pseudogroup_dic[SpikeGroups_list[j]])][0]
+                    if len(w_j_list) != 0:
+                        w_j = w_j_list[0]
+                        SpikeGroups_list_index.append(list(variants_in_cross)[w_j])  
                     
             SpikeGroups_list_index = np.array(SpikeGroups_list_index)
         else:
@@ -542,7 +544,7 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
                     if SpikeGroups_list[j] in variants_in_cross:
                         w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
                     elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
-                        w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list_index[j]])
+                        w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list[j]])
                     spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
                 
                 # renormalization
@@ -758,9 +760,11 @@ else:
     for j in range(len(SpikeGroups_list)):
         if SpikeGroups_list[j] in variants_in_cross:
             SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
-        elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
-            w_j = [list(variants_in_cross).index(x) for x in list(Pseudogroup_dic.keys()) if (x in variants_in_cross & Pseudogroup_dic[x] == Pseudogroup_dic[SpikeGroups_list[j]])][0]
-            SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[w_j]))  
+        elif (SpikeGroups_list[j] in list(Pseudogroup_dic.keys())):
+            w_j_list = [list(variants_in_cross).index(x) for x in list(Pseudogroup_dic.keys()) if (x in variants_in_cross and Pseudogroup_dic[x] == Pseudogroup_dic[SpikeGroups_list[j]])]
+            if len(w_j_list) != 0:
+                w_j = w_j_list[0]
+                SpikeGroups_list_index.append(list(variants_in_cross)[w_j])  
     
     SpikeGroups_list_index = np.array(SpikeGroups_list_index)
     add_print = False
@@ -786,7 +790,7 @@ else:
                     if SpikeGroups_list[j] in variants_in_cross:
                         w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
                     elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
-                        w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list_index[j]])
+                        w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list[j]])
                     spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
                 
                 # renormalization
@@ -799,8 +803,8 @@ else:
                 if SpikeGroups_list[j] in variants_in_cross:
                     w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
                 elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
-                    w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list_index[j]])
-                    
+                    w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list[j]])   
+                
                 spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
             
             # renormalization
@@ -811,7 +815,7 @@ else:
     for i in range(len(SpikeGroups_list)):
         if SpikeGroups_list[i] in variants_in_cross:
             if add_print:
-                print("A smaller set of spikesgroups are being simulated for all_il = TRUE \n Make sure this is what you want otherwise first set the parameter cross_missing to TRUE")
+                print("A smaller set of spikesgroups are being simulated for all_il = TRUE \n Make sure this is what you want otherwise set the parameter cross_missing to TRUE")
                 miss_num = len(SpikeGroups_list)-len(SpikeGroups_list_index)
                 print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1: missing %d spikegroups)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list_index)-1, miss_num))
             else:
