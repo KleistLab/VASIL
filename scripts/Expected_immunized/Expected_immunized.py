@@ -654,12 +654,12 @@ if Lin_name != "ALL":
                 except:
                     pass
         # Save file as a placeholder for exectuted codes, required for snakemake
-        if Grouped:
+        if not Grouped:
             sim_df = pd.DataFrame({"Lineage":[Lin_name], "Simulation status":[status_var]})
-            sim_df.to_csv(sys.argv[w_save]+"/simulation_status.csv")
-        else:
-            sim_df = pd.DataFrame({"Lineage": Lin_name, "Simulation status":status_var})
             sim_df.to_csv(sys.argv[w_save]+"/simulation_status_%s.csv"%Lin_name)
+        else:
+            sim_df = pd.DataFrame({"Lineage": lineages, "Simulation status":status_var})
+            sim_df.to_csv(sys.argv[w_save]+"/simulation_status.csv")
     else:
         Lin_list = []
         cross_list = []
