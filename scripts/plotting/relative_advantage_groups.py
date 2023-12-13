@@ -298,7 +298,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             if (num_avail == len(ES_list)):
                 #ES_ranges= np.mean(np.array(ES_list), axis = 0) # compute the mean
                 Props = np.array(prop_list)[:, :ES_list[0].shape[0]]
-                Props_normed = np.divide(Props, np.sum(Props, axis = 0), out = np.zeros(len(Props)), where = np.sum(Props, axis = 0)!=0)
+                Props_normed = np.divide(Props, np.sum(Props, axis = 0)[np.newaxis, :], out = np.zeros(Props.shape), where = np.sum(Props, axis = 0)[np.newaxis, :]!=0)
                 ES_ranges = np.sum(np.array(ES_list)*Props_normed[:, :, np.newaxis], axis = 0) ## weighted mean
             else:
                 sys.exit("Loaded E[Susceptible] files were more than what is available for groups %s, recheck the loading process script/plotting/relative_advantage_groups.py Line 122-196"%lineage_list[k])
@@ -316,10 +316,12 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     try:
                         if Pseudo_Prop2[w_l] == 0 or Pseudo_Prop2[w_l+1] == 0:
                             gamma_prop[l] = float('nan')
+                            SI_mask[l] = True
                         else:
                             gamma_prop[l] = (Pseudo_Prop2[w_l+1]/Pseudo_Prop2[w_l]) - 1
                     except:
                         gamma_prop[l] = float('nan')
+                        SI_mask[l] = True
                 else:
                     gamma_prop[l] = float('nan')
                     SI_mask[l] = True
@@ -337,6 +339,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 S_x = ES_ranges[:, i]
                 S_mean = S_all_mean[:, i]
                 gamma_SI[:, i] = np.divide(S_x - S_mean, S_mean, out = S_x, where = S_mean != 0)
+            
             
             # get min max gamma over PK at each timepoints
             inds_dates = np.arange(0,len(t_dates),1)
