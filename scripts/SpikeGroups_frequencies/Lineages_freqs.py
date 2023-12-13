@@ -38,10 +38,6 @@ date_start = sys.argv[2]
 inds_keep = np.array(days_prop0)!="nan"
 days_prop = np.array(days_prop0)[inds_keep]
 lineages_all = np.array(lineages_all_0)[inds_keep]
-if date_start in days_prop:
-    where_day = list(days_prop).index(date_start)
-    days_prop = days_prop[where_day:]
-    lineages_all = lineages_all[where_day:]
 
 """Start computing Variant-proportions"""
 # iniializing variant proportion for all lineages
@@ -61,7 +57,12 @@ for i in range(len(unique_days_prop_all)):
 
 unique_days_prop_sub.sort(key = lambda date: datetime.strptime(date, "%Y-%m-%d")) 
 unique_days_prop = unique_days_prop_sub
- 
+
+if date_start in unique_days_prop:
+    where_day = list(unique_days_prop).index(date_start)
+    unique_days_prop = unique_days_prop[where_day:]
+    
+
 def sub_func(s, x, days_prop, unique_days_prop, lineages_all, unique_lineage):
     res = np.sum((days_prop == unique_days_prop[s]) & (lineages_all == unique_lineage[x]))
     return res
@@ -83,28 +84,24 @@ if seq_thres is not None:
     
     i = 0
     n_i = 0
-    days_prop_new = []
-    while i<len(unique_days_prop) and n_i<len(days_prop):
+    days_prop_new = days_prop.copy()
+    while i<len(unique_days_prop):
         num_goal = 0
         j = i
+        where_days = np.zeros(len(days_prop)).astype(bool)
         while num_goal <= seq_thres and j<len(num_seq):
             num_goal += num_seq[j]
+            where_days += days_prop == unique_days_prop[j]
             j +=1
-        grouped = days_prop[n_i:n_i+num_goal+1]
+        
+        grouped = days_prop[where_days]
         useq = np.unique(grouped)
         chosen_mid = useq[len(useq)//2]
-        days_prop_new += [chosen_mid]*len(grouped)
+        days_prop_new[where_days]= chosen_mid
         
         i = j
         n_i +=len(grouped)
     
-    
-    if len(days_prop_new) != len(days_prop):
-        grouped = days_prop[n_i:]
-        useq = np.unique(grouped)
-        days_prop_new += [useq[len(useq)//2]]*len(grouped)
-   
-
     unique_days_prop_new = list(np.unique(days_prop_new))
     if unique_days_prop_new[0]!=unique_days_prop[0]:
         unique_days_prop_new = [unique_days_prop[0]] + unique_days_prop_new
@@ -112,7 +109,8 @@ if seq_thres is not None:
         unique_days_prop_new = unique_days_prop_new + [unique_days_prop[-1]]
         
     days_prop = np.array(days_prop_new)
-    unique_days_prop = np.array(unique_days_prop_new)
+    unique_days_prop = unique_days_prop_new
+    unique_days_prop.sort(key = lambda date: datetime.strptime(date, "%Y-%m-%d")) 
     
 """ Remove NONE and UNASSIGNED """
 """
