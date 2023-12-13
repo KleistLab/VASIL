@@ -195,43 +195,47 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
 
 
 """Compute Cross reactivity to Delta for valitation"""
-# use Delta: B.1.617.2 for validation (Used in Clinical data paper)
-variant_x_names_show = ["Wuhan-Hu-1", "Delta: B.1.617.2"]
-mut_dic_show = {"Wuhan-Hu-1":[], "Delta: B.1.617.2": [614, 950, 142, 452, 681, 19, 478]}
-
-Cross_with_delta_validation, Missed, Greater_one = cross_reactivity((variant_x_names_show,variant_x_names_show), 
-															             Escape_Fraction, Ab_classes, 
-                                                        	             mut_dic_show,joblib=True)
-
-"""Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""  
-n = len(variant_x_names_show)
-FR_NTD = np.ones((n, n))
-for i in range(n):
-    var_1 = variant_x_names_show[i]
-    for j in range(n):
-        if i > j:
-            var_2 = variant_x_names_show[j]
-
-            sites_1 = set(np.array(mut_dic_show[var_1]).astype(int))
-            sites_2 = set(np.array(mut_dic_show[var_2]).astype(int))
-
-            sites = list(sites_1.symmetric_difference(sites_2))
-            FR_sites = 1
-            for s in sites:
-                s = int(s)
-                if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                    FR_sites *= 10
-            FR_NTD[i, j] = FR_sites
-            FR_NTD[j, i] = FR_sites
-
-Cross_with_delta_validation["NTD"] = FR_NTD
-Cross_with_delta_validation["variant_list"] = variant_x_names_show
-try:
-    file0 = open(sys.argv[len(sys.argv)-2], "wb") 
-    pickle.dump(Cross_with_delta_validation, file0)
-    file0.close()
-except:
-    pass
+if str(sys.argv[6])[:4] not in ("None", "none", False):
+    # use Delta: B.1.617.2 for validation (Used in Clinical data paper)
+    variant_x_names_show = ["Wuhan-Hu-1", "Delta: B.1.617.2"]
+    mut_dic_show = {"Wuhan-Hu-1":[], "Delta: B.1.617.2": [614, 950, 142, 452, 681, 19, 478]}
+    
+    Cross_with_delta_validation, Missed, Greater_one = cross_reactivity((variant_x_names_show,variant_x_names_show), 
+    															             Escape_Fraction, Ab_classes, 
+                                                            	             mut_dic_show,joblib=True)
+    
+    """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""  
+    n = len(variant_x_names_show)
+    FR_NTD = np.ones((n, n))
+    for i in range(n):
+        var_1 = variant_x_names_show[i]
+        for j in range(n):
+            if i > j:
+                var_2 = variant_x_names_show[j]
+    
+                sites_1 = set(np.array(mut_dic_show[var_1]).astype(int))
+                sites_2 = set(np.array(mut_dic_show[var_2]).astype(int))
+    
+                sites = list(sites_1.symmetric_difference(sites_2))
+                FR_sites = 1
+                for s in sites:
+                    s = int(s)
+                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                        FR_sites *= 10
+                FR_NTD[i, j] = FR_sites
+                FR_NTD[j, i] = FR_sites
+    
+    Cross_with_delta_validation["NTD"] = FR_NTD
+    Cross_with_delta_validation["variant_list"] = variant_x_names_show
+    
+    if str(sys.argv[6])[-4:] == ".pck":
+        file0 = open(sys.argv[6], "wb") 
+        pickle.dump(Cross_with_delta_validation, file0)
+        file0.close()
+    else:
+        file0 = open("results/Cross_with_delta_validation.pck", "wb") 
+        pickle.dump(Cross_with_delta_validation, file0)
+        file0.close()
 
 """Compute Cross reactivity"""
 Cross_react_dic = {}
