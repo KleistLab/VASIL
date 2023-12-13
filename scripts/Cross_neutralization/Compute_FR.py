@@ -383,8 +383,9 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
         Grouped = []
         Lin_exists = []
         single_lin = 0
+        Lin_list_grouped = {}
         for j in range(len(Lin_list)):
-            Lin_list_grouped = {Lin_list[j]:[Lin_list[j]]}
+            Lin_list_grouped[Lin_list[j]] = [Lin_list[j]]
             if Lin_list[j] not in list(Pseudogroup_dic.keys()):
                 try:
                     mut_file = open(mut_sim[j], "r")
@@ -465,8 +466,9 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
         for i in range(len(Lin_list)):
             Cross_i = {}
             Cross_i["variant_list"] = list(variant_x_names_cross)
-            Lin_list_i = Lin_list_grouped[Lin_list[i]]
             
+            Lin_list_i = Lin_list_grouped[Lin_list[i]]
+
             if Grouped[i]:
                 Cross_i["Group"] = Lin_list_i
             
@@ -645,8 +647,14 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     Cross_global = pickle.load(file_c)
                     variant_global = Cross_global["variant_list"]
                     Cross_global.pop("variant_list")
+                    try:
+                        Cross_global.pop("Mutations")
+                    except:
+                        pass
+
                     Ab_global = Cross_global.keys()
                     file_c.close()
+
                     
                     if Pseudogroup_dic[Lin_list[i]] not in list(variant_x_names_cross):
                         w_lin = len(variant_x_names_cross)
@@ -655,7 +663,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                         w_lin = list(variant_x_names_cross).index(Pseudogroup_dic[Lin_list[i]])
                         Cross_i["variant_list"] = list(variant_x_names_cross)
                         Cross_i["variant_list"][w_lin] = Lin_list[i]
-                        
+                    
                     for ab in Ab_global:  
                         if Pseudogroup_dic[Lin_list[i]] not in list(variant_x_names_cross):
                             FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
