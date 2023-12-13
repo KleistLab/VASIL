@@ -10,6 +10,7 @@ import sys
 import warnings
 import pdb
 import os
+import numpy.ma as ma
 
 """
 #### Sys argv setup
@@ -366,7 +367,7 @@ def PNeut_Envelope(s, t, variants, variant_x_names, Cross_react_dic, c_dframe_di
     splited_var = splited_var[~(splited_var == " ")]
     
     res = np.zeros((len(variants), len(list(c_dframe_dic.keys())), len(t)))
-    
+    ignore = np.zeros(res.shape).astype(bool)
     success = []
     for j in range(len(splited_var)):
         spl_sub = np.array(splited_var[j].split("="))
@@ -374,14 +375,13 @@ def PNeut_Envelope(s, t, variants, variant_x_names, Cross_react_dic, c_dframe_di
         spl_sub = spl_sub[~(spl_sub == " ")]
 
         lin = spl_sub[0]
-        try:
+        if lin in variant_x_names:
             where_x = list(variant_x_names).index(lin)
-        except:
-            try:
-                where_x = list(variant_x_names).index(Pseudogroup_dic[lin])
-            except:
-                where_x = "Not Found"
-                print("Error in antigen parameter: %s is not present in covsonar data"%lin)
+        elif Pseudogroup_dic[lin] in variant_x_names:
+            where_x = list(variant_x_names).index(Pseudogroup_dic[lin])
+        else:
+            where_x = "Not Found"
+            print("Error in antigen parameter: %s is not present in covsonar datat thus or Cross ALL simulated"%lin)
         
         if where_x != "Not Found":
             success.append(True)
@@ -392,22 +392,27 @@ def PNeut_Envelope(s, t, variants, variant_x_names, Cross_react_dic, c_dframe_di
                 prop_lin = float(prop_0)
             
             for i in range(len(variants)):
-                where_y = list(variant_x_names).index(variants[i])
+                if variants[i] in variant_x_names:
+                    where_y = list(variant_x_names).index(variants[i])
                 
-                for j in range(len(list(c_dframe_dic.keys()))):
-                    if not mean_IC50xx:
-                        IC50xx = IC50xx_dic[list(c_dframe_dic.keys())[j]]
-                    
-                    IC50xy = [Cross_react_dic[Ab_classes[i]][where_x, where_y]*IC50xx*FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))]
+                    for j in range(len(list(c_dframe_dic.keys()))):
+                        if not mean_IC50xx:
+                            IC50xx = IC50xx_dic[list(c_dframe_dic.keys())[j]]
                         
-                    c_dframe = c_dframe_dic[list(c_dframe_dic.keys())[j]]
-                    for l in range(len(t)): 
-                        antibody_level = c_dframe.loc[l][1:]
-                        res[i, j, l] += prop_lin*efficacy_n_antibodies(antibody_level, IC50xy)
+                        IC50xy = [Cross_react_dic[Ab_classes[i]][where_x, where_y]*IC50xx*FC_ic50_dic[Ab_classes[i]] for i in range(len(Ab_classes))]
+                            
+                        c_dframe = c_dframe_dic[list(c_dframe_dic.keys())[j]]
+                        for l in range(len(t)): 
+                            antibody_level = c_dframe.loc[l][1:]
+                            res[i, j, l] += prop_lin*efficacy_n_antibodies(antibody_level, IC50xy)
+                else:
+                    print("P_neut not computed for %s because it is not present in Cross ALL simulated"%variants[i])
+                    ignore[i, j, :] = True
         else:
             success.append(False)
             
     if np.all(success):
+        res = ma.masked_array(res, mask = ignore)
         return np.min(res, axis = (0, 1)), np.max(res, axis = (0, 1))
     else:
         return None, None
