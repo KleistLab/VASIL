@@ -504,9 +504,9 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ymin2, ymax2 = ax2_twin.get_ylim()
             ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
             
-            loc0 = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
-            mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, loc0)
-            #mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, 0.5)
+            #loc0 = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
+            #mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, loc0)
+            mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, 0.5)
             
             if (ymin1/ymin2 >0.5) or (ymax1/ymax2>0.5) or (ymin2/ymin1 >0.5) or (ymax2/ymax1>0.5):
                 ax2.set_ylim((ymin, ymax))
