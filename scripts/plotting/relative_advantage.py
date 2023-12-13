@@ -97,12 +97,28 @@ def plot_fit(ES_df, lineage, w_save = 6):
             w_l = list(day_prop).index(t_dates[l])
             if Pseudo_Prop[w_l] == 0 or Pseudo_Prop[w_l+1] == 0:
                 gamma_prop[l] = float('nan')
+                SI_mask[l] == True
             else:
                 gamma_prop[l] = (Pseudo_Prop[w_l+1]/Pseudo_Prop[w_l]) - 1
         else:
             gamma_prop[l] = float('nan')
             SI_mask[l] = True
-            
+    
+    if t_dates[len(t_dates)-1] in day_prop and len(day_prop)>len(t_dates):
+        w_l = list(day_prop).index(t_dates[len(t_dates)-1])
+        try:                        
+            if Pseudo_Prop[w_l] == 0 or Pseudo_Prop[w_l+1] == 0:
+                gamma_prop[l] = float('nan')
+                SI_mask[l] == True
+            else:
+                gamma_prop[l] = (Pseudo_Prop[w_l+1]/Pseudo_Prop[w_l]) - 1
+        except:
+            gamma_prop[l] = float('nan')
+            SI_mask[l] = True
+    else:
+        gamma_prop[l] = float('nan')
+        SI_mask[l] = True
+        
     # plotting
     PreFig(xsize = 20, ysize = 20)
     fig = plt.figure(figsize = (15, 7))

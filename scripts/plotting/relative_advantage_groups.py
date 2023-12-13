@@ -300,6 +300,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 Props = np.array(prop_list)[:, :ES_list[0].shape[0]]
                 Props_normed = np.divide(Props, np.sum(Props, axis = 0)[np.newaxis, :], out = np.zeros(Props.shape), where = np.sum(Props, axis = 0)[np.newaxis, :]!=0)
                 ES_ranges = np.sum(np.array(ES_list)*Props_normed[:, :, np.newaxis], axis = 0) ## weighted mean
+                ES_ranges[np.sum(Props, axis = 0) == 0, :] = np.mean(np.array(ES_list), axis = 0)[np.sum(Props, axis = 0) == 0, :]
             else:
                 sys.exit("Loaded E[Susceptible] files were more than what is available for groups %s, recheck the loading process script/plotting/relative_advantage_groups.py Line 122-196"%lineage_list[k])
             
@@ -311,12 +312,13 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             SI_mask = np.zeros(len(t_dates)).astype(bool)
             for l in range(len(t_dates)-1):
                 #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
+                ## Dates are already set to always be to be successive
                 if t_dates[l] in day_prop:
                     w_l = list(day_prop).index(t_dates[l])
                     try:
                         if Pseudo_Prop2[w_l] == 0 or Pseudo_Prop2[w_l+1] == 0:
                             gamma_prop[l] = float('nan')
-                            SI_mask[l] = True
+                            SI_mask[l] == True
                         else:
                             gamma_prop[l] = (Pseudo_Prop2[w_l+1]/Pseudo_Prop2[w_l]) - 1
                     except:
@@ -326,12 +328,20 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     gamma_prop[l] = float('nan')
                     SI_mask[l] = True
             
-            prop_mask_0 = np.zeros(len(t_dates)).astype(bool)
-            prop_mask_0[:-1] = SI_mask[:-1]
-            if t_dates[len(t_dates)-1] in day_prop:
+            if t_dates[len(t_dates)-1] in day_prop and len(day_prop)>len(t_dates):
                 w_l = list(day_prop).index(t_dates[len(t_dates)-1])
+                try:
+                    if Pseudo_Prop2[w_l] == 0 or Pseudo_Prop2[w_l+1] == 0:
+                        gamma_prop[l] = float('nan')
+                        SI_mask[l] == True
+                    else:
+                        gamma_prop[l] = (Pseudo_Prop2[w_l+1]/Pseudo_Prop2[w_l]) - 1
+                except:
+                    gamma_prop[l] = float('nan')
+                    SI_mask[l] = True
             else:
-                prop_mask_0[-1] = True
+                gamma_prop[l] = float('nan')
+                SI_mask[l] = True
             
             # calculation of relative fitness
             gamma_SI = np.zeros((len(t_dates), ES_ranges.shape[1]))
@@ -346,6 +356,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             SI_mask = np.array(SI_mask) + prop_mask[:len(inds_dates)] ### props are already aligned with indicence date
             gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
             gamma_SI_max = ma.masked_array(gamma_SI_max, mask = SI_mask)
+            gamma_SI_min = ma.masked_array(gamma_SI_min, mask = SI_mask)
             Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop, mask = prop_mask)
 
             ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
@@ -475,9 +486,11 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             # different axis for proportions
             ax2_twin = ax2.twinx()
             
+            gamma_prop_masked = ma.masked_array(gamma_prop, mask = SI_mask)
             ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = lab_k)
-            ax2_twin.plot(inds_dates, gamma_prop, color = "orange", label=lab_k)
-            
+            ax2_twin.plot(inds_dates, gamma_prop_masked, color = "orange", label=lab_k)
+            #ax2_twin.scatter(inds_dates, gamma_prop_masked, marker = ".", color = "orange")
+
             ax2.set_xticks(perday_orig)
             ax2.set_xticklabels(date_ticks,
                 rotation = 45, horizontalalignment = "right")
@@ -491,7 +504,9 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ymin2, ymax2 = ax2_twin.get_ylim()
             ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
             
-            mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, 0.5)
+            loc0 = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
+            mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, loc0)
+            #mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, 0.5)
             
             if (ymin1/ymin2 >0.5) or (ymax1/ymax2>0.5) or (ymin2/ymin1 >0.5) or (ymax2/ymax1>0.5):
                 ax2.set_ylim((ymin, ymax))
