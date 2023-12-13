@@ -54,7 +54,10 @@ for i in range(len(unique_days_prop_all)):
         try_this = datetime.strptime(unique_days_prop_all[i], "%Y-%m-%d") 
         unique_days_prop_sub.append(unique_days_prop_all[i])
     except:
-        pass
+        """Keep only well formated dates"""
+        keep = days_prop != unique_days_prop_all[i]
+        days_prop = days_prop[keep]
+        lineages_all = lineages_all[keep]
 
 unique_days_prop_sub.sort(key = lambda date: datetime.strptime(date, "%Y-%m-%d")) 
 unique_days_prop = unique_days_prop_sub
@@ -81,18 +84,26 @@ if seq_thres is not None:
     i = 0
     n_i = 0
     days_prop_new = []
-    while i<len(unique_days_prop):
+    while i<len(unique_days_prop) and n_i<len(days_prop):
         num_goal = 0
         j = i
         while num_goal <= seq_thres and j<len(num_seq):
             num_goal += num_seq[j]
             j +=1
-        grouped = days_prop[n_i:n_i+num_goal]
+        grouped = days_prop[n_i:n_i+num_goal+1]
         useq = np.unique(grouped)
-        days_prop_new += [useq[len(useq)//2]]*len(grouped)
+        chosen_mid = useq[len(useq)//2]
+        days_prop_new += [chosen_mid]*len(grouped)
+        
         i = j
         n_i +=len(grouped)
     
+    
+    if len(days_prop_new) != len(days_prop):
+        grouped = days_prop[n_i:]
+        useq = np.unique(grouped)
+        days_prop_new += [useq[len(useq)//2]]*len(grouped)
+   
 
     unique_days_prop_new = list(np.unique(days_prop_new))
     if unique_days_prop_new[0]!=unique_days_prop[0]:
@@ -102,7 +113,7 @@ if seq_thres is not None:
         
     days_prop = np.array(days_prop_new)
     unique_days_prop = np.array(unique_days_prop_new)
-
+    
 """ Remove NONE and UNASSIGNED """
 """
 if "NONE" in unique_lineage_timeframe:
