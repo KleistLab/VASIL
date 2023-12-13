@@ -67,6 +67,8 @@ if days_incidence[len(days_incidence) - 1] < days_prop[len(days_prop) - 1]:
     sdate = datetime.strptime(days_incidence[len(days_incidence) - 1], "%Y-%m-%d")
     edate = datetime.strptime(days_prop[len(days_prop) - 1], "%Y-%m-%d")
     date_list = list(days_incidence)[:-1]+pd.date_range(sdate,edate-timedelta(days=1),freq='d').strftime('%Y-%m-%d').tolist()
+    if days_prop[len(days_prop) - 1] not in date_list:
+        date_list.append(days_prop[len(days_prop) - 1])
 else:
     date_list = list(days_incidence)
 
