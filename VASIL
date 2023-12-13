@@ -59,8 +59,8 @@ if config["groups_il"]:
     groups_names = []
     mut_files = []
     for i in range(len(config["compare_groups"])):
-        check_file = os.path.exists(config["mut_groups"][i])
-        if check_file:
+        check_file = os.path.exists(config["mut_groups"][i]) 
+        if check_file and (config["mut_groups"][-3:]!="txt"):
             groups_names.append(config["compare_groups"][i]),
             mut_files.append(config["mut_groups"][i]),
         else:

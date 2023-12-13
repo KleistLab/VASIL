@@ -195,7 +195,7 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
 
 
 """Compute Cross reactivity to Delta for valitation"""
-if str(sys.argv[6])[:4] not in ("None", "none", False):
+if str(sys.argv[-2])[:4] not in ("None", "none", False):
     # use Delta: B.1.617.2 for validation (Used in Clinical data paper)
     variant_x_names_show = ["Wuhan-Hu-1", "Delta: B.1.617.2"]
     mut_dic_show = {"Wuhan-Hu-1":[], "Delta: B.1.617.2": [614, 950, 142, 452, 681, 19, 478]}
@@ -228,8 +228,8 @@ if str(sys.argv[6])[:4] not in ("None", "none", False):
     Cross_with_delta_validation["NTD"] = FR_NTD
     Cross_with_delta_validation["variant_list"] = variant_x_names_show
     
-    if str(sys.argv[6])[-4:] == ".pck":
-        file0 = open(sys.argv[6], "wb") 
+    if str(sys.argv[-2])[-4:] == ".pck":
+        file0 = open(sys.argv[-2], "wb") 
         pickle.dump(Cross_with_delta_validation, file0)
         file0.close()
     else:
@@ -403,8 +403,9 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     Lin_exists.append(Lin_list[j])
                 except:
                     try:
-                        mutation_data_file = open(mut_sim[j], "rb")
-                        mutation_loaded = pickle.load(mutation_data_file)
+                        data_file = open(mut_sim[j], "rb")
+                        mutation_loaded = pickle.load(data_file)
+                        data_file.close()
                         mutation_data = mutation_loaded["positions"]
                         variants = mutation_loaded["Group"]
                         mut_sub = []
@@ -436,17 +437,19 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                 Grouped.append(False)
                 Lin_exists.append(Lin_list[j])
         
+        
         ### Update to available data
         Lin_list = Lin_exists
         
         g = []
         g_var =[]
         inds = np.arange(0, len(variant_x_names_cross)).astype(int)
+        
         if single_lin<10:
             cut_step = 300
         else:
             cut_step = 50
-            
+        
         if len(variant_x_names_cross)>cut_step:
             cut1 = 0
             cut2 = cut_step
@@ -462,8 +465,8 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
             g_var.append(variant_x_names_cross)
         
         status_sim = []
-        
         for i in range(len(Lin_list)):
+             
             Cross_i = {}
             Cross_i["variant_list"] = list(variant_x_names_cross)
             
@@ -478,6 +481,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                 extract = True 
             except:
                 extract = False # file is not present and thus if must be recomputed
+            
             
             try:
                 if (Lin_list[i] not in list(Pseudogroup_dic.keys())) or (not extract):
@@ -558,8 +562,6 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                             
                             print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes)) 
                             sub_FR = np.ones((len(Cross_i["variant_list"]), len(Cross_i["variant_list"])))
-                            
-                            
                             
                             if len(w_global)>0:
                                 for ex in range(len(w_cross)):
@@ -708,14 +710,14 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                 file0 = open(sys.argv[len(sys.argv)-1]+"/Cross_%s.pck"%Lin_list[i], "wb") 
                 pickle.dump(Cross_i, file0)
                 file0.close()
-                
             except:
                 print("Ignored Cross of %s: Give mutation file or chose a lineage with pseudogroup present in covsonar data"%Lin_list[i])
                 status_sim.append("No mutation profile for %s, give mutation file or chose a lineage present in covsonar data"%Lin_list[i])
-                
-        stat_df = pd.DataFrame({"Lineages":Lin_list, "computed_cross":status_sim})
-        stat_df.to_csv(sys.argv[len(sys.argv)-1]+"/cross_status.csv")
-
+            
+        if len(status_sim)>0:
+            stat_df = pd.DataFrame({"Lineages":Lin_list, "computed_cross":status_sim})
+            stat_df.to_csv(sys.argv[len(sys.argv)-1]+"/cross_status.csv")
+            
 elif Lin_name == "ALL":  
     """Break runs into manageable pieces"""
     
