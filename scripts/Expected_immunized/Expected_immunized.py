@@ -544,7 +544,7 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
                 for j in range(len(SpikeGroups_list_index)):
                     if SpikeGroups_list[j] in variants_in_cross:
                         w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
-                    elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()) and  Pseudogroup_dic[SpikeGroups_list[j]] in variants_in_cross:
+                    elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
                         w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list[j]])
                     spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
                 
@@ -792,7 +792,7 @@ else:
                 add_print = True
                 spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
                 for j in range(len(SpikeGroups_list_index)):
-                    if SpikeGroups_list[j] in variants_in_cross and Pseudogroup_dic[SpikeGroups_list[j]] in variants_in_cross:
+                    if SpikeGroups_list[j] in variants_in_cross:
                         w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
                     elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
                         w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list[j]])
@@ -810,7 +810,7 @@ else:
                 if SpikeGroups_list[j] in variants_in_cross:
                     w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
                     
-                elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()) and Pseudogroup_dic[SpikeGroups_list[j]] in variants_in_cross:
+                elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
                     w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list[j]])   
                 
                 spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
