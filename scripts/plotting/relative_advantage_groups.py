@@ -497,8 +497,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 rotation = 45, horizontalalignment = "right")
             
             if x_min is not None:
-                ax2.set_xlim((x_min, len(inds_dates)-1))
-                ax2_twin.set_xlim((x_min, len(inds_dates)-1))
+                ax2.set_xlim((x_min, len(inds_dates)))
+                ax2_twin.set_xlim((x_min, len(inds_dates)))
                 
             
             ymin1, ymax1 = ax2.get_ylim()
