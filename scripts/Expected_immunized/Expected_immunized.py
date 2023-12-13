@@ -9,6 +9,7 @@ from functools import partial
 import sys
 import warnings
 import pdb
+import os
 
 """
 #### Sys argv setup
@@ -543,18 +544,19 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
                 for j in range(len(SpikeGroups_list_index)):
                     if SpikeGroups_list[j] in variants_in_cross:
                         w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
-                    elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
+                    elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()) and  Pseudogroup_dic[SpikeGroups_list[j]] in variants_in_cross:
                         w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list[j]])
                     spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
                 
                 # renormalization
-                spikegroups_proportion_adjust = spikegroups_proportion_adjust/np.sum(spikegroups_proportion_adjust, axis = 0)
+                NormProp = np.sum(spikegroups_proportion_adjust, axis = 0)
+                prop_rounded = np.round(spikegroups_proportion_adjust,decimals = 10)
+                spikegroups_proportion_adjust = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
             else:
                 spikegroups_proportion_adjust = spikegroups_proportion.copy()
-
         else:
-            spikegroups_proportion_adjust = spikegroups_proportion_adjust
-            
+           spikegroups_proportion_adjust = spikegroups_proportion_adjust
+           
         for key in c_dframe_dic.keys():
             PK_dframe = c_dframe_dic[key]
             key_num = np.array(re.findall(r"\d+", key)).astype(int)
@@ -570,6 +572,8 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
             EI["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = Res_sub_0
             Susc["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = total_population - Res_sub_0
         """ Save Dynamics Without Vaccination """
+        
+        
         EI_df = pd.DataFrame(EI)
         EI_df.to_csv(sys.argv[w_save]+"/Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
         
@@ -769,7 +773,8 @@ else:
     SpikeGroups_list_index = np.array(SpikeGroups_list_index)
     add_print = False
     if len(SpikeGroups_list_index)!=len(SpikeGroups_list):
-        try: ### use updated cross ALL including missing if it was computed
+         ### use updated cross ALL including missing if it was computed
+         if os.path.exists("results/Cross_react_dic_spikegroups_present.pck"):
             file1 = open("results/Cross_react_dic_spikegroups_present.pck", "rb") 
             Cross_react_dic = pickle.load(file1)
             variants_in_cross = Cross_react_dic["variant_list"]
@@ -787,33 +792,39 @@ else:
                 add_print = True
                 spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
                 for j in range(len(SpikeGroups_list_index)):
-                    if SpikeGroups_list[j] in variants_in_cross:
+                    if SpikeGroups_list[j] in variants_in_cross and Pseudogroup_dic[SpikeGroups_list[j]] in variants_in_cross:
                         w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
                     elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
                         w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list[j]])
                     spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
                 
                 # renormalization
-                spikegroups_proportion_adjust = spikegroups_proportion_adjust/np.sum(spikegroups_proportion_adjust, axis = 0)
-        except:
+                NormProp = np.sum(spikegroups_proportion_adjust, axis = 0)
+                prop_rounded = np.round(spikegroups_proportion_adjust,decimals = 10)
+                spikegroups_proportion_adjust = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
+         else:
             # readjust variant proportions to spikegroups available in cross react
             add_print = True
             spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
             for j in range(len(SpikeGroups_list_index)):
                 if SpikeGroups_list[j] in variants_in_cross:
                     w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
-                elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
+                    
+                elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()) and Pseudogroup_dic[SpikeGroups_list[j]] in variants_in_cross:
                     w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list[j]])   
                 
                 spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
             
             # renormalization
-            spikegroups_proportion_adjust = spikegroups_proportion_adjust/np.sum(spikegroups_proportion_adjust, axis = 0)
+            NormProp = np.sum(spikegroups_proportion_adjust, axis = 0)
+            prop_rounded = np.round(spikegroups_proportion_adjust,decimals = 10)
+            spikegroups_proportion_adjust = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
+    
     else:
         spikegroups_proportion_adjust = spikegroups_proportion.copy()
     
     for i in range(len(SpikeGroups_list)):
-        if SpikeGroups_list[i] in variants_in_cross:
+        if SpikeGroups_list[i] in variants_in_cross or SpikeGroups_list[i] in list(Pseudogroup_dic.keys()):
             if add_print:
                 print("A smaller set of spikesgroups are being simulated for all_il = TRUE \n Make sure this is what you want otherwise set the parameter cross_missing to TRUE")
                 miss_num = len(SpikeGroups_list)-len(SpikeGroups_list_index)
