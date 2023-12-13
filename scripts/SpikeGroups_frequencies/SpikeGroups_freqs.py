@@ -20,13 +20,16 @@ except:
 fq_cols = frequency_lineage_df.columns.astype(str)
 days_prop = frequency_lineage_df["date"] ### already matched with timeline of infection -- including excess
 
-""" Remove NONE and UNASSIGNED """
+""" Remove NONE and UNASSIGNED and nans"""
 """
 if "NONE" in fq_cols:
     frequency_lineage_df.drop(columns = "NONE", inplace = True)
     fq_cols = frequency_lineage_df.columns.astype(str)
 if "UNASSIGNED" in fq_cols:
     frequency_lineage_df.drop(columns = "UNASSIGNED", inplace = True)
+    fq_cols = frequency_lineage_df.columns.astype(str)
+if "nan" in fq_cols:
+    frequency_lineage_df.drop(columns = "nan", inplace = True)
     fq_cols = frequency_lineage_df.columns.astype(str)
 """
 
