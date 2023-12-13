@@ -107,9 +107,15 @@ rule get_epitope_landscape:
     shell:
         "Rscript {workflow.basedir}/scripts/epitopelandscape/epitope_landscape.R {input.Escape_data} {input.AB_mapping} {output.dir}"
 
+try:
+    seq_thres = config["min_seq"]
+    lin_freq_file = "results/Daily_Lineages_Freq_seq_thres_%d.csv"%int(seq_thres)
+except:
+	seq_thres = "None"
+	lin_freq_file = "results/Daily_Lineages_Freq.csv"
 
 if not config["freq_lin"]:
-    check_file = os.path.exists("results/Daily_Lineages_Freq.csv")
+    check_file = os.path.exists(lin_freq_file)
     if not check_file:
         compute_lin_freq = True
     else:
@@ -124,10 +130,11 @@ if compute_lin_freq:
             covsonar=config["covsonardata"],
         params:
             date_start=config["date_start"],
+            seq_thres = seq_thres,
         output:
-            result="results/Daily_Lineages_Freq.csv",
+            result=lin_freq_file,
         shell:
-            "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.covsonar} {params.date_start} {output.result}"
+            "python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input.covsonar} {params.date_start} {output.result} {params.seq_thres}"
 
 
 rule get_mutation_and_spikegroups:
@@ -149,7 +156,7 @@ rule get_mutation_and_spikegroups:
 rule get_spikegroups_frequencies:
     input:
         cases=config["cases"],
-        lins_freqs="results/Daily_Lineages_Freq.csv",
+        lins_freqs=lin_freq_file,
         spk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
         spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
     params:
@@ -286,13 +293,14 @@ if config["groups_il"]:
                 recurse_freq,
             params:
                 date_start=config["date_start"],
+                seq_thres = "None",
             output:
                 result="results/Groups_data_{i}/Daily_Lineages_Freq_{i}.csv",
                 mutations_dic="results/Groups_data_{i}/Mutations_Lineages_{i}.pck",
             wildcard_constraints:
                 i="[0-%d]+" % (len(mut_files) - 1),
             shell:
-                "loop='loop{wildcards.i}' python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input[0]} {params.date_start} {output.result} {input[1]} {output.mutations_dic}"
+                "loop='loop{wildcards.i}' python {workflow.basedir}/scripts/SpikeGroups_frequencies/Lineages_freqs.py {input[0]} {params.date_start} {output.result} {params.seq_thres} {input[1]} {output.mutations_dic}"
 
         if config["cross_group"]:
 
