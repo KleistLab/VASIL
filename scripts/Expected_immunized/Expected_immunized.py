@@ -627,7 +627,7 @@ if Lin_name != "ALL":
                         variants_cross[variants_in_cross.index(Pseudogroup_dic[var])] = var
                     
                     status_var.append(ei_util(var, variants_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save))
-                Group = True
+                Grouped = True
             else:
                 status_var = ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save) 
         else:
@@ -654,11 +654,11 @@ if Lin_name != "ALL":
                 except:
                     pass
         # Save file as a placeholder for exectuted codes, required for snakemake
-        if not Grouped:
+        if Grouped:
             sim_df = pd.DataFrame({"Lineage":[Lin_name], "Simulation status":[status_var]})
             sim_df.to_csv(sys.argv[w_save]+"/simulation_status.csv")
         else:
-            sim_df = pd.DataFrame({"Lineage":lineages, "Simulation status":status_var})
+            sim_df = pd.DataFrame({"Lineage": Lin_name, "Simulation status":status_var})
             sim_df.to_csv(sys.argv[w_save]+"/simulation_status_%s.csv"%Lin_name)
     else:
         Lin_list = []
