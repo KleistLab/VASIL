@@ -538,8 +538,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     #ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
     ax.set_ylim((ymin1, ymax1))
     #ax_twin.set_ylim((ymin2, ymax2))
-    loc0 = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
-    mpl_axes_aligner.align.yaxes(ax, 0, ax_twin, 0, loc0)
+    #loc0 = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
+    #mpl_axes_aligner.align.yaxes(ax, 0, ax_twin, 0, loc0)
     try:
         if str(sys.argv[5]) in list(t_dates):
             x_min = list(t_dates).index(str(sys.argv[5]))
