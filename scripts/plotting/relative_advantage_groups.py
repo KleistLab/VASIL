@@ -380,8 +380,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             #ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
             ax_k.set_ylim((ymin1, ymax1))
             #ax_k_twin.set_ylim((ymin, ymax))
-            loc0k = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
-            mpl_axes_aligner.align.yaxes(ax_k, 0, ax_k_twin, 0, loc0k)
+            #loc0k = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
+            #mpl_axes_aligner.align.yaxes(ax_k, 0, ax_k_twin, 0, loc0k)
             
             try:
                 if str(sys.argv[5]) in list(t_dates):
@@ -398,7 +398,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     x_max1 = len(day_prop) - 1
                 if str(sys.argv[6]) not in list(t_dates):
                     x_max = (len(t_dates) - 1) + (x_max1 - day_prop.index(t_dates[len(t_dates) - 1]))
-                    xmax_spec = (len(t_dates) - 1)
                 else:
                     x_max = list(t_dates).index(str(sys.argv[6])) 
             except:
@@ -443,9 +442,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     date_ticks = date_ticks[:-1]
                 date_ticks.append(day_prop[check_last])
                 perday = np.append(perday, check_last)
-               
-            
-            
+              
             perday_orig = []
             for i in range(len(np.array(date_ticks)[:change])):
                 try:
