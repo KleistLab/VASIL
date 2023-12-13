@@ -398,6 +398,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     x_max1 = len(day_prop) - 1
                 if str(sys.argv[6]) not in list(t_dates):
                     x_max = (len(t_dates) - 1) + (x_max1 - day_prop.index(t_dates[len(t_dates) - 1]))
+                    xmax_spec = (len(t_dates) - 1)
                 else:
                     x_max = list(t_dates).index(str(sys.argv[6])) 
             except:
@@ -496,8 +497,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 rotation = 45, horizontalalignment = "right")
             
             if x_min is not None:
-                ax2.set_xlim((x_min, x_max))
-                ax2_twin.set_xlim((x_min1, x_max1))
+                ax2.set_xlim((x_min, len(inds_dates)-1))
+                ax2_twin.set_xlim((x_min, len(inds_dates)-1))
                 
             
             ymin1, ymax1 = ax2.get_ylim()
