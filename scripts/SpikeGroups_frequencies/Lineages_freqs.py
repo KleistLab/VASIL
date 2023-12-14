@@ -146,23 +146,25 @@ if seq_thres is not None:
     
     x = []
     for i in range(len(unique_days_prop)):
-        d = np.array(unique_days_prop_all[i].split("-"))
-        d = d[~(d == "")]
-        d = d[~(d == " ")]
+        da = np.array(unique_days_prop[i].split("-")).astype(str)
+        da = da[~(da == "")]
+        da = da[~(da== " ")]
+        da = list(da)
         reformat = False
-        if int(d[1]) < 10 and len(d[1]) != 2:
-            d[1] = "0%d"%int(d[1])
+        if int(da[1]) < 10 and len(da[1]) != 2:
+            da[1] = "0%d"%int(da[1])
             reformat = True
-        if int(d[2]) < 10 and len(d[2]) != 2:
-            d[2] = "0%d"%int(d[2])
+        if int(da[2]) < 10 and len(da[2]) != 2:
+            da[2] = "0%d"%int(da[2])
             reformat = True
         if reformat:
-            dr = "-".join(d)
+            dr = "-".join(da)
             if dr in date_list:
                 x.append(date_list.index(dr))
         else:
             x.append(date_list.index(unique_days_prop_all[i]))
     
+    pdb.set_trace()
     if len(x) != len(unique_days_prop):
         sys.exit("Some dates are not properly fomated in covsonar data: Please only use format Year-month-days \n and put 0 before single digit days/months e.g. May 3rd, 2022 = 2022-03-03")
         
