@@ -153,7 +153,7 @@ if seq_thres is not None:
     if unique_days_prop[len(unique_days_prop) - 1] not in date_list:
         date_list.append(unique_days_prop[len(unique_days_prop) - 1])
 
-    x = np.array([date_list.index(d) for d in unique_days_prop if d in date_list])
+    x = np.array([date_list.index(d) for d in unique_days_prop])
     y = frequency_lineage
     sub_x = np.arange(0, len(date_list))
     f = interp1d(x, y, axis = -1)
