@@ -52,9 +52,9 @@ for i in range(len(unique_days_prop_all)):
         d = d[~(d == "")]
         d = d[~(d == " ")]
         if int(len(d[1])) < 10:
-            d[1] = "0%d"%d[1]
+            d[1] = "0%d"%int(d[1])
         if int(len(d[2])) < 10:
-            d[2] = "0%d"%d[2]
+            d[2] = "0%d"%int(d[2])
         
         dr  = "-".join(d)
         unique_days_prop_sub.append(dr)
@@ -63,6 +63,7 @@ for i in range(len(unique_days_prop_all)):
         keep = days_prop != unique_days_prop_all[i]
         days_prop = days_prop[keep]
         lineages_all = lineages_all[keep]
+pdb.set_trace()
 
 unique_days_prop_sub.sort(key = lambda date: datetime.strptime(date, "%Y-%m-%d")) 
 unique_days_prop = unique_days_prop_sub
