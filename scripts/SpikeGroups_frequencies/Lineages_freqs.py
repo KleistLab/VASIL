@@ -51,9 +51,9 @@ for i in range(len(unique_days_prop_all)):
         d = np.array(unique_days_prop_all[i].split("-"))
         d = d[~(d == "")]
         d = d[~(d == " ")]
-        if int(len(d[1])) < 10:
+        if int(d[1]) < 10:
             d[1] = "0%d"%int(d[1])
-        if int(len(d[2])) < 10:
+        if int(d[2]) < 10:
             d[2] = "0%d"%int(d[2])
         
         dr  = "-".join(d)
