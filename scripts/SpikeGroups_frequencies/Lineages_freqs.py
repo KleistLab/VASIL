@@ -153,12 +153,15 @@ if seq_thres is not None:
             d[1] = "0%d"%int(d[1])
         if int(d[2]) < 10:
             d[2] = "0%d"%int(d[2])
-        
-        if "-".join(d) in date_list:
-            x.append(d)
-        else:
-            pdb.set_trace()
+            
+        dr = "-".join(d)
+        if dr in date_list:
+            x.append(date_list.index(dr))
     
+    if len(x) != len(unique_days_prop):
+        sys.exit("Some dates are not properly fomated in covsonar data: Please only use format Year-month-days \n and for single digit days/month put 0 before e.g. May 3rd, 2022 = 2022-03-03")
+        
+    pdb.set_trace()
     x = np.array(x)
     y = frequency_lineage
     sub_x = np.arange(0, len(date_list))
