@@ -48,7 +48,16 @@ unique_days_prop_sub = []
 for i in range(len(unique_days_prop_all)):
     try:
         try_this = datetime.strptime(unique_days_prop_all[i], "%Y-%m-%d") 
-        unique_days_prop_sub.append(unique_days_prop_all[i])
+        d = np.array(unique_days_prop_all[i].split("-"))
+        d = d[~(d == "")]
+        d = d[~(d == " ")]
+        if int(len(d[1])) < 10:
+            d[1] = "0%d"%d[1]
+        if int(len(d[2])) < 10:
+            d[2] = "0%d"%d[2]
+        
+        dr  = "-".join(d)
+        unique_days_prop_sub.append(dr)
     except:
         """Keep only well formated dates"""
         keep = days_prop != unique_days_prop_all[i]
@@ -133,7 +142,6 @@ for x in range(len(unique_lineage_timeframe)):
         except: 
             res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(d) for d in range(len(unique_days_prop)))) 
 
-    
     for s in range(len(unique_days_prop)):
         frequency_lineage[x, s] = res[s]
 
@@ -145,7 +153,7 @@ if seq_thres is not None:
     if unique_days_prop[len(unique_days_prop) - 1] not in date_list:
         date_list.append(unique_days_prop[len(unique_days_prop) - 1])
 
-    x = np.array([date_list.index(d) for d in unique_days_prop])
+    x = np.array([date_list.index(d) for d in unique_days_prop if d in date_list])
     y = frequency_lineage
     sub_x = np.arange(0, len(date_list))
     f = interp1d(x, y, axis = -1)
