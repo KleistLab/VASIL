@@ -63,7 +63,6 @@ for i in range(len(unique_days_prop_all)):
         keep = days_prop != unique_days_prop_all[i]
         days_prop = days_prop[keep]
         lineages_all = lineages_all[keep]
-pdb.set_trace()
 
 unique_days_prop_sub.sort(key = lambda date: datetime.strptime(date, "%Y-%m-%d")) 
 unique_days_prop = unique_days_prop_sub

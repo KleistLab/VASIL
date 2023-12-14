@@ -444,7 +444,7 @@ except:
 	pass
 
 ### Make sure proportions axis 0 is aligned with Spikegroup_list
-prop_start = list(frequency_spk_df["date"]).index(date_start)
+#prop_start = list(frequency_spk_df["date"]).index(date_start)
 spikegroups_freq = np.zeros((len(SpikeGroups_list), len(t)))
 for i in range(len(SpikeGroups_list)):
     if SpikeGroups_list[i]!="Wuhan-Hu-1":
