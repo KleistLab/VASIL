@@ -154,8 +154,10 @@ if seq_thres is not None:
         if int(d[2]) < 10:
             d[2] = "0%d"%int(d[2])
         
-        if "_".join(d) in date_list:
+        if "-".join(d) in date_list:
             x.append(d)
+        else:
+            pdb.set_trace()
     
     x = np.array(x)
     y = frequency_lineage
