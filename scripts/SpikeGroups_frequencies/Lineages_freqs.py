@@ -159,7 +159,7 @@ if seq_thres is not None:
             x.append(date_list.index(dr))
     
     if len(x) != len(unique_days_prop):
-        sys.exit("Some dates are not properly fomated in covsonar data: Please only use format Year-month-days \n and for single digit days/month put 0 before e.g. May 3rd, 2022 = 2022-03-03")
+        sys.exit("Some dates are not properly fomated in covsonar data: Please only use format Year-month-days \n and put 0 before single digit days/months e.g. May 3rd, 2022 = 2022-03-03")
         
     pdb.set_trace()
     x = np.array(x)
