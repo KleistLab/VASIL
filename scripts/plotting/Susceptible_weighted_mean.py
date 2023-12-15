@@ -23,16 +23,6 @@ N_pop = float(sys.argv[4])
 
 """Results directory and timeline of simulations"""
 results_dir = sys.argv[5]
-
-phold_df = pd.read_csv(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%SpikeGroups_list[0]) # just a place holder
-try:
-    phold_df.drop(columns = "Unnamed: 0", inplace = True)
-except:
-    pass
-
-pk_cols = phold_df.columns
-t = np.arange(1, len(phold_df['Days'])+1, 1) 
-
 # processing of frequency data
 try:
     frequency_spk_df.drop(columns = "Unnamed: 0", inplace = True)
@@ -40,10 +30,21 @@ except:
     pass
 
 """Remove missing spikegroups data """
+i = 0
 for spk in SpikeGroups_list:
     if not os.path.exists(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%spk):
         frequency_spk_df.drop(columns = "Spike. "+spk , inplace = True)
+        if i == 0:
+            phold_df = pd.read_csv(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%SpikeGroups_list[0]) # just a place holder
+            try:
+                phold_df.drop(columns = "Unnamed: 0", inplace = True)
+            except:
+                pass
 
+            pk_cols = phold_df.columns
+            t = np.arange(1, len(phold_df['Days'])+1, 1) 
+        i+=1
+        
 days_prop = frequency_spk_df['date'][frequency_spk_df['date'].isin(phold_df['Days'])]
 frequency_spk_df = frequency_spk_df[frequency_spk_df['date'].isin(phold_df['Days'])]
 frequency_spk_df = frequency_spk_df.loc[:, frequency_spk_df.columns != 'date']
