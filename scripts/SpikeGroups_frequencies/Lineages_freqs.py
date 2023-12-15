@@ -188,7 +188,7 @@ if seq_thres is not None:
             x.append(date_list.index(unique_days_prop[i]))
     
     if len(x) != len(unique_days_prop):
-        sys.exit("Some dates are not properly fomated in covsonar data: Please only use format Year-month-days \n and put 0 before single digit days/months e.g. May 3rd, 2022 = 2022-03-03")
+        sys.exit("Some dates are not properly fomated in covsonar data: Please only use format Year-month-days \n and put 0 before single digit days/months e.g. May 3rd, 2022 = 2022-03-03 \n We recommend to first replace covsonar data with the output of (assuming that country = Brazil): Rscript scripts/check_dataset.R path/to/covsonar_data_Brazil.tsv Brazil path/to_new_filename/covsonar_data_Brazil_checked.tsv")
         
     x = np.array(x)
     y = frequency_lineage
