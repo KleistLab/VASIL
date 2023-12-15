@@ -12,8 +12,15 @@ rule_all_common = [
     "results/epitope_data/dms_per_ab_per_site.csv",
 ]
 
+try:
+    seq_thres = config["min_seq"]
+    lin_freq_file = "results/Daily_Lineages_Freq_seq_thres_%d.csv"%int(seq_thres)
+except:
+	seq_thres = "None"
+	lin_freq_file = "results/Daily_Lineages_Freq.csv"
+	
 if config["freq_lin"]:
-    rule_all_common.append("results/Daily_Lineages_Freq.csv")
+    rule_all_common.append(lin_freq_file)
 
 try:
     save_lin = config["freq_lin_filt"]
@@ -106,13 +113,6 @@ rule get_epitope_landscape:
         dms_data_regrouped="results/epitope_data/dms_per_ab_per_site.csv",
     shell:
         "Rscript {workflow.basedir}/scripts/epitopelandscape/epitope_landscape.R {input.Escape_data} {input.AB_mapping} {output.dir}"
-
-try:
-    seq_thres = config["min_seq"]
-    lin_freq_file = "results/Daily_Lineages_Freq_seq_thres_%d.csv"%int(seq_thres)
-except:
-	seq_thres = "None"
-	lin_freq_file = "results/Daily_Lineages_Freq.csv"
 
 if not config["freq_lin"]:
     check_file = os.path.exists(lin_freq_file)
