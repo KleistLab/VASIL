@@ -33,7 +33,8 @@ except:
 i = 0
 for spk in SpikeGroups_list:
     if not os.path.exists(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%spk):
-        frequency_spk_df.drop(columns = "Spike. "+spk , inplace = True)
+        frequency_spk_df.drop(columns = "Spike. "+spk , inplace = True)   
+    else:
         if i == 0:
             phold_df = pd.read_csv(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%spk) # just a place holder
             try:
