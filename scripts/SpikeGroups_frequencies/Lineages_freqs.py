@@ -62,11 +62,6 @@ if date_start in unique_days_prop:
     where_day = list(unique_days_prop).index(date_start)
     unique_days_prop = unique_days_prop[where_day:]
     
-
-def sub_func(s, x, days_prop, unique_days_prop, lineages_all, unique_lineage):
-    res = np.sum((days_prop == unique_days_prop[s]) & (lineages_all == unique_lineage[x]))
-    return res
-
 print("Timeline of lineage proportions: %s -- %s"%(unique_days_prop[0], unique_days_prop[-1]))
 unique_lineage_timeframe = np.unique(lineages_all)
 
@@ -121,8 +116,35 @@ if "UNASSIGNED" in unique_lineage_timeframe:
 """
 
 """Compute lineage frequencies"""
+def sub_func2(x, days_prop, unique_days_prop, lineages_all, unique_lineage):
+    lin_locs = lineages_all == unique_lineage_timeframe[x]
+    locs = days_prop[lin_locs, np.newaxis] == np.array(unique_days_prop)[np.newaxis, :]
+    res = np.sum(locs, axis = 0)
+    return res
+
+pfunc = partial(sub_func2, days_prop = days_prop, unique_days_prop = unique_days_prop, lineages_all = lineages_all, unique_lineage = unique_lineage_timeframe)
+try:
+    res = list(jb.Parallel(n_jobs = -1, backend = "loky")(jb.delayed(pfunc)(x) for x in range(len(unique_lineage_timeframe))))
+except:
+    try:
+        res = list(jb.Parallel(n_jobs = -1, backend = "multiprocessing")(jb.delayed(pfunc)(x) for x in range(len(unique_lineage_timeframe))))
+    except: 
+        res = list(jb.Parallel(n_jobs = -1, prefer = "threads")(jb.delayed(pfunc)(x) for x in range(len(unique_lineage_timeframe))))
+
+frequency_lineage = np.array(res)
+
+"""
+def sub_func(s, x, days_prop, unique_days_prop, lineages_all, unique_lineage):
+    res = np.sum((days_prop == unique_days_prop[s]) & (lineages_all == unique_lineage[x]))
+    return res
+
 frequency_lineage = np.zeros((len(unique_lineage_timeframe), len(unique_days_prop))) # indexing of t correspondis to timeline of infection days_incidence
 for x in range(len(unique_lineage_timeframe)):
+    pdb.set_trace()
+    lin_locs = lineages_all == unique_lineage_timeframe[x]
+    locs = days_prop[lin_locs, np.newaxis] == np.array(unique_days_prop)[np.newaxis, :]
+    
+    frequency_lineage[x, :] = np.sum(locs, axis = 0)
     
     pfunc = partial(sub_func, x = x, days_prop = days_prop, unique_days_prop = unique_days_prop, lineages_all = lineages_all, unique_lineage = unique_lineage_timeframe)
     try:
@@ -135,6 +157,7 @@ for x in range(len(unique_lineage_timeframe)):
 
     for s in range(len(unique_days_prop)):
         frequency_lineage[x, s] = res[s]
+"""
 
 """Interpolate in-between dates"""
 if seq_thres is not None:
@@ -162,9 +185,8 @@ if seq_thres is not None:
             if dr in date_list:
                 x.append(date_list.index(dr))
         else:
-            x.append(date_list.index(unique_days_prop_all[i]))
+            x.append(date_list.index(unique_days_prop[i]))
     
-    pdb.set_trace()
     if len(x) != len(unique_days_prop):
         sys.exit("Some dates are not properly fomated in covsonar data: Please only use format Year-month-days \n and put 0 before single digit days/months e.g. May 3rd, 2022 = 2022-03-03")
         
