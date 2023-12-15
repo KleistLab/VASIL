@@ -79,8 +79,9 @@ D <- D[order(D$date),]
 ## If actual data frame is smaller than start or end date:
 #date_start <- max(date_start, min(D$date))
 #date_end <- min(date_end, max(D$date))
-if (!(date_start %in% D$date)){date_start = D$date[1]}
+if (!(date_start %in% D$date)){date_start = D$date[0]}
 if (!(date_end %in% D$date)){date_end = D$date[length(D$date)]}
+
 
 
 ## Check dates:
@@ -117,7 +118,8 @@ for (i in 1:number_lineages){
   Dlin <- D[which(D$lineage == D_lineagename),]
   D_N <- nrow(Dlin)
   aaprofile <- Dlin$aa_profile
-  if (length(which(!is.na(aaprofile))) > 0){
+  aaprofile[which(aaprofile=="")]<-NA
+  if ((length(which(!is.na(aaprofile))) > 0)&(D_lineagename != "")){
     aaprofile_l <- list()
     for (j in 1:D_N){
       aaprofile_l[j] <- strsplit(aaprofile[j]," ")
@@ -129,11 +131,12 @@ for (i in 1:number_lineages){
     D_mutationprofile <- count_df$Var1[which(count_df$Freq >= N)]
     mutationprofiles_l[i] <- list(D_mutationprofile)
     lineages_l = c(lineages_l, D_lineagename)
+    number_genomes_per_lineage <- c(number_genomes_per_lineage, D_N)
   }
   else{
     lineages_without_mutations <- c(lineages_without_mutations, D_lineagename) 
   }
-  number_genomes_per_lineage <- c(number_genomes_per_lineage, D_N)
+  #number_genomes_per_lineage <- c(number_genomes_per_lineage, D_N)
 }
 number_lineages <- number_lineages-length(lineages_without_mutations)
 number_genomes_per_lineage <- cbind(lineages_l, number_genomes_per_lineage)
@@ -330,7 +333,6 @@ MP3_zoom <- MP3_zoom[,which(apply(MP3_zoom,2,sum)>0)]
 #keep only RBD and NTD regions:
 #MP3_zoom <- MP3_zoom[,unlist(lapply(intersect(rownames(mydf3),colnames(MP3_zoom)),
 #                                    function(x) which(colnames(MP2_zoom) == x)))]
-
 
 if (length(MP3_zoom)>=2){
   pdf(paste0(outputdir,"/",stringr::str_replace(outputfile_mutationprofile_plot,".pdf","_zoom.pdf")),height = 3, width = 10)
