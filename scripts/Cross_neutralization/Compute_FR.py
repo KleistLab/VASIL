@@ -193,16 +193,46 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
     return FRxy, Missed, Greater_one
 
 
+"""Compute Cross reactivity"""
+Cross_react_dic = {}
+AB = ""
+a = 1
+print("Cross reactivity computation might take a while")
+try:
+    cluster = str(sys.argv[8])
+    cluster_argv = True
+    if cluster in ("cluster_True", "True", "TRUE"):
+        cluster = True
+    else:
+        cluster = False
+except:
+    cluster = False
+    
+try:
+    n_jobs = int(sys.argv[9])
+    given_njobs = True
+except:
+    n_jobs = -1
+    given_njobs = False
 
 """Compute Cross reactivity to Delta for valitation"""
-if str(sys.argv[-2])[:4] not in ("None", "none", False):
+if not cluster_argv:
+    delta_file = str(sys.argv[-2])
+elif cluster_argv and given_njobs:
+    delta_file = str(sys.argv[-4])
+else:
+    delta_file = str(sys.argv[-3])
+    
+if delta_file[:4] not in ("None", "none", False):
     # use Delta: B.1.617.2 for validation (Used in Clinical data paper)
     variant_x_names_show = ["Wuhan-Hu-1", "Delta: B.1.617.2"]
     mut_dic_show = {"Wuhan-Hu-1":[], "Delta: B.1.617.2": [614, 950, 142, 452, 681, 19, 478]}
     
     Cross_with_delta_validation, Missed, Greater_one = cross_reactivity((variant_x_names_show,variant_x_names_show), 
     															             Escape_Fraction, Ab_classes, 
-                                                            	             mut_dic_show,joblib=True)
+                                                            	             mut_dic_show,
+                                                                            joblib=True, 
+                                                                            cluster = False)
     
     """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""  
     n = len(variant_x_names_show)
@@ -228,33 +258,12 @@ if str(sys.argv[-2])[:4] not in ("None", "none", False):
     Cross_with_delta_validation["NTD"] = FR_NTD
     Cross_with_delta_validation["variant_list"] = variant_x_names_show
     
-    if str(sys.argv[-2])[-4:] == ".pck":
-        file0 = open(sys.argv[-2], "wb") 
+    try:
+        file0 = open(delta_file, "wb") 
         pickle.dump(Cross_with_delta_validation, file0)
         file0.close()
-    else:
-        file0 = open("results/Cross_with_delta_validation.pck", "wb") 
-        pickle.dump(Cross_with_delta_validation, file0)
-        file0.close()
-
-"""Compute Cross reactivity"""
-Cross_react_dic = {}
-AB = ""
-a = 1
-print("Cross reactivity computation might take a while")
-try:
-    cluster = str(sys.argv[8])
-    if cluster in ("cluster_True", "True", "TRUE"):
-        cluster = True
-    else:
-        cluster = False
-except:
-    cluster = False
-    
-try:
-    n_jobs = int(sys.argv[9])
-except:
-    n_jobs = -1
+    except:
+        pass
 
 """Load lineage name to assess and it's mutation profile"""
 try:
