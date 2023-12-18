@@ -71,8 +71,11 @@ total_population = float(sys.argv[8])
 date_start = str(sys.argv[9])
 if date_start not in list(Population_Data['date']):
     date_start = list(Population_Data['date'])[0]
-    
-Population_Data = Population_Data.drop(index = Population_Data.index[:list(Population_Data['date']).index(date_start)])
+
+if date_start > frequency_spk_df["date"][0]:
+    Population_Data = Population_Data.drop(index = Population_Data.index[:list(Population_Data['date']).index(date_start)])
+else:
+    Population_Data = Population_Data.drop(index = Population_Data.index[:list(Population_Data['date']).index(frequency_spk_df["date"][0])])
 
 date_end = sys.argv[10]
 if date_end in list(Population_Data['date']):
