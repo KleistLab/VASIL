@@ -51,18 +51,17 @@ mut_x_sites_orig = np.array(variant_mut_data["RBD_NTD_mutations"].values).astype
 mut_x_sites_dic = {}
 variant_x_names = []
 unique_muts = np.unique(mut_x_sites_orig)
-Grouped_in_Spike = []
-for i in range(len(unique_muts)):
-    where_mut = mut_x_sites_orig == unique_muts[i]
-    mut_x_sites_dic[variant_x_name_orig[where_mut][0]] = re.findall(r'\d+', unique_muts[i])
-    variant_x_names.append(variant_x_name_orig[where_mut][0])
-    Grouped_in_Spike += list(variant_x_name_orig[where_mut])
+for i in range(len(variant_x_name_orig)):
+    x = variant_x_name_orig[i]
+    mut_x = mut_x_sites_orig[i]
+    where_mut = mut_x_sites_orig == mut_x
+    mut_x_sites_dic[x] = re.findall(r'\d+', mut_x)
+    variant_x_names.append(x)
     
 NormProp = np.sum(frequency_lineage, axis = 0)
 prop_rounded = np.round(frequency_lineage,decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
 """Finalizing variant proportion parameter and aligning with case ascertainement timeline if parameter is given"""
-#try:
 """Load Infection Data"""
 Population_Data = pd.read_csv(sys.argv[9])
 days_incidence = list(Population_Data['date'])
@@ -76,9 +75,6 @@ else:
     date_list = list(days_incidence)
 
 N_days = len(date_list)
-
-#except:
-#    N_days = len(days_prop)
 
 Lineages_list = list(unique_lineage)
 variant_proportion_orig = np.zeros((len(Lineages_list), N_days))
