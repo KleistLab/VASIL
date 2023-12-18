@@ -207,6 +207,7 @@ try:
         cluster = False
 except:
     cluster = False
+    cluster_argv = False
     
 try:
     n_jobs = int(sys.argv[9])
