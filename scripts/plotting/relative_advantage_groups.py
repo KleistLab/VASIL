@@ -373,7 +373,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ax_k.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
             ax_k_twin.plot(t_prop, Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
             ax_k_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
-            ax_k.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
+            ax_k.axhline(xmin = 0, xmax = len(t_dates) - 1, ls = "--", linewidth = 2, color = "black")
             
             ymin1, ymax1 = ax_k.get_ylim()
             ymin2, ymax2 = ax_k_twin.get_ylim()
