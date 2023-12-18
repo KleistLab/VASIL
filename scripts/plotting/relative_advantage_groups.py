@@ -269,6 +269,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                         Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
                         if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
                             lab_done[lineage_list[k]] += " + "+lab_k
+                            prop_list.append(ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool)))
                         else:
                             lab_done[lineage_list[k]] += " + "+lab_k
                     
