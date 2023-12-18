@@ -905,8 +905,8 @@ elif Lin_name == "missing":
 
     
     if len(Lin_miss) == 0:
-        Cross_react_dic["variant_list"] = variant_global
         Cross_react_dic = Cross_global.copy()
+        Cross_react_dic["variant_list"] = variant_global
     else:
         w_in_cross = np.arange(0, len(variant_x_names_cross)).astype(int)[np.array(loc_in_cross)]
         variants_in_global = np.array(variant_x_names_cross)[w_in_cross]
