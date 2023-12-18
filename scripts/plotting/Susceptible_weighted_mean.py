@@ -31,7 +31,6 @@ except:
 
 """Remove missing spikegroups data """
 i = 0
-pdb.set_trace()
 for spk in SpikeGroups_list:
     if not os.path.exists(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%spk):
         frequency_spk_df.drop(columns = "Spike. "+spk , inplace = True)   
@@ -47,7 +46,6 @@ for spk in SpikeGroups_list:
             t = np.arange(1, len(phold_df['Days'])+1, 1) 
         i+=1
 
-pdb.set_trace()
 if len(frequency_spk_df.columns) > 1:    
     days_prop = frequency_spk_df['date'][frequency_spk_df['date'].isin(phold_df['Days'])]
     frequency_spk_df = frequency_spk_df[frequency_spk_df['date'].isin(phold_df['Days'])]
