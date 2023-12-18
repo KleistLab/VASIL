@@ -9,7 +9,6 @@ import sys
 import pdb
 
 # inputs
-
 infection_data_corrected = pd.read_csv(sys.argv[1])
 S_mean_file = sys.argv[2]
 S_mean_df = pd.read_csv(S_mean_file)

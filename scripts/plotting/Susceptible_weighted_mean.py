@@ -33,7 +33,10 @@ except:
 i = 0
 for spk in SpikeGroups_list:
     if not os.path.exists(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%spk):
-        frequency_spk_df.drop(columns = "Spike. "+spk , inplace = True)   
+        if spk != "Wuhan-Hu-1": 
+            frequency_spk_df.drop(columns = "Spike. "+spk , inplace = True)  
+        else:
+            frequency_spk_df.drop(columns = "Wuhan-Hu-1" , inplace = True)  
     else:
         if i == 0:
             phold_df = pd.read_csv(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%spk) # just a place holder
@@ -57,7 +60,7 @@ if len(frequency_spk_df.columns) > 1:
     frequency_spk_df = frequency_spk_df.fillna(0)
     prop_mask = np.all(frequency_spk_df.loc[:, frequency_spk_df.columns != 'date'] == 0, axis = 1)
 else:
-    sys.exit("First compute E[Immunized] for all spikegroups: i.e., set all_il = TRUE in main config.yaml")
+    sys.exit("All E[Immunized] are missing, first compute them: i.e., set all_il = TRUE in main config.yaml")
 
 pS_all = np.zeros((len(t)-1, len(SpikeGroups_list[SpikeGroups_list!="Wuhan-Hu-1"]), len(pk_cols[pk_cols!="Days"])))
 dprop_all = np.zeros((len(t)-1, len(SpikeGroups_list[SpikeGroups_list!="Wuhan-Hu-1"])))
