@@ -56,6 +56,8 @@ if len(frequency_spk_df.columns) > 1:
     frequency_spk_df = frequency_spk_df.divide(col_sums, axis="rows")
     frequency_spk_df = frequency_spk_df.fillna(0)
     prop_mask = np.all(frequency_spk_df.loc[:, frequency_spk_df.columns != 'date'] == 0, axis = 1)
+else:
+    sys.exit("First compute E[Immunized] for all spikegroups: i.e., set all_il = TRUE in main config.yaml")
 
 pS_all = np.zeros((len(t)-1, len(SpikeGroups_list[SpikeGroups_list!="Wuhan-Hu-1"]), len(pk_cols[pk_cols!="Days"])))
 dprop_all = np.zeros((len(t)-1, len(SpikeGroups_list[SpikeGroups_list!="Wuhan-Hu-1"])))
