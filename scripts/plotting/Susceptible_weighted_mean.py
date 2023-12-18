@@ -31,6 +31,7 @@ except:
 
 """Remove missing spikegroups data """
 i = 0
+pdb.set_trace()
 for spk in SpikeGroups_list:
     if not os.path.exists(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%spk):
         frequency_spk_df.drop(columns = "Spike. "+spk , inplace = True)   
@@ -45,16 +46,18 @@ for spk in SpikeGroups_list:
             pk_cols = phold_df.columns
             t = np.arange(1, len(phold_df['Days'])+1, 1) 
         i+=1
-        
-days_prop = frequency_spk_df['date'][frequency_spk_df['date'].isin(phold_df['Days'])]
-frequency_spk_df = frequency_spk_df[frequency_spk_df['date'].isin(phold_df['Days'])]
-frequency_spk_df = frequency_spk_df.loc[:, frequency_spk_df.columns != 'date']
-frequency_spk_df = frequency_spk_df.mask(frequency_spk_df < threshold)
-frequency_spk_df = frequency_spk_df.fillna(0)
-col_sums = frequency_spk_df.sum(axis = 1).values
-frequency_spk_df = frequency_spk_df.divide(col_sums, axis="rows")
-frequency_spk_df = frequency_spk_df.fillna(0)
-prop_mask = np.all(frequency_spk_df.loc[:, frequency_spk_df.columns != 'date'] == 0, axis = 1)
+
+pdb.set_trace()
+if len(frequency_spk_df.columns) > 1:    
+    days_prop = frequency_spk_df['date'][frequency_spk_df['date'].isin(phold_df['Days'])]
+    frequency_spk_df = frequency_spk_df[frequency_spk_df['date'].isin(phold_df['Days'])]
+    frequency_spk_df = frequency_spk_df.loc[:, frequency_spk_df.columns != 'date']
+    frequency_spk_df = frequency_spk_df.mask(frequency_spk_df < threshold)
+    frequency_spk_df = frequency_spk_df.fillna(0)
+    col_sums = frequency_spk_df.sum(axis = 1).values
+    frequency_spk_df = frequency_spk_df.divide(col_sums, axis="rows")
+    frequency_spk_df = frequency_spk_df.fillna(0)
+    prop_mask = np.all(frequency_spk_df.loc[:, frequency_spk_df.columns != 'date'] == 0, axis = 1)
 
 pS_all = np.zeros((len(t)-1, len(SpikeGroups_list[SpikeGroups_list!="Wuhan-Hu-1"]), len(pk_cols[pk_cols!="Days"])))
 dprop_all = np.zeros((len(t)-1, len(SpikeGroups_list[SpikeGroups_list!="Wuhan-Hu-1"])))

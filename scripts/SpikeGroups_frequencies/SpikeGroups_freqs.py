@@ -180,18 +180,17 @@ variant_proportion_interpolated = variant_proportion
 freq_dic = {}
 freq_dic["date"] = date_list
 for x in range(len(SpikeGroups_list)):
-    if SpikeGroups_list[x]!= "Wuhan-Hu-1":
-        freq_dic["Spike. "+SpikeGroups_list[x]] = variant_proportion_interpolated[x, :]*100 
+    freq_dic["Spike. "+SpikeGroups_list[x]] = variant_proportion_interpolated[x, :]*100 
 
-
-freq_df = pd.DataFrame(freq_dic, index = np.arange(0, len(date_list)))
-freq_df.to_csv(sys.argv[4])
 if "Wuhan-Hu-1" not in SpikeGroups_list:
     freq_dic["Wuhan-Hu-1"] = np.zeros(variant_proportion.shape[1])
     SpikeGroups_list.append("Wuhan-Hu-1")
     print("Number of Spikegroups: %d + 1 Wuhan-Hu-1"%(len(SpikeGroups_list) - 1))
 else:
     print("Number of Spikegroups: %d + 1 Wuhan-Hu-1"%(len(SpikeGroups_list) - 2))
+
+freq_df = pd.DataFrame(freq_dic, index = np.arange(0, len(date_list)))
+freq_df.to_csv(sys.argv[4])
 
 print("Number of lineages composing Spikegroups: %d"%len(list(SpikeGroups_dic.keys())))
 ### Save SpikeGroups_list and Mutation_Profiles
