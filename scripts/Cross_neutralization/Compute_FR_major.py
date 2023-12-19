@@ -51,7 +51,7 @@ try:
     mut_file.close()
 
     mut_Lin = []
-    aa_lin = []
+    aa_lin = {}
     for mut in mut_lin0:
         if mut[:3] not in ("DEL", "del"):
             if len(re.findall(r'\d+', mut))>0:
