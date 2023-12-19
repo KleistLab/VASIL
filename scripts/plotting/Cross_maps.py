@@ -94,6 +94,7 @@ if plot_major not in ("True"):
 
     choosen_Ab = list(Cross_Epitope_Dic_orig.keys())
     
+    pdb.set_trace()
     Cross_Epitope_Dic = {}
     for ab in choosen_Ab:
         Cross = np.ones((len(Top_Pseudo),len(Top_Pseudo)))

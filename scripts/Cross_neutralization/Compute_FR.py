@@ -24,9 +24,11 @@ file1 = open(sys.argv[1], "rb")
 SpikeGroups_list = pickle.load(file1)["names"]
 file1.close()
 
-"""Load Mutation profile dictionary"""
+"""Load Mutation profile dictionary and aa_changes"""
 file1 = open(sys.argv[2], "rb") 
-mut_x_sites_dic = pickle.load(file1)["positions"]
+Mut_infos = pickle.load(file1)
+mut_x_sites_dic = Mut_infos["positions"]
+AA_change_dic = Mut_infos["AA_changes"]
 file1.close()
 
 variant_x_names_cross = SpikeGroups_list
@@ -47,11 +49,15 @@ def sub_Bind(d, tiled_esc, Where_Mut, Where_Cond):
     return [Bind_list_d, Missing_cond_data_d]
 
 
-def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, EF_func = "MEAN", GM = False, quiet = True, joblib = None, cluster=False, n_jobs = 10):
+def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, aa_bool_i = None, EF_func = "MEAN", GM = False, quiet = True, joblib = None, cluster=False, n_jobs = 10):
     vars_num = mut_bool_g2.shape[0]
     
     test_i = np.tile(mut_bool_g1[i, :], (vars_num, 1))
-    diff_sites = (test_i ^ mut_bool_g2)
+    
+    if aa_bool_i is not None:
+        diff_sites = (test_i ^ mut_bool_g2) + aa_bool_i # sites are in symmetric difference or the aminoacid changes at the site are different
+    else:
+        diff_sites = (test_i ^ mut_bool_g2)
 
     escape_data_ab = escape_ab_dic["escape_data_ab"]
     
@@ -130,7 +136,7 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     
     return FR_ab, Missed, Greater_one 
 
-def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_variant, EF_func = "MEAN", GM = False, quiet = True, joblib = None, cluster = False, n_jobs = 10):
+def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_variant, AA_change_dic = None, EF_func = "MEAN", GM = False, quiet = True, joblib = None, cluster = False, n_jobs = 10):
     FRxy = {}
     Missed = []
     Greater_one = []
@@ -147,13 +153,23 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
     mut_bool_g1 = np.zeros((len(variants_g1), len(mut_sites)), dtype = bool)
     mut_bool_g2= np.zeros((len(variants_g2), len(mut_sites)), dtype = bool)
     #print(variant_name)
+    if AA_change_dic is None:
+        aa_bool_diff = None
+    else:
+        aa_bool_diff = np.zeros((len(variants_g1), len(variants_g2), len(mut_sites))).astype(bool)
+        
     for i in range(max(len(variants_g1), len(variants_g2))):
         for j in range(len(mut_sites)): 
             if i<len(variants_g1):
                 mut_bool_g1[i, j] = mut_sites[j] in list(np.array(mut_sites_per_variant[variants_g1[i]]).astype(str))
+                if AA_change_dic is not None:
+                    for k in range(len(variants_g2)):
+                        if (mut_sites[j] in mut_sites_per_variant[variants_g1[i]]) and (mut_sites[j] in mut_sites_per_variant[variants_g2[k]]): ### if the position exists in both variants
+                            aa_bool_diff[i, k, j] = AA_change_dic[variants_g1[i]][mut_sites[j]] != AA_change_dic[variants_g2[k]][mut_sites[j]] ### positions will be considered when aa_changes are different
+                
             if i<len(variants_g2):
                 mut_bool_g2[i, j] = mut_sites[j] in list(np.array(mut_sites_per_variant[variants_g2[i]]).astype(str))
-
+            
     for ab in Ab_classes:
         FRxy_ab = np.ones((len(variants_g1), len(variants_g2)))
         Missing_Cond = np.zeros((len(variants_g1), len(variants_g2)))
@@ -172,7 +188,11 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
         escape_ab_dic["escape_data_ab"] = escape_data[where_ab_group]
         
         for i in range(len(variants_g1)):
-            FR, missed, gOne = FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, mut_sites_per_variant, GM = GM, quiet = quiet, joblib = joblib, cluster = cluster, n_jobs = n_jobs)
+            if aa_bool_diff is not None:
+                FR, missed, gOne = FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, aa_bool_i = aa_bool_diff[i, :, :], GM = GM, quiet = quiet, joblib = joblib, cluster = cluster, n_jobs = n_jobs)
+            else:
+                FR, missed, gOne = FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, aa_bool_i = None, GM = GM, quiet = quiet, joblib = joblib, cluster = cluster, n_jobs = n_jobs)
+
             if EF_func == "MEAN":
                 FRxy_ab[i, :] = np.mean(FR, axis = 1)
                 
@@ -249,10 +269,13 @@ if delta_file[:4] not in ("None", "none", False):
     
                 sites = list(sites_1.symmetric_difference(sites_2))
                 FR_sites = 1
+                pos_done = []
                 for s in sites:
                     s = int(s)
                     if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                        FR_sites *= 10
+                        if s not in pos_done:
+                            FR_sites *= 10
+                            pos_done.append(s)
                 FR_NTD[i, j] = FR_sites
                 FR_NTD[j, i] = FR_sites
     
@@ -281,18 +304,25 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
             mut_file.close()
 
             mut_Lin = []
+            aa_lin = {}
             for mut in mut_lin0:
                 if mut[:3] not in ("DEL", "del"):
                     if len(re.findall(r'\d+', mut))>0:
-                        mut_Lin.append(re.findall(r'\d+', mut)[0])       
-                        mut_Lin = list(np.unique(np.array(mut_Lin).astype(str)))
+                        pos0 = re.findall(r'\d+', mut)
+                        if len(pos0) == 1:
+                            pos = str(pos0[0])
+                            mut_Lin.append(pos)   
+                            aa_lin[pos] = mut
 
-            """Update mutation profile dictionary"""
+            """Update mutation profile dictionary and AA dictionary """
             mut_x_sites_dic_updated = mut_x_sites_dic.copy()
-            if Lin_name not in variant_x_names_cross: ### Keep Lin_name as it is
+            AA_change_dic_updated = AA_change_dic.copy()
+            if Lin_name not in variant_x_names_cross: ### Keep Lin_name as it is because we advise the user to avoid replace "." with "_" in lineage_focus parameter
                 mut_x_sites_dic_updated[Lin_name] = mut_Lin
+                AA_change_dic_updated[Lin_name] = aa_lin
             else:
                 mut_x_sites_dic_updated[Lin_name] = mut_Lin
+                AA_change_dic_updated[Lin_name] = aa_lin
         except:
             sys.exit("Lineage focus mutation file must be provided")
         
@@ -337,6 +367,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                                                               Escape_Fraction, 
                                                                               [ab],
                                                                               mut_x_sites_dic_updated,
+                                                                              AA_change_dic=AA_change_dic_updated,
                                                                               joblib=True)
                     
                     #Only the information for the specific lineage studied is required for immunological landscape calculation
@@ -356,19 +387,23 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
             for j in range(n):
                 if i > j:
                     var_2 = Cross_react_dic["variant_list"][j]
-        
-                    sites_1 = set(np.array(mut_x_sites_dic_updated[var_1]).astype(int))
-                    sites_2 = set(np.array(mut_x_sites_dic_updated[var_2]).astype(int))
-        
-                    sites = list(sites_1.symmetric_difference(sites_2))
+                    
+                    sites_1 = set(np.array(AA_change_dic_updated[var_1].values).astype(str))
+                    sites_2 = set(np.array(AA_change_dic_updated[var_2].values).astype(str))
+                    
+                    sites = list(sites_1.symmetric_difference(sites_2))                    
                     FR_sites = 1
+                    pos_done = []
                     for s in sites:
-                        s = int(s)
+                        s = int(re.findall(r'\d+', s)[0])
                         if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                            FR_sites *= 10
+                            if s not in pos_done:
+                                FR_sites *= 10
+                                pos_done.append(s)
                     FR_NTD[i, j] = FR_sites
                     FR_NTD[j, i] = FR_sites
         Cross_react_dic["NTD"] = FR_NTD
+        Cross_react_dic["Mutations"] = {"positions":mut_x_sites_dic_updated, "AA_changes":AA_change_dic_updated}
         file0 = open(sys.argv[7], "wb") 
         pickle.dump(Cross_react_dic, file0)
         file0.close()
@@ -390,6 +425,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
             k +=1
         
         mut_x_sites_dic_updated = mut_x_sites_dic.copy()
+        AA_change_dic_updated = AA_change_dic.copy()
         Grouped = []
         Lin_exists = []
         single_lin = 0
@@ -402,13 +438,19 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     mut_lin0 = mut_file.readlines()
                     mut_file.close()
                     mut_Lin = []
+                    aa_lin = {}
                     for mut in mut_lin0:
                         if mut[:3] not in ("DEL", "del"):
                             if len(re.findall(r'\d+', mut))>0:
-                                mut_Lin.append(re.findall(r'\d+', mut)[0])       
-                                mut_Lin = list(np.unique(np.array(mut_Lin).astype(str)))
+                                pos0 = re.findall(r'\d+', mut)
+                                if len(pos0) == 1:
+                                    pos = str(pos0[0])
+                                    mut_Lin.append(pos)   
+                                    aa_lin[pos] = mut    
+
                     """Update mutation profile dictionary"""
                     mut_x_sites_dic_updated[Lin_list[j]] = mut_Lin
+                    AA_change_dic_updated[Lin_list[j]] = aa_lin
                     Grouped.append(False)
                     Lin_exists.append(Lin_list[j])
                 except:
@@ -418,16 +460,22 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                         data_file.close()
                         mutation_data = mutation_loaded["positions"]
                         variants = mutation_loaded["Group"]
+                        aa_data = mutation_loaded["AA_changes"]
                         mut_sub = []
                         for i in range(len(variants)):
                             var = variants[i]
                             if var in list(Pseudogroup_dic.keys()):
                                 mut_x_sites_dic_updated[var] = mut_x_sites_dic[Pseudogroup_dic[var]]
+                                AA_change_dic_updated[var] = AA_change_dic[Pseudogroup_dic[var]]
                             else:
                                 mut_x_sites_dic_updated[var] = mutation_data[var]
-                            mut_sub.append("/".join(mut_x_sites_dic_updated[var]))
+                                AA_change_dic_updated = aa_data[var]
+                            
+                            mut_sub.append("/".join(AA_change_dic_updated[var]))
+                        
                         inds_spk = []
                         variants_spk = []
+                        
                         mut_sub = np.array(mut_sub)
                         for mut in np.unique(mut_sub):
                             var_0 = np.array(variants)[mut_sub == mut][0]
@@ -444,6 +492,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                         pass
             else:
                 mut_x_sites_dic_updated[Lin_list[j]] = mut_x_sites_dic[Pseudogroup_dic[Lin_list[j]]]
+                AA_change_dic_updated[Lin_list[j]] = AA_change_dic_updated[Pseudogroup_dic[Lin_list[j]]]
                 Grouped.append(False)
                 Lin_exists.append(Lin_list[j])
         
@@ -584,6 +633,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                                                                       Escape_Fraction, 
                                                                                       [ab],
                                                                                       mut_x_sites_dic_updated,
+                                                                                      AA_change_dic=AA_change_dic_updated,
                                                                                       joblib=True)
                                 
                                
@@ -600,6 +650,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                                                                   Escape_Fraction, 
                                                                                   [ab],
                                                                                   mut_x_sites_dic_updated,
+                                                                                  AA_change_dic=AA_change_dic_updated,
                                                                                   joblib=True)
                                 
                                         sub_FR[where_spk_s[k], where_spk_s[k+1:]] = Cross_Lin[ab][k, :]
@@ -642,10 +693,13 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     
                                 sites = list(sites_1.symmetric_difference(sites_2))
                                 FR_sites = 1
+                                pos_done = []
                                 for s in sites:
-                                    s = int(s)
+                                    s = int(re.findall(r'\d+', s)[0])
                                     if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                        FR_sites *= 10
+                                        if s not in pos_done:
+                                            FR_sites *= 10
+                                            pos_done.append(s)
                                 FR_NTD[i1, j1] = FR_sites
                                 FR_NTD[j1, i1] = FR_sites
                     Cross_i["NTD"] = FR_NTD
@@ -695,6 +749,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                                                                           Escape_Fraction, 
                                                                                           [ab],
                                                                                           mut_x_sites_dic_updated,
+                                                                                          AA_change_dic= AA_change_dic_updated,
                                                                                           joblib=True)
                                     
                                    
@@ -703,20 +758,26 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                     FRxy_ab[w_lin, u1] = Cross_Lin[ab][0, 0]
                                     FRxy_ab[u1, w_lin] = FRxy_ab[w_lin, u1]
                                 else:
-                                    sites_1 = set(np.array(mut_x_sites_dic_updated[Lin_list[i]]).astype(int))
-                                    sites_2 = set(np.array(mut_x_sites_dic_updated[v_u1]).astype(int))
-                                    sites = list(sites_1.symmetric_difference(sites_2))
+                                    sites_1 = set(np.array(AA_change_dic_updated[var_1].values).astype(str))
+                                    sites_2 = set(np.array(AA_change_dic_updated[var_2].values).astype(str))
+                                    
+                                    sites = list(sites_1.symmetric_difference(sites_2))                                    
                                     FR_sites = 1
+                                    pos_done = []
                                     for s in sites:
-                                        s = int(s)
+                                        s = int(re.findall(r'\d+', s)[0])
                                         if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                            FR_sites *= 10
+                                            if s not in pos_done:
+                                                FR_sites *= 10
+                                                pos_done.append(s)
+                                                
                                     FRxy_ab[w_lin, u1] = FR_sites
                                     FRxy_ab[u1, w_lin] = FR_sites
                         Cross_i[ab] = FRxy_ab
                         a +=1 
                 
                 status_sim.append("Done")
+                Cross_i["Mutations"] = {"positions":mut_x_sites_dic_updated, "AA_changes":AA_change_dic_updated}
                 file0 = open(sys.argv[len(sys.argv)-1]+"/Cross_%s.pck"%Lin_list[i], "wb") 
                 pickle.dump(Cross_i, file0)
                 file0.close()
@@ -749,32 +810,8 @@ elif Lin_name == "ALL":
     else:
         g.append(inds)
         g_var.append(variant_x_names_cross)
-        
-    """ 
-    # If FR is not symmetric, this code block must be used
-    for ab in Ab_classes:
-        if ab!= "NTD":
-            FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
-            for s1 in range(len(g)):
-                print("Assess all spikegroups with the NTD-RBD mutation positions ")
-                print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_classes))
-                print("Run Cross for %d out of %d (to achieve %d/%d spikegroups)"%(s1+1, len(g), len(g[s1]), len(variant_x_names_cross)))
-                sub_FR = np.ones((len(g[s1]), len(variant_x_names_cross)))
-                for s2 in range(len(g)):
-                    Cross_Lin, Missed, Greater_one = cross_reactivity((g_var[s1], g_var[s2]), 
-                                                                       Escape_Fraction, 
-                                                                       [ab],
-                                                                       mut_x_sites_dic, joblib=True)
-
-                    sub_FR[:, g[s2]] = Cross_Lin[ab]
-                    
-                FRxy_ab[g[s1], :] = sub_FR
-                
-            Cross_react_dic[ab] = FRxy_ab
-        a +=1
-    """
     
-    # If FR is symmetric, computing the upper diagonal or the lower diagonal is enough, thus reducing compuation time to half
+    # FR is symmetric, computing the upper diagonal or the lower diagonal is enough, thus reducing compuation time to half
     for ab in Ab_classes:
         if ab!= "NTD":
             FRxy_ab = np.zeros((len(variant_x_names_cross), len(variant_x_names_cross)))
@@ -808,7 +845,9 @@ elif Lin_name == "ALL":
                         Cross_Lin, Missed, Greater_one = cross_reactivity(([g_var[s1][j]], g2_var[s2]), 
                                                                        Escape_Fraction, 
                                                                        [ab],
-                                                                       mut_x_sites_dic, joblib=True, 
+                                                                       mut_x_sites_dic, 
+                                                                       AA_change_dic = AA_change_dic,
+                                                                       joblib=True, 
                                                                        cluster = cluster,
                                                                        n_jobs = n_jobs)
     
@@ -837,7 +876,9 @@ elif Lin_name == "ALL":
                     Cross_Lin, Missed, Greater_one = cross_reactivity((g_var[s1], g2_var[s2]), 
                                                                    Escape_Fraction, 
                                                                    [ab],
-                                                                   mut_x_sites_dic, joblib=True, 
+                                                                   mut_x_sites_dic, 
+                                                                   AA_change_dic = AA_change_dic,
+                                                                   joblib=True, 
                                                                    cluster = cluster,
                                                                    n_jobs = n_jobs)
 
@@ -859,20 +900,23 @@ elif Lin_name == "ALL":
             if i > j:
                 var_2 = Cross_react_dic["variant_list"][j]
     
-                sites_1 = set(np.array(mut_x_sites_dic[var_1]).astype(int))
-                sites_2 = set(np.array(mut_x_sites_dic[var_2]).astype(int))
-    
+                sites_1 = set(np.array(AA_change_dic[var_1].values).astype(str))
+                sites_2 = set(np.array(AA_change_dic[var_2].values).astype(str))
+                
                 sites = list(sites_1.symmetric_difference(sites_2))
                 FR_sites = 1
+                pos_done = []
                 for s in sites:
-                    s = int(s)
+                    s = int(re.findall(r'\d+', s)[0])
                     if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                        FR_sites *= 10
+                        if s not in pos_done:
+                            FR_sites *= 10
+                            pos_done.append(s)
                 FR_NTD[i, j] = FR_sites
                 FR_NTD[j, i] = FR_sites
         
     Cross_react_dic["NTD"] = FR_NTD
-    Cross_react_dic["Mutations"] = mut_x_sites_dic
+    Cross_react_dic["Mutations"] = {"positions":mut_x_sites_dic, "AA_changes":AA_change_dic}
     file0 = open(sys.argv[7], "wb") 
     pickle.dump(Cross_react_dic, file0)
     file0.close()
@@ -881,6 +925,7 @@ elif Lin_name == "missing":
     file_c = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") 
     Cross_global = pickle.load(file_c)
     variant_global = list(Cross_global["variant_list"])
+    
     Cross_global.pop("variant_list")
     try:
         Cross_global.pop("Mutations")
@@ -901,7 +946,7 @@ elif Lin_name == "missing":
             Lin_miss.append(lin)
         else:
             loc_in_cross.append(list(variant_x_names_cross).index(lin))
-            loc_not_miss.append(list(variant_global).index(lin))          
+            loc_not_miss.append(list(variant_global).index(lin))
 
     
     if len(Lin_miss) == 0:
@@ -942,6 +987,7 @@ elif Lin_name == "missing":
                                                                       Escape_Fraction, 
                                                                       [ab],
                                                                       mut_x_sites_dic,
+                                                                      AA_change_dic = AA_change_dic,
                                                                       joblib = True,
                                                                       cluster = False)
                     
@@ -953,6 +999,7 @@ elif Lin_name == "missing":
                                                                   Escape_Fraction, 
                                                                   [ab],
                                                                   mut_x_sites_dic,
+                                                                  AA_change_dic = AA_change_dic,
                                                                   joblib = True,
                                                                   cluster = False)
                 
@@ -965,15 +1012,18 @@ elif Lin_name == "missing":
                     for j in range(n):
                         var_2 = Cross_react_dic["variant_list"][j]
             
-                        sites_1 = set(np.array(mut_x_sites_dic[var_1]).astype(int))
-                        sites_2 = set(np.array(mut_x_sites_dic[var_2]).astype(int))
-            
+                        sites_1 = set(np.array(AA_change_dic[var_1].values).astype(str))
+                        sites_2 = set(np.array(AA_change_dic[var_2].values).astype(str))
+                        
                         sites = list(sites_1.symmetric_difference(sites_2))
                         FR_sites = 1
+                        pos_done = []
                         for s in sites:
-                            s = int(s)
+                            s = int(re.findall(r'\d+', s)[0])
                             if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                FR_sites *= 10
+                                if s not in pos_done:
+                                    FR_sites *= 10
+                                    pos_done.append(s)
                         FR_NTD[i, j] = FR_sites
                         FR_NTD[j, i] = FR_sites
                     
@@ -982,7 +1032,7 @@ elif Lin_name == "missing":
             Cross_react_dic[ab][:len(variants_in_global), :len(variants_in_global)] = Cross_global[ab][w_global, :][:, w_global]
             a +=1 
         
-    Cross_react_dic["Mutations"] = mut_x_sites_dic
+    Cross_react_dic["Mutations"] = {"positions":mut_x_sites_dic, "AA_changes":AA_change_dic}
     file0 = open(sys.argv[7], "wb") 
     pickle.dump(Cross_react_dic, file0)
     file0.close()
@@ -1041,10 +1091,13 @@ elif Lin_name == "FR_DMS_sites":
     
             sites = list(sites_1.symmetric_difference(sites_2))
             FR_sites = 1
+            pos_done = []
             for s in sites:
-                s = int(s)
-                if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)): ### Antigenic supersites
-                    FR_sites *= 10
+                s = int(re.findall(r'\d+', s)[0])
+                if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                    if s not in pos_done:
+                        FR_sites *= 10
+                        pos_done.append(s)
             FR_NTD[i] = FR_sites
     
     FR_Sites_Ab = np.row_stack((FR_Sites_Ab, FR_NTD)) 

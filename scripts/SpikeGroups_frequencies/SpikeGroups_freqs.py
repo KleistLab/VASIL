@@ -49,15 +49,26 @@ variant_mut_data = pd.read_csv(sys.argv[2])
 variant_x_name_orig = np.array(variant_mut_data["lineage"].values).astype(str)
 mut_x_sites_orig = np.array(variant_mut_data["RBD_NTD_mutations"].values).astype(str)
 mut_x_sites_dic = {}
+AA_change_dic = {}
 variant_x_names = []
 unique_muts = np.unique(mut_x_sites_orig)
 for i in range(len(variant_x_name_orig)):
     x = variant_x_name_orig[i]
     mut_x = mut_x_sites_orig[i]
-    where_mut = mut_x_sites_orig == mut_x
-    mut_x_sites_dic[x] = re.findall(r'\d+', mut_x)
+    split_mut = mut_x.split("/")
+    aa_x = {}
+    pos_list = []
+    for mut in split_mut:
+        pos0 = re.findall(r'\d+', mut)
+        if len(pos0) == 1:
+            pos = str(pos0[0])
+            aa_x[pos] = mut
+            pos_list.append(pos)
+            
+    mut_x_sites_dic[x] = pos_list
+    AA_change_dic[x] = aa_x
     variant_x_names.append(x)
-    
+
 NormProp = np.sum(frequency_lineage, axis = 0)
 prop_rounded = np.round(frequency_lineage,decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
@@ -194,7 +205,7 @@ spk_file = open(sys.argv[5], "wb")
 pickle.dump({"names":SpikeGroups_list}, spk_file)
 spk_file.close()
 mut_file = open(sys.argv[6], "wb")
-pickle.dump({"positions": mut_x_sites_dic}, mut_file)
+pickle.dump({"positions": mut_x_sites_dic, "AA_changes":AA_change_dic}, mut_file)
 mut_file.close()
 
 ### Save SpikeGroups_dic
