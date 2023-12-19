@@ -19,6 +19,7 @@ library(pheatmap)
 #### (In4) threshold: mutations should be present in at least x% of all samples
 #### (In5) date start: date to starting simulations
 #### (In6) date end: date to end simulations
+#### (In7) dms_per_ab_per_site: contains all positions that have dms data
 ### OUTPUT:
 #### (Out1) <prefix>_mutations_spike_lists.csv : table with mutated sites for each lineage
 #### (Out2) <prefix>_mutations_spike.csv : matrix with mutation profile for each lineage
@@ -29,8 +30,8 @@ library(pheatmap)
 #### (Out7) <prefix>_positiongroups_RBD_NTD_groups_zoom.pdf : Mutation Profile of predefined lineages.
 
 args = commandArgs(trailingOnly=TRUE)
-if (length(args)!=6) {
-  stop("Call: Rscript generate_mutation_profile <covsonar data file> <output directory> <prefix> <mutation threshold> <date start> <date end>", call.=FALSE)
+if (length(args)!=7) {
+  stop("Call: Rscript generate_mutation_profile <covsonar data file> <output directory> <prefix> <mutation threshold> <date start> <date end> <dms data>", call.=FALSE)
 } else  {
   input_datafile_covsonar <- args[1]
   outputdir <- args[2]
@@ -38,6 +39,7 @@ if (length(args)!=6) {
   threshold <- as.numeric(args[4])
   date_start <- args[5]
   date_end <- args[6]
+  dms_per_ab_per_site_file <- args[7]
 }
 
 
@@ -56,10 +58,18 @@ outputfile_mutationprofile_groups <- paste0(output_prefix_for_file,"_RBD_NTD_pse
 
 ######## CONSTANT DEFINTIONS:
 ## spike protein positions (NTD and RBD):
-NTD_position_start <- 13
-NTD_position_end <- 317
-RBD_position_start <- 318
-RBD_position_end <- 541
+#NTD_position_start <- 13
+#NTD_position_end <- 317
+#RBD_position_start <- 331
+#RBD_position_end <- 531
+dms_per_ab_per_site <- read.csv(dms_per_ab_per_site_file, sep = ",")
+RBD_positions <- sort(unique(dms_per_ab_per_site$site))
+RBD_position_start = min(RBD_positions)
+RBD_position_end = max(RBD_positions)
+NTD_positions <- c(14:20, 140:158, 245:264)
+NTD_position_start = min(NTD_positions)
+NTD_position_end = max(NTD_positions)
+
 
 ######################################### DATA PROCESSING 1: mutation profile
 
@@ -210,42 +220,27 @@ write.csv(MP2, file=paste0(outputdir,"/",outputfile_mutationprofile))
 
 
 ######################################### DATA PROCESSING 2: NTD & RBD
-
-## Spike Protein groupings: NTD and RBD
 sites <- parse_number(colnames(MP2))
-NTD_before_positions <- c(1:(NTD_position_start-1))
-NTD_positions <- c(NTD_position_start:NTD_position_end)
-RBD_positions <- c(RBD_position_start:RBD_position_end) 
-RBD_after_positions <- c((RBD_position_end+1):max(sites)) 
+site_classification_rbd = ifelse(sites %in% RBD_positions, 1, 0)
+site_classification_ntd = ifelse(sites %in% NTD_positions, 1, 0)
+site_classification = site_classification_rbd + site_classification_ntd
 
-sites_ntd_before <- intersect(sites, NTD_before_positions)
-sites_ntd_before_x <- unlist(lapply(sites_ntd_before, function(x) which(sites == x)))
-sites_ntd <- intersect(sites, NTD_positions)
-sites_ntd_x <- unlist(lapply(sites_ntd, function(x) which(sites == x)))
-sites_rbd <- intersect(sites, RBD_positions)
-sites_rbd_x <- unlist(lapply(sites_rbd, function(x) which(sites == x)))
-sites_rbd_after <- intersect(sites, RBD_after_positions)
-sites_rbd_after_x <- unlist(lapply(sites_rbd_after, function(x) which(sites == x)))
-
-mydf <- data.frame(row.names = colnames(MP2), category = c(rep("Before NTD", length(sites_ntd_before_x)), 
-                                                           rep("NTD", length(sites_ntd_x)), 
-                                                           rep("RBD", length(sites_rbd_x)), 
-                                                           rep("after RBD", length(sites_rbd_after_x))))
+mydf <- data.frame(row.names = colnames(MP2), category = site_classification)
 
 
 
 ######################################### DATA PROCESSING 3: Lineage Grouping
 
 ## Lineages are called identical if NTD and RBD regions are equal:
-ix <- c(which(mydf=="NTD"), which(mydf=="RBD"))
+ix <- c(which(mydf==1))
 MP3 <- MP2[,ix]
 mydf3 <- as.data.frame(mydf[ix,]); colnames(mydf3) <- "category"; rownames(mydf3) <- rownames(mydf)[ix]
 rm(ix)
 
 ## Some stats:
 print(paste("Number of mutations in the spike protein for all given lineages:", ncol(MP2)))
-print(paste("Number of mutations in the NTD region of the spike for all given lineages:", length(which(mydf=="NTD"))))
-print(paste("Number of mutations in the RBD region of the spike for all given lineages:",length(which(mydf=="RBD"))))
+print(paste("Number of mutations in the NTD region of the spike for all given lineages:", sum(site_classification_ntd)))
+print(paste("Number of mutations in the RBD region of the spike for all given lineages:",sum(site_classification_rbd)))
 
 
 ## Spike-pseudogrouping: find duplicated lineages based on equal profile of NTD & RBD:
