@@ -123,6 +123,18 @@ Now the VASIL environment also contains all the dependencies in R
 As an input, the pipeline requires the paths to the consonar data, Escape data, and GInPipe case ascertainment data.
 These variables are stored in [`config.yaml`](https://github.com/KleistLab/VASIL/blob/main/config.yaml).
 For more information about the YAML markup format refer to documentation: [https://yaml.org](https://yaml.org)
+### File formatting requirements
+`.tsv` files must be tab separated, if not first the shell command `sed 's/,/\t/g' oldfile_commasep.tsv > newfile_tabsep.tsv`
+
+Covsonar data pre-processing that
+
+1) order dates and double check for correct country name (column 'zip' in covsonar data) 
+
+2) removes `invalid date entries`, entries that have lineages `UNASSIGNED` or `nan`. ``
+
+run the following on the terminal:
+
+`Rscript scripts/check_dataset.R <covsonar data file> <country> <output file>`
 
 ## Execution
 
