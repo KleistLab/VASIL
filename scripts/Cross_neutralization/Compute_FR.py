@@ -702,9 +702,10 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                 sites = list(sites_1.symmetric_difference(sites_2))
                                 FR_sites = 1
                                 for s in sites:
-                                    s = int(re.findall(r'\d+', s)[0])
-                                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                        if s not in pos_done:
+                                    pos0 = re.findall(r'\d+', s)
+                                    if len(pos0) == 1:
+                                        s = int(pos0[0])
+                                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                                             FR_sites *= 10
 
                                 FR_NTD[i1, j1] = FR_sites
@@ -771,9 +772,10 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                     sites = list(sites_1.symmetric_difference(sites_2))                                    
                                     FR_sites = 1
                                     for s in sites:
-                                        s = int(re.findall(r'\d+', s)[0])
-                                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                            if s not in pos_done:
+                                        pos0 = re.findall(r'\d+', s)
+                                        if len(pos0) == 1:
+                                            s = int(pos0[0])
+                                            if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                                                 FR_sites *= 10
                                                 
                                     FRxy_ab[w_lin, u1] = FR_sites
@@ -911,10 +913,12 @@ elif Lin_name == "ALL":
                 sites = list(sites_1.symmetric_difference(sites_2))
                 FR_sites = 1
                 for s in sites:
-                    s = int(re.findall(r'\d+', s)[0])
-                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                        if s not in pos_done:
+                    pos0 = re.findall(r'\d+', s)
+                    if len(pos0) == 1:
+                        s = int(pos0[0])
+                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                             FR_sites *= 10
+                            
                 FR_NTD[i, j] = FR_sites
                 FR_NTD[j, i] = FR_sites
         
@@ -1021,10 +1025,12 @@ elif Lin_name == "missing":
                         sites = list(sites_1.symmetric_difference(sites_2))
                         FR_sites = 1
                         for s in sites:
-                            s = int(re.findall(r'\d+', s)[0])
-                            if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                if s not in pos_done:
+                            pos0 = re.findall(r'\d+', s)
+                            if len(pos0) == 1:
+                                s = int(pos0[0])
+                                if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                                     FR_sites *= 10
+                                    
                         FR_NTD[i, j] = FR_sites
                         FR_NTD[j, i] = FR_sites
                     

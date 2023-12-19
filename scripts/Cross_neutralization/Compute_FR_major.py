@@ -343,9 +343,11 @@ if len(Top_Pseudo)!=0:
                 sites = list(sites_1.symmetric_difference(sites_2))                    
                 FR_sites = 1
                 for s in sites:
-                    s = int(re.findall(r'\d+', s)[0])
-                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                        FR_sites *= 10
+                    pos0 = re.findall(r'\d+', s)
+                    if len(pos0) == 1:
+                        s = int(pos0[0])
+                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                            FR_sites *= 10
                             
                 FR_NTB[i, j] = FR_sites
                 FR_NTB[j, i] = FR_sites
