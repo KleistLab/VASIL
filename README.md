@@ -124,7 +124,9 @@ As an input, the pipeline requires the paths to the consonar data, Escape data, 
 These variables are stored in [`config.yaml`](https://github.com/KleistLab/VASIL/blob/main/config.yaml).
 For more information about the YAML markup format refer to documentation: [https://yaml.org](https://yaml.org)
 ### File formatting requirements
-`.tsv` files must be tab separated, if not first the shell command `sed 's/,/\t/g' oldfile_commasep.tsv > newfile_tabsep.tsv`
+`.tsv` files must be tab separated, if not first the shell command 
+
+`sed 's/,/\t/g' oldfile_commasep.tsv > newfile_tabsep.tsv`
 
 Covsonar data pre-processing that
 
