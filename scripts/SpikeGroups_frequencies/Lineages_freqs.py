@@ -237,7 +237,7 @@ if len(sys.argv) > 5 :
         mut_x_sites_dic[variant_x_name_orig[i]] = mut_i
     
     mut_file = open(sys.argv[6], "wb")
-    pickle.dump({"positions": mut_x_sites_dic, "Group":variant_x_name_orig}, mut_file)
+    pickle.dump({"positions": mut_x_sites_dic, "AA_changes":AA_change_dic, "Group":variant_x_name_orig}, mut_file)
     mut_file.close()
     
         
