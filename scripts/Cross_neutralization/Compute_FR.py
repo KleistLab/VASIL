@@ -36,7 +36,8 @@ variant_x_names_cross = SpikeGroups_list
 if "Wuhan-Hu-1" not in variant_x_names_cross:
     variant_x_names_cross = ["Wuhan-Hu-1"]+list(variant_x_names_cross)
 
-mut_x_sites_dic["Wuhan-Hu-1"] = []
+mut_x_sites_dic["Wuhan-Hu-1"] = [""]
+AA_change_dic["Wuhan-Hu-1"] = {"":""}
 
 """Load DMS Escape fraction data"""
 Escape_Fraction = pd.read_csv(sys.argv[3])
@@ -394,13 +395,13 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     try:
                         sites_1 = set([*AA_change_dic_updated[var_1].values()])
                         sites_2 = set([*AA_change_dic_updated[var_2].values()])
-                        
                         sites = list(sites_1.symmetric_difference(sites_2))                    
                         FR_sites = 1
                         for s in sites:
-                            s = int(re.findall(r'\d+', s)[0])
-                            if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                if s not in pos_done:
+                            pos0 = re.findall(r'\d+', s)
+                            if len(pos0) == 1:
+                                s = int(pos0[0])
+                                if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                                     FR_sites *= 10
                     except:
                         pdb.set_trace()

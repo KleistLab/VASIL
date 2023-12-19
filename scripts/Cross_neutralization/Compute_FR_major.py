@@ -37,7 +37,8 @@ variant_x_names_cross = SpikeGroups_list
 if "Wuhan-Hu-1" not in variant_x_names_cross:
     variant_x_names_cross = ["Wuhan-Hu-1"]+list(variant_x_names_cross)
 
-mut_x_sites_dic["Wuhan-Hu-1"] = []
+mut_x_sites_dic["Wuhan-Hu-1"] = [""]
+AA_change_dic["Wuhan-Hu-1"] = {"":""}
 
 """Load DMS Escape fraction data"""
 Escape_Fraction = pd.read_csv(sys.argv[3])
