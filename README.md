@@ -130,9 +130,9 @@ For more information about the YAML markup format refer to documentation: [https
 
 Covsonar data pre-processing that
 
-1) order dates and double check for correct country name (column 'zip' in covsonar data) 
+1) order dates and double check for correct country name (column 'zip' in covsonar data), 
 
-2) removes `invalid date entries`, entries that have lineages `UNASSIGNED` or `nan`. ``
+2) removes `invalid date entries`, entries that have lineages `UNASSIGNED` or `nan`,
 
 run the following on the terminal:
 
