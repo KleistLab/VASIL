@@ -53,6 +53,9 @@ try:
     mut_Lin = []
     aa_lin = {}
     for mut in mut_lin0:
+        if "\n" in mut:
+            mut = mut.replace("\n","")
+            
         if mut[:3] not in ("DEL", "del"):
             if len(re.findall(r'\d+', mut))>0:
                 pos0 = re.findall(r'\d+', mut)
@@ -275,6 +278,9 @@ for spklin in lineages_sim:
             mut_maj= []
             aa_lin = {}
             for mut in mut_lin0:
+                if "\n" in mut:
+                    mut = mut.replace("\n","")
+                    
                 if mut[:3] not in ("DEL", "del"):
                     pos0 = re.findall(r'\d+', mut)
                     if len(pos0) == 1:
@@ -330,15 +336,16 @@ if len(Top_Pseudo)!=0:
             if i > j:
                 var_2 = Cross_react_dic["variant_list"][j]
     
-                sites_1 = set(np.array(mut_x_sites_dic_used[var_1]).astype(int))
-                sites_2 = set(np.array(mut_x_sites_dic_used[var_2]).astype(int))
-    
-                sites = list(sites_1.symmetric_difference(sites_2))
+                sites_1 = set([*AA_change_dic_updated[var_1].values()])
+                sites_2 = set([*AA_change_dic_updated[var_2].values()])
+                
+                sites = list(sites_1.symmetric_difference(sites_2))                    
                 FR_sites = 1
                 for s in sites:
-                    s = int(s)
+                    s = int(re.findall(r'\d+', s)[0])
                     if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                         FR_sites *= 10
+                            
                 FR_NTB[i, j] = FR_sites
                 FR_NTB[j, i] = FR_sites
         

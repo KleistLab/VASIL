@@ -63,14 +63,14 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     
     conditions = escape_ab_dic["conditions"]
     ab_sub_list = escape_ab_dic["ab_sub_list"]   
-    escape_sites = escape_ab_dic["escape_sites"]
+    escape_sites = escape_ab_dic["escape_sites"] 
     IC50_list = escape_ab_dic["IC50_list"]
     
     tiled_esc = np.tile(escape_data_ab, (vars_num, 1))
     Bind_list  = np.ones((vars_num, len(conditions)))
     Missing_cond_data = np.zeros((vars_num, len(conditions)), dtype = bool)
     Where_Cond = conditions[:, np.newaxis] == ab_sub_list[np.newaxis, :]
-    tiled_mut = ma.array(np.tile(mut_sites, (vars_num, 1)), mask = ~diff_sites)
+    tiled_mut = ma.array(np.tile(mut_sites, (vars_num, 1)), mask = ~diff_sites) 
     Where_Mut = tiled_mut[:, :, np.newaxis] == escape_sites[np.newaxis, np.newaxis,  :]
     if joblib in (True, "joblib"):
         """Parallel codes --- macOS Monterey 12.5 crashes --- Not used by default """
@@ -162,7 +162,7 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
         for j in range(len(mut_sites)): 
             if i<len(variants_g1):
                 mut_bool_g1[i, j] = mut_sites[j] in list(np.array(mut_sites_per_variant[variants_g1[i]]).astype(str))
-                if AA_change_dic is not None:
+                if AA_change_dic is not None:    
                     for k in range(len(variants_g2)):
                         if (mut_sites[j] in mut_sites_per_variant[variants_g1[i]]) and (mut_sites[j] in mut_sites_per_variant[variants_g2[k]]): ### if the position exists in both variants
                             aa_bool_diff[i, k, j] = AA_change_dic[variants_g1[i]][mut_sites[j]] != AA_change_dic[variants_g2[k]][mut_sites[j]] ### positions will be considered when aa_changes are different
@@ -306,6 +306,9 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
             mut_Lin = []
             aa_lin = {}
             for mut in mut_lin0:
+                if "\n" in mut:
+                    mut = mut.replace("\n","")
+                    
                 if mut[:3] not in ("DEL", "del"):
                     if len(re.findall(r'\d+', mut))>0:
                         pos0 = re.findall(r'\d+', mut)
@@ -388,18 +391,20 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                 if i > j:
                     var_2 = Cross_react_dic["variant_list"][j]
                     
-                    sites_1 = set(np.array(AA_change_dic_updated[var_1].values).astype(str))
-                    sites_2 = set(np.array(AA_change_dic_updated[var_2].values).astype(str))
-                    
-                    sites = list(sites_1.symmetric_difference(sites_2))                    
-                    FR_sites = 1
-                    pos_done = []
-                    for s in sites:
-                        s = int(re.findall(r'\d+', s)[0])
-                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                            if s not in pos_done:
-                                FR_sites *= 10
-                                pos_done.append(s)
+                    try:
+                        sites_1 = set([*AA_change_dic_updated[var_1].values()])
+                        sites_2 = set([*AA_change_dic_updated[var_2].values()])
+                        
+                        sites = list(sites_1.symmetric_difference(sites_2))                    
+                        FR_sites = 1
+                        for s in sites:
+                            s = int(re.findall(r'\d+', s)[0])
+                            if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                                if s not in pos_done:
+                                    FR_sites *= 10
+                    except:
+                        pdb.set_trace()
+                        
                     FR_NTD[i, j] = FR_sites
                     FR_NTD[j, i] = FR_sites
         Cross_react_dic["NTD"] = FR_NTD
@@ -440,6 +445,8 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     mut_Lin = []
                     aa_lin = {}
                     for mut in mut_lin0:
+                        if "\n" in mut:
+                            mut = mut.replace("\n","")
                         if mut[:3] not in ("DEL", "del"):
                             if len(re.findall(r'\d+', mut))>0:
                                 pos0 = re.findall(r'\d+', mut)
@@ -688,18 +695,17 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                             if i1 > j1:
                                 var_2 = Cross_i["variant_list"][j1]
                     
-                                sites_1 = set(np.array(mut_x_sites_dic_updated[var_1]).astype(int))
-                                sites_2 = set(np.array(mut_x_sites_dic_updated[var_2]).astype(int))
+                                sites_1 = set([*AA_change_dic_updated[var_1].values()])
+                                sites_2 = set([*AA_change_dic_updated[var_2].values()])
                     
                                 sites = list(sites_1.symmetric_difference(sites_2))
                                 FR_sites = 1
-                                pos_done = []
                                 for s in sites:
                                     s = int(re.findall(r'\d+', s)[0])
                                     if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                                         if s not in pos_done:
                                             FR_sites *= 10
-                                            pos_done.append(s)
+
                                 FR_NTD[i1, j1] = FR_sites
                                 FR_NTD[j1, i1] = FR_sites
                     Cross_i["NTD"] = FR_NTD
@@ -758,18 +764,16 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                     FRxy_ab[w_lin, u1] = Cross_Lin[ab][0, 0]
                                     FRxy_ab[u1, w_lin] = FRxy_ab[w_lin, u1]
                                 else:
-                                    sites_1 = set(np.array(AA_change_dic_updated[var_1].values).astype(str))
-                                    sites_2 = set(np.array(AA_change_dic_updated[var_2].values).astype(str))
+                                    sites_1 = set([*AA_change_dic_updated[Lin_list[i]].values()])
+                                    sites_2 = set([*AA_change_dic_updated[v_u1].values()])
                                     
                                     sites = list(sites_1.symmetric_difference(sites_2))                                    
                                     FR_sites = 1
-                                    pos_done = []
                                     for s in sites:
                                         s = int(re.findall(r'\d+', s)[0])
                                         if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                                             if s not in pos_done:
                                                 FR_sites *= 10
-                                                pos_done.append(s)
                                                 
                                     FRxy_ab[w_lin, u1] = FR_sites
                                     FRxy_ab[u1, w_lin] = FR_sites
@@ -900,18 +904,16 @@ elif Lin_name == "ALL":
             if i > j:
                 var_2 = Cross_react_dic["variant_list"][j]
     
-                sites_1 = set(np.array(AA_change_dic[var_1].values).astype(str))
-                sites_2 = set(np.array(AA_change_dic[var_2].values).astype(str))
+                sites_1 = set([*AA_change_dic[var_1].values()])
+                sites_2 = set([*AA_change_dic[var_2].values()])
                 
                 sites = list(sites_1.symmetric_difference(sites_2))
                 FR_sites = 1
-                pos_done = []
                 for s in sites:
                     s = int(re.findall(r'\d+', s)[0])
                     if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                         if s not in pos_done:
                             FR_sites *= 10
-                            pos_done.append(s)
                 FR_NTD[i, j] = FR_sites
                 FR_NTD[j, i] = FR_sites
         
@@ -1012,18 +1014,16 @@ elif Lin_name == "missing":
                     for j in range(n):
                         var_2 = Cross_react_dic["variant_list"][j]
             
-                        sites_1 = set(np.array(AA_change_dic[var_1].values).astype(str))
-                        sites_2 = set(np.array(AA_change_dic[var_2].values).astype(str))
+                        sites_1 = set([*AA_change_dic[var_1].values()]) 
+                        sites_2 = set([*AA_change_dic_updated[var_2].values()])
                         
                         sites = list(sites_1.symmetric_difference(sites_2))
                         FR_sites = 1
-                        pos_done = []
                         for s in sites:
                             s = int(re.findall(r'\d+', s)[0])
                             if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                                 if s not in pos_done:
                                     FR_sites *= 10
-                                    pos_done.append(s)
                         FR_NTD[i, j] = FR_sites
                         FR_NTD[j, i] = FR_sites
                     
