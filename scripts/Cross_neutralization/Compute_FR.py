@@ -1093,7 +1093,7 @@ elif Lin_name == "FR_DMS_sites":
             FR_sites = 1
             pos_done = []
             for s in sites:
-                s = int(re.findall(r'\d+', s)[0])
+                s = int(s)
                 if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                     if s not in pos_done:
                         FR_sites *= 10
