@@ -70,7 +70,7 @@ D <- read.csv(input_datafile_covsonar, sep = "\t")
 D <- D[order(D$date),]
 
 ## If actual data frame is smaller than start or end date:
-if (!(date_start %in% D$date)){date_start = D$date[0]}
+if (!(date_start %in% D$date)){date_start = D$date[1]}
 if (!(date_end %in% D$date)){date_end = D$date[length(D$date)]}
 
 ## Check dates:
