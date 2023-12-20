@@ -1082,7 +1082,7 @@ elif Lin_name == "missing":
                             
                             locs_recompute = np.array([list(Cross_react_dic["variant_list"]).index(g_var_recompute[i]) for i in range(len(g_var_recompute))])
                             Cross_react_dic[ab][w_miss:, :w_miss][indx_lin, locs_recompute] = Cross_Lin[ab]
-                            Cross_react_dic[ab][:w_miss, w_miss:][recomp_lin, locs_recompute] = Cross_Lin[ab].T
+                            Cross_react_dic[ab][:w_miss, w_miss:][locs_recompute, indx_lin] = Cross_Lin[ab].T
                         
                             if lin in variant_global:
                                 id_lin_global = list(variant_global).index(lin)
@@ -1090,8 +1090,8 @@ elif Lin_name == "missing":
                                 if len(g_not_recomputed) != 0:
                                     locs_not_recompt = np.array([list(Cross_react_dic["variant_list"]).index(g_not_recomputed[i]) for i in range(len(g_not_recomputed))])
                                     keep = np.array([g[s][~recomp_lin][i] for i in range(len(g_not_recomputed))])
-                                    Cross_react_dic[ab][w_miss:, :w_miss][indx_lin, locs_not_recompt] = Cross_global[ab][id_lin_global, keep]
-                                    Cross_react_dic[ab][:w_miss, w_miss:][locs_not_recompt, indx_lin] = Cross_global[ab][keep, id_lin_global]
+                                    Cross_react_dic[ab][w_miss:, :][indx_lin, locs_not_recompt] = Cross_global[ab][id_lin_global, keep]
+                                    Cross_react_dic[ab][:, w_miss:][locs_not_recompt, indx_lin] = Cross_global[ab][keep, id_lin_global]
                 
                     print("Assess %d missing vs. %d missing with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss)))
                     lin = Lin_miss[indx_lin]
@@ -1155,8 +1155,8 @@ elif Lin_name == "missing":
                     if lin in variant_global:
                         id_lin_global = list(variant_global).index(lin)
                         not_miss_recomputed = w_global[~sub_miss[lin][np.array(loc_not_miss)]]
-                        Cross_react_dic[ab][:len(variants_in_global), :len(variants_in_global)][id_lin, :] = Cross_global[ab][id_lin_global, not_miss_recomputed]
-                        Cross_react_dic[ab][:len(variants_in_global), :len(variants_in_global)][:, id_lin] = Cross_global[ab][not_miss_recomputed, id_lin_global]
+                        Cross_react_dic[ab][:, :len(variants_in_global)][id_lin, :] = Cross_global[ab][id_lin_global, not_miss_recomputed]
+                        Cross_react_dic[ab][:len(variants_in_global), :][:, id_lin] = Cross_global[ab][not_miss_recomputed, id_lin_global]
             
             a +=1 
         
