@@ -321,7 +321,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
             """Update mutation profile dictionary and AA dictionary """
             mut_x_sites_dic_updated = mut_x_sites_dic.copy()
             AA_change_dic_updated = AA_change_dic.copy()
-            if Lin_name not in variant_x_names_cross: ### Keep Lin_name as it is because we advise the user to avoid replace "." with "_" in lineage_focus parameter
+            if Lin_name not in variant_x_names_cross: ### Keep Lin_name as it is because we advise the user to replace "." with "_" in lineage_focus parameter
                 mut_x_sites_dic_updated[Lin_name] = mut_Lin
                 AA_change_dic_updated[Lin_name] = aa_lin
             else:
