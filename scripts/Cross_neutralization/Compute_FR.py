@@ -50,13 +50,13 @@ def sub_Bind(d, tiled_esc, Where_Mut, Where_Cond):
     return [Bind_list_d, Missing_cond_data_d]
 
 
-def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, aa_bool_i = None, EF_func = "MEAN", GM = False, quiet = True, joblib = None, cluster=False, n_jobs = 10):
+def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, aa_diff_bool_i = None, EF_func = "MEAN", GM = False, quiet = True, joblib = None, cluster=False, n_jobs = 10):
     vars_num = mut_bool_g2.shape[0]
     
     test_i = np.tile(mut_bool_g1[i, :], (vars_num, 1))
     
-    if aa_bool_i is not None:
-        diff_sites = (test_i ^ mut_bool_g2) + aa_bool_i # sites are in symmetric difference or the aminoacid changes at the site are different
+    if aa_diff_bool_i is not None:
+        diff_sites = (test_i ^ mut_bool_g2) + aa_diff_bool_i # sites/positions are in symmetric difference and amend FALSE to TRUE if a position is not in the symmetric difference but the aminoacid change is different
     else:
         diff_sites = (test_i ^ mut_bool_g2)
 
@@ -190,9 +190,9 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
         
         for i in range(len(variants_g1)):
             if aa_bool_diff is not None:
-                FR, missed, gOne = FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, aa_bool_i = aa_bool_diff[i, :, :], GM = GM, quiet = quiet, joblib = joblib, cluster = cluster, n_jobs = n_jobs)
+                FR, missed, gOne = FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, aa_diff_bool_i = aa_bool_diff[i, :, :], GM = GM, quiet = quiet, joblib = joblib, cluster = cluster, n_jobs = n_jobs)
             else:
-                FR, missed, gOne = FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, aa_bool_i = None, GM = GM, quiet = quiet, joblib = joblib, cluster = cluster, n_jobs = n_jobs)
+                FR, missed, gOne = FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_name, aa_diff_bool_i = None, GM = GM, quiet = quiet, joblib = joblib, cluster = cluster, n_jobs = n_jobs)
 
             if EF_func == "MEAN":
                 FRxy_ab[i, :] = np.mean(FR, axis = 1)
