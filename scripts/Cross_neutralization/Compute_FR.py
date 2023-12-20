@@ -809,6 +809,9 @@ elif Lin_name == "ALL":
     g_var =[]
     inds = np.arange(0, len(variant_x_names_cross)).astype(int)
     
+    if len(variant_x_names_cross)>100:
+        print("WARNING: Cross reactivity computation might take really long on local computers, better using HPC (see scripts/run_cross.sh for hints on using a slurm cluster)")
+    
     cut_step = 200
     if len(variant_x_names_cross)>cut_step:
         cut1 = 0
@@ -1022,7 +1025,7 @@ elif Lin_name == "missing":
     else:     
         av_rerun = np.mean(num_rerun)
         if len(Lin_miss)>10 and av_rerun > 50:
-            sys.exit("Cross reactivity computation might take really long on local computers, better to use the HPC")
+            print("WARNING: Cross reactivity computation might take really long on local computers, better using HPC (see scripts/run_cross.sh for hints on using a slurm cluster)")
             
         if len(loc_in_cross)!=0:
             w_in_cross = np.arange(0, len(variant_x_names_cross)).astype(int)[np.array(loc_in_cross)]
@@ -1066,8 +1069,7 @@ elif Lin_name == "missing":
                 
                     for s in range(len(g)):
                         recomp_lin = np.array([k for k in range(len(g[s])) if sub_miss[lin][g[s][k]]])
-                        pdb.set_trace()
-                        g_var_recompute = g_var[s][recomp_lin]
+                        g_var_recompute = np.array(g_var[s])[recomp_lin]
                         
                         if len(g_var_recompute) != 0:
                             print("Assess missing | num %d out of %d vs (%d, %d (max %d)) with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss), s*len(g_var_recompute), min((s+1)*len(g_var_recompute), len(variants_in_global)),len(variants_in_global)))
