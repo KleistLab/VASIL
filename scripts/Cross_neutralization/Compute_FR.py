@@ -968,6 +968,32 @@ elif Lin_name == "missing":
     if len(Lin_miss) == 0:
         Cross_react_dic = Cross_global.copy()
         Cross_react_dic["variant_list"] = variant_global
+        n = len(Cross_react_dic["variant_list"])
+        FR_NTD = np.ones((n, n))
+        for i in range(n):
+            var_1 = Cross_react_dic["variant_list"][i]
+            for j in range(n):
+                var_2 = Cross_react_dic["variant_list"][j]
+    
+                sites_1 = set([*AA_change_dic[var_1].values()]) 
+                sites_2 = set([*AA_change_dic[var_2].values()])
+                
+                sites = list(sites_1.symmetric_difference(sites_2))
+                FR_sites = 1
+                pos_done = []
+                for s in sites:
+                    pos0 = re.findall(r'\d+', s)
+                    if len(pos0) == 1:
+                        s = int(pos0[0])
+                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                            if s in pos_done:
+                                FR_sites *= 10
+                                pos_done.append(s)
+                            
+                FR_NTD[i, j] = FR_sites
+                FR_NTD[j, i] = FR_sites
+            
+        Cross_react_dic["NTD"] = FR_NTD
     else:
         w_in_cross = np.arange(0, len(variant_x_names_cross)).astype(int)[np.array(loc_in_cross)]
         variants_in_global = np.array(variant_x_names_cross)[w_in_cross]
@@ -1023,7 +1049,7 @@ elif Lin_name == "missing":
             elif ab == "NTD":
                 n = len(Cross_react_dic["variant_list"])
                 FR_NTD = np.ones((n, n))
-                for i in range(len(variants_in_global), n):
+                for i in range(n):
                     var_1 = Cross_react_dic["variant_list"][i]
                     for j in range(n):
                         var_2 = Cross_react_dic["variant_list"][j]
