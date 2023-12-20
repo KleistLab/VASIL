@@ -392,19 +392,19 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                 if i > j:
                     var_2 = Cross_react_dic["variant_list"][j]
                     
-                    try:
-                        sites_1 = set([*AA_change_dic_updated[var_1].values()])
-                        sites_2 = set([*AA_change_dic_updated[var_2].values()])
-                        sites = list(sites_1.symmetric_difference(sites_2))                    
-                        FR_sites = 1
-                        for s in sites:
-                            pos0 = re.findall(r'\d+', s)
-                            if len(pos0) == 1:
-                                s = int(pos0[0])
-                                if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                    sites_1 = set([*AA_change_dic_updated[var_1].values()])
+                    sites_2 = set([*AA_change_dic_updated[var_2].values()])
+                    sites = list(sites_1.symmetric_difference(sites_2))                    
+                    FR_sites = 1
+                    pos_done = []
+                    for s in sites:
+                        pos0 = re.findall(r'\d+', s)
+                        if len(pos0) == 1:
+                            s = int(pos0[0])
+                            if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                                if s not in pos_done:
                                     FR_sites *= 10
-                    except:
-                        pdb.set_trace()
+                                    pos_done.append(s)
                         
                     FR_NTD[i, j] = FR_sites
                     FR_NTD[j, i] = FR_sites
@@ -701,12 +701,15 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     
                                 sites = list(sites_1.symmetric_difference(sites_2))
                                 FR_sites = 1
+                                pos_done = []
                                 for s in sites:
                                     pos0 = re.findall(r'\d+', s)
                                     if len(pos0) == 1:
                                         s = int(pos0[0])
                                         if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                            FR_sites *= 10
+                                            if s not in pos_done:
+                                                FR_sites *= 10
+                                                pos_done.append(s)
 
                                 FR_NTD[i1, j1] = FR_sites
                                 FR_NTD[j1, i1] = FR_sites
@@ -771,13 +774,16 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                     
                                     sites = list(sites_1.symmetric_difference(sites_2))                                    
                                     FR_sites = 1
+                                    pos_done = []
                                     for s in sites:
                                         pos0 = re.findall(r'\d+', s)
                                         if len(pos0) == 1:
                                             s = int(pos0[0])
                                             if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                                FR_sites *= 10
-                                                
+                                                if s not in pos_done:
+                                                    FR_sites *= 10
+                                                    pos_done.append(s)
+                                                    
                                     FRxy_ab[w_lin, u1] = FR_sites
                                     FRxy_ab[u1, w_lin] = FR_sites
                         Cross_i[ab] = FRxy_ab
@@ -912,12 +918,15 @@ elif Lin_name == "ALL":
                 
                 sites = list(sites_1.symmetric_difference(sites_2))
                 FR_sites = 1
+                pos_done = []
                 for s in sites:
                     pos0 = re.findall(r'\d+', s)
                     if len(pos0) == 1:
                         s = int(pos0[0])
                         if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                            FR_sites *= 10
+                            if s not in pos_done:
+                                FR_sites *= 10
+                                pos_done.append(s)
                             
                 FR_NTD[i, j] = FR_sites
                 FR_NTD[j, i] = FR_sites
@@ -1020,16 +1029,19 @@ elif Lin_name == "missing":
                         var_2 = Cross_react_dic["variant_list"][j]
             
                         sites_1 = set([*AA_change_dic[var_1].values()]) 
-                        sites_2 = set([*AA_change_dic_updated[var_2].values()])
+                        sites_2 = set([*AA_change_dic[var_2].values()])
                         
                         sites = list(sites_1.symmetric_difference(sites_2))
                         FR_sites = 1
+                        pos_done = []
                         for s in sites:
                             pos0 = re.findall(r'\d+', s)
                             if len(pos0) == 1:
                                 s = int(pos0[0])
                                 if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                    FR_sites *= 10
+                                    if s in pos_done:
+                                        FR_sites *= 10
+                                        pos_done.append(s)
                                     
                         FR_NTD[i, j] = FR_sites
                         FR_NTD[j, i] = FR_sites
