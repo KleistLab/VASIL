@@ -94,14 +94,14 @@ def FR_xy(i, mut_sites, mut_bool_g1, mut_bool_g2, escape_ab_dic, ab, variant_nam
     
     conditions = escape_ab_dic["conditions"]
     ab_sub_list = escape_ab_dic["ab_sub_list"]   
-    escape_sites = escape_ab_dic["escape_sites"]
+    escape_sites = escape_ab_dic["escape_sites"] 
     IC50_list = escape_ab_dic["IC50_list"]
     
     tiled_esc = np.tile(escape_data_ab, (vars_num, 1))
     Bind_list  = np.ones((vars_num, len(conditions)))
     Missing_cond_data = np.zeros((vars_num, len(conditions)), dtype = bool)
     Where_Cond = conditions[:, np.newaxis] == ab_sub_list[np.newaxis, :]
-    tiled_mut = ma.array(np.tile(mut_sites, (vars_num, 1)), mask = ~diff_sites)
+    tiled_mut = ma.array(np.tile(mut_sites, (vars_num, 1)), mask = ~diff_sites) 
     Where_Mut = tiled_mut[:, :, np.newaxis] == escape_sites[np.newaxis, np.newaxis,  :]
     if joblib in (True, "joblib"):
         """Parallel codes --- macOS Monterey 12.5 crashes --- Not used by default """
@@ -193,7 +193,7 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
         for j in range(len(mut_sites)): 
             if i<len(variants_g1):
                 mut_bool_g1[i, j] = mut_sites[j] in list(np.array(mut_sites_per_variant[variants_g1[i]]).astype(str))
-                if AA_change_dic is not None:
+                if AA_change_dic is not None:    
                     for k in range(len(variants_g2)):
                         if (mut_sites[j] in mut_sites_per_variant[variants_g1[i]]) and (mut_sites[j] in mut_sites_per_variant[variants_g2[k]]): ### if the position exists in both variants
                             aa_bool_diff[i, k, j] = AA_change_dic[variants_g1[i]][mut_sites[j]] != AA_change_dic[variants_g2[k]][mut_sites[j]] ### positions will be considered when aa_changes are different

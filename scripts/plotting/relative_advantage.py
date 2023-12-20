@@ -238,7 +238,7 @@ else:
             plot_fit(ES_df, variant, w_save = w_save)
             status_list.append("Done")
         except:
-            pdb.set_trace()
+            
             print(num, "Was not computed: %s Not present in file Cross_react_dic_spikegroups_ALL.pck"%variant[7:])
             num +=1
             status_list.append("Not computed: %s Not present in file Cross_react_dic_spikegroups_ALL.pck"%variant[7:])
