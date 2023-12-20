@@ -14,11 +14,11 @@ rule_all_common = [
 
 try:
     seq_thres = config["min_seq"]
-    lin_freq_file = "results/Daily_Lineages_Freq_seq_thres_%d.csv"%int(seq_thres)
+    lin_freq_file = "results/Daily_Lineages_Freq_seq_thres_%d.csv" % int(seq_thres)
 except:
-	seq_thres = "None"
-	lin_freq_file = "results/Daily_Lineages_Freq.csv"
-	
+    seq_thres = "None"
+    lin_freq_file = "results/Daily_Lineages_Freq.csv"
+
 if config["freq_lin"]:
     rule_all_common.append(lin_freq_file)
 
@@ -65,8 +65,8 @@ if config["groups_il"]:
     groups_names = []
     mut_files = []
     for i in range(len(config["compare_groups"])):
-        check_file = os.path.exists(config["mut_groups"][i]) 
-        if check_file and (config["mut_groups"][-3:]!="txt"):
+        check_file = os.path.exists(config["mut_groups"][i])
+        if check_file and (config["mut_groups"][-3:] != "txt"):
             groups_names.append(config["compare_groups"][i]),
             mut_files.append(config["mut_groups"][i]),
         else:
@@ -90,8 +90,7 @@ if config["groups_il"]:
                     "results/Cross_react_dic_groups_%d/cross_status.csv" % (i,)
                 ),
             rule_all_common.append(
-                "results/Immunological_Landscape_groups_%d/simulation_status.csv"
-                % (i)
+                "results/Immunological_Landscape_groups_%d/simulation_status.csv" % (i)
             ),
 
 if config["Cross_major"]:
@@ -113,6 +112,7 @@ rule get_epitope_landscape:
     shell:
         "Rscript {workflow.basedir}/scripts/epitopelandscape/epitope_landscape.R {input.Escape_data} {input.AB_mapping} {output.dir}"
 
+
 if not config["freq_lin"]:
     check_file = os.path.exists(lin_freq_file)
     if not check_file:
@@ -129,7 +129,7 @@ if compute_lin_freq:
             covsonar=config["covsonardata"],
         params:
             date_start=config["date_start"],
-            seq_thres = seq_thres,
+            seq_thres=seq_thres,
         output:
             result=lin_freq_file,
         shell:
@@ -139,6 +139,7 @@ if compute_lin_freq:
 rule get_mutation_and_spikegroups:
     input:
         covsonar=config["covsonardata"],
+        dms_data="results/epitope_data/dms_per_ab_per_site.csv",
     params:
         prefix=config["prefix"],
         mutation_threshold=config["mutation_threshold"],
@@ -149,7 +150,7 @@ rule get_mutation_and_spikegroups:
         spk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
         spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
     shell:
-        "Rscript {workflow.basedir}/scripts/mutationprofile/mutation_profile.R {input.covsonar} {output.dir} {params.prefix} {params.mutation_threshold} {params.date_start} {params.date_end}"
+        "Rscript {workflow.basedir}/scripts/mutationprofile/mutation_profile.R {input.covsonar} {output.dir} {params.prefix} {params.mutation_threshold} {params.date_start} {params.date_end} {input.dms_data}"
 
 
 rule get_spikegroups_frequencies:
@@ -255,13 +256,14 @@ if config["cross_missing"]:
 
     if os.path.exists("None"):
         os.remove("None")
-        
+
+
 if config["groups_il"]:
     if len(groups_names) > 0:
 
         def recurse_mut(wcs):
             i = int(wcs.i)
-            return mut_files[i]
+            return [mut_files[i], "results/epitope_data/dms_per_ab_per_site.csv"]
 
         rule get_mut_i:
             input:
@@ -277,7 +279,7 @@ if config["groups_il"]:
             wildcard_constraints:
                 i="[0-%d]+" % (len(mut_files) - 1),
             shell:
-                "loop='loop{wildcards.i}' Rscript {workflow.basedir}/scripts/mutationprofile/mutation_profile.R {input} {output.dir} {params.prefix} {params.mutation_threshold} {params.date_start} {params.date_end}"
+                "loop='loop{wildcards.i}' Rscript {workflow.basedir}/scripts/mutationprofile/mutation_profile.R {input[0]} {output.dir} {params.prefix} {params.mutation_threshold} {params.date_start} {params.date_end} {input[1]}"
 
         def recurse_freq(wcs):
             i = int(wcs.i)
@@ -292,7 +294,7 @@ if config["groups_il"]:
                 recurse_freq,
             params:
                 date_start=config["date_start"],
-                seq_thres = "None",
+                seq_thres="None",
             output:
                 result="results/Groups_data_{i}/Daily_Lineages_Freq_{i}.csv",
                 mutations_dic="results/Groups_data_{i}/Mutations_Lineages_{i}.pck",
@@ -330,9 +332,9 @@ if config["groups_il"]:
                     i="[0-%d]+" % (len(mut_files) - 1),
                 shell:
                     "loop='loop{wildcards.i}' python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input[0]} {input[1]} {input[2]} {params[0]} {params[1]} {input[3]} {params.cross_delta} {output.cross_spkdir}"
-				
-        
+
         if not os.path.exists("results/Cross_with_delta_valitation_groups.pck"):
+
             rule compute_cross_delta:
                 input:
                     spikes_dic="results/SpikeGroups.pck",
@@ -370,7 +372,7 @@ if config["groups_il"]:
                 config["total_population"],
                 config["date_start"],
                 config["date_end"],
-                config["p_neut_groups"],                
+                config["p_neut_groups"],
                 recurse_cross_params,
                 len(config["antigen_groups"]),
                 config["antigen_groups"],
@@ -401,8 +403,9 @@ if config["groups_il"]:
                     res="results/Cross_react_dic_groups/cross_status.csv",
                 shell:
                     "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.len_groups} {params.lineage_focus} {params.mutation_focus} {params.cross_delta} {output.cross_spkdir}"
-		
+
         if not os.path.exists("results/Cross_with_delta_validation_again.pck"):
+
             rule compute_cross_delta_again:
                 input:
                     spikes_dic="results/SpikeGroups.pck",
@@ -411,13 +414,12 @@ if config["groups_il"]:
                 params:
                     lineage_focus="only_delta",
                     mutation_focus="None",
-                    cross_spk="None"
+                    cross_spk="None",
                 output:
                     cross_delta="results/Cross_with_delta_validation_again.pck",
                 shell:
                     "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {params.cross_spk}"
 
-		
         rule get_EI_groups:
             input:
                 cases=config["cases"],
@@ -498,7 +500,7 @@ if config["all_il"]:
 
 
 if config["Cross_major"]:
-	
+
     rule get_cross_neutralization_major:
         input:
             spikes_dic="results/SpikeGroups.pck",
