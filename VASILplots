@@ -12,7 +12,7 @@ rule_all_common = [
 ]
 if config["FR_DMS_sites"]:
     rule_all_common.append("plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf")
-    rule_all_common.append("plots/FR_sites_weighted/foldresistance_DMS_sites_epitopes.pdf")
+    rule_all_common.append("plots/FR_sites_weighted/foldresistance_DMS_sites_epitopes_weighted.pdf")
 
 if config["cross_spk"]:
     rule_all_common.append("plots/Cross_spikegroups/Cross_React_AB_A.pdf")
@@ -198,9 +198,9 @@ if config["FR_DMS_sites"]:
            FR_sites="results/Fold_Resistance_DMS_Sites_Epitopes_weighted.csv",
         output:
             res_dir=directory("plots/FR_sites_weighted"),
-            res="plots/FR_sites_weighted/foldresistance_DMS_sites_epitopes.pdf",
+            res="plots/FR_sites_weighted/foldresistance_DMS_sites_epitopes_weighted.pdf",
         shell:
-            "Rscript {workflow.basedir}/scripts/plotting/FR_sites_landscape.R {input.FR_sites} {output.res_dir}"
+            "Rscript {workflow.basedir}/scripts/plotting/FR_sites_landscape_weighted.R {input.FR_sites} {output.res_dir}"
 
 if config["cross_spk"]:
     if config["added_cross"]:
