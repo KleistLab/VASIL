@@ -495,8 +495,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 rotation = 45, horizontalalignment = "right")
             
             if x_min is not None:
-                ax2.set_xlim((x_min, len(inds_dates)))
-                ax2_twin.set_xlim((x_min, len(inds_dates)))
+                ax2.set_xlim((x_min, x_max))
+                ax2_twin.set_xlim((x_min, x_max))
                 
             
             ymin1, ymax1 = ax2.get_ylim()
@@ -510,7 +510,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             if (ymin1/ymin2 >0.5) or (ymax1/ymax2>0.5) or (ymin2/ymin1 >0.5) or (ymax2/ymax1>0.5):
                 ax2.set_ylim((ymin, ymax))
                 ax2_twin.set_ylim((ymin, ymax))   
-
+                
             ax2.axhline(xmin = 0, xmax = len(day_prop), ls = "--", linewidth = 2, color = "black")
             ax2.set_ylabel("Relative fitness $\gamma_y$", fontsize = 20)
             ax2_twin.set_ylabel("Change in proportion $\gamma_{prop}$", fontsize = 20)
