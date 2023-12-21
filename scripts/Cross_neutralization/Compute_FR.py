@@ -1082,6 +1082,7 @@ elif Lin_name == "missing":
                                                                               joblib = True,
                                                                               cluster = False)
                             
+                            pdb.set_trace()
                             locs_recompute = np.array([list(Cross_react_dic["variant_list"]).index(g_var_recompute[i]) for i in range(len(g_var_recompute))])
                             Cross_react_dic[ab][w_miss:, :w_miss][indx_lin, locs_recompute] = Cross_Lin[ab]
                             Cross_react_dic[ab][:w_miss, w_miss:][locs_recompute, indx_lin] = Cross_Lin[ab].T
@@ -1235,13 +1236,34 @@ elif Lin_name == "FR_DMS_sites":
     
     ### Saving file
     FR_dic = {}
+    FR_wght_dic = {}
+    
     FR_dic["Epitope Classes"] = Ab_One_Mut
+    FR_wght_dic["Epitope Classes"] = Ab_One_Mut
+    
+    # compute mean IC50 per Ab_classes
+    IC50_group = Escape_Fraction.groupby('condition', as_index=False).first()[['condition', 'IC50', 'group']]
+    mean_IC50_per_group = IC50_group.groupby('group')['IC50'].mean().reset_index()
+    Mean_IC50 = np.ones(len(Ab_One_Mut))
+    for i in range(len(Ab_One_Mut)):
+        ab = Ab_One_Mut[i]
+        if ab != "NTD":
+            Mean_IC50[i] = (mean_IC50_per_group["IC50"].values[mean_IC50_per_group["group"] == ab])[0]
+    
     for i in range(len(One_mut_lin_new)):
         if i != idx_WT:
+            s = int(One_mut_lin_new[i])
             FR_dic[One_mut_lin_new[i]] = FR_Sites_Ab[:, i]
-            
+            if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                FR_wght_dic[One_mut_lin_new[i]] = FR_Sites_Ab[:, i]
+            else:
+                FR_wght_dic[One_mut_lin_new[i]] = FR_Sites_Ab[:, i]/Mean_IC50
+    
     FR_df = pd.DataFrame(FR_dic)
-    FR_df.to_csv(sys.argv[7]) 
+    FR_df.to_csv(sys.argv[7])
+    ### Save weighted FR DMS
+    FR_df2 = pd.DataFrame(FR_wght_dic)
+    FR_df2.to_csv(str(sys.argv[7])[:-4]+"_weighted.csv")
 
     
     
