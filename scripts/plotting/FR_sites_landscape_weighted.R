@@ -35,9 +35,9 @@ FR2 <- FR
 FR2[FR2>100] <- 100
 FRlg2 <- log10(FR2)
 
-colorcoding <- c("#053061", brewer.pal(8,"Blues")[c(6,5,4,3,2)], "white",brewer.pal(8,"Blues")[c(2,3,4,5,6)],"#053061")
+#colorcoding <- c("#053061", brewer.pal(8,"Blues")[c(6,5,4,3,2)], "white",brewer.pal(8,"Blues")[c(2,3,4,5,6)],"#053061")
 # negative values in red:
-#colorcoding <- c( brewer.pal(8,"Reds")[c(7,6,5,4,3,2)], "white",brewer.pal(8,"Blues")[c(2,3,4,5,6)],"#053061")
+colorcoding <- c( brewer.pal(8,"RdPu")[c(7,6,5,4,3,2)], "white",brewer.pal(8,"Blues")[c(2,3,4,5,6)],"#053061")
 FRlg2[FRlg2 == 0] <- NA
 
 pdf(paste0(outputdir,"/",outputfile_heatmapplot_FR), width = 20)
