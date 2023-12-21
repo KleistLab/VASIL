@@ -221,11 +221,12 @@ a = 1
 print("Cross reactivity computation might take a while")
 try:
     cluster = str(sys.argv[8])
-    cluster_argv = True
     if cluster in ("cluster_True", "True", "TRUE"):
         cluster = True
+        cluster_argv = True
     else:
         cluster = False
+        cluster_argv = False
 except:
     cluster = False
     cluster_argv = False
@@ -244,7 +245,7 @@ elif cluster_argv and given_njobs:
     delta_file = str(sys.argv[-4])
 else:
     delta_file = str(sys.argv[-3])
-    
+
 if delta_file[:4] not in ("None", "none", False):
     # use Delta: B.1.617.2 for validation (Used in Clinical data paper)
     variant_x_names_show = ["Wuhan-Hu-1", "Delta: B.1.617.2"]
@@ -259,6 +260,7 @@ if delta_file[:4] not in ("None", "none", False):
     """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""  
     n = len(variant_x_names_show)
     FR_NTD = np.ones((n, n))
+    
     for i in range(n):
         var_1 = variant_x_names_show[i]
         for j in range(n):
@@ -732,7 +734,6 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     Ab_global = Cross_global.keys()
                     file_c.close()
 
-                    
                     if Pseudogroup_dic[Lin_list[i]] not in list(variant_x_names_cross):
                         w_lin = len(variant_x_names_cross)
                         Cross_i["variant_list"] = list(variant_x_names_cross) + [Lin_list[i]]
@@ -740,7 +741,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                         w_lin = list(variant_x_names_cross).index(Pseudogroup_dic[Lin_list[i]])
                         Cross_i["variant_list"] = list(variant_x_names_cross)
                         Cross_i["variant_list"][w_lin] = Lin_list[i]
-                    
+
                     for ab in Ab_global:  
                         if Pseudogroup_dic[Lin_list[i]] not in list(variant_x_names_cross):
                             FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))

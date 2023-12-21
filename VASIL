@@ -59,6 +59,8 @@ if config["focus_il"]:
     ),
 
 if config["groups_il"]:
+    if os.path.exists("avail"):
+        os.remove("avail")
     run_groups = []
     mut_groups = []
 

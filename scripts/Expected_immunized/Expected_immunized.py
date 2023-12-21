@@ -616,7 +616,7 @@ if Lin_name != "ALL":
         Grouped = False
         if Lin_name not in list(Pseudogroup_dic.keys()):
             if str(sys.argv[3][:31]) == "results/Cross_react_dic_groups_":
-                file1 = open(sys.argv[3]+"/Cross_%s.pck"%Lin_name, "rb") # load cross reactivity if parameter is not a directory
+                file1 = open(sys.argv[3]+"/Cross_%s.pck"%Lin_name, "rb") # load cross reactivity of a group with mutation profile extracted from a small covsonar data file
                 Cross_react_dic = pickle.load(file1)
                 variants_in_cross = Cross_react_dic["variant_list"]
                 Cross_react_dic.pop("variant_list")

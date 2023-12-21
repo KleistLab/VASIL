@@ -50,7 +50,6 @@ variant_x_name_orig = np.array(variant_mut_data["lineage"].values).astype(str)
 mut_x_sites_orig = np.array(variant_mut_data["RBD_NTD_mutations"].values).astype(str)
 mut_x_sites_dic = {}
 AA_change_dic = {}
-variant_x_names = []
 unique_muts = np.unique(mut_x_sites_orig)
 for i in range(len(variant_x_name_orig)):
     x = variant_x_name_orig[i]
@@ -67,7 +66,6 @@ for i in range(len(variant_x_name_orig)):
             
     mut_x_sites_dic[x] = pos_list
     AA_change_dic[x] = aa_x
-    variant_x_names.append(x)
 
 NormProp = np.sum(frequency_lineage, axis = 0)
 prop_rounded = np.round(frequency_lineage,decimals = 10)
