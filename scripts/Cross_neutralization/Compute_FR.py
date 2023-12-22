@@ -1015,7 +1015,7 @@ elif Lin_name == "missing":
     else:     
         av_rerun = np.mean(num_rerun)
         if len(Lin_miss)>10 and av_rerun > 50:
-            print("WARNING: Cross reactivity computation might take really long on local computers, better using HPC (see scripts/run_cross.sh for hints on using a slurm cluster)")
+            print("WARNING: Cross reactivity computation might take really long on local computers, better using HPC (see scripts/run_cross_missing.sh for hints on using a slurm cluster)")
             
         if len(loc_in_cross)!=0:
             w_in_cross = np.arange(0, len(variant_x_names_cross)).astype(int)[np.array(loc_in_cross)]
@@ -1052,17 +1052,17 @@ elif Lin_name == "missing":
             
         for ab in Ab_global:
             Cross_react_dic[ab] = np.ones((len(Cross_react_dic["variant_list"]), len(Cross_react_dic["variant_list"])))
-            for indx_lin in range(len(Lin_miss)):
-                lin = Lin_miss[indx_lin]
-                lin_indx = list(Cross_react_dic["variant_list"]).index(lin)
-                if (ab != "NTD") and (ab in Ab_classes):
-                
+            if (ab != "NTD") and (ab in Ab_classes):
+                for indx_lin in range(len(Lin_miss)):
+                    lin = Lin_miss[indx_lin]
+                    lin_indx = list(Cross_react_dic["variant_list"]).index(lin)
+                    n_0 = 0
                     for s in range(len(g)):
                         recomp_lin = np.array([k for k in range(len(g[s])) if sub_miss[lin][g[s][k]]])
                         g_var_recompute = np.array(g_var[s])[recomp_lin]
                         
                         if len(g_var_recompute) != 0:
-                            print("Assess missing | num %d out of %d vs (%d, %d (max %d)) with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss), s*len(g_var_recompute), min((s+1)*len(g_var_recompute), len(variants_in_global)),len(variants_in_global)))
+                            print("Assess missing | num %d out of %d vs (%d, %d (max %d)) with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss), len(g_var_recompute), min(n_0 + len(g_var_recompute), len(variants_in_global)),len(variants_in_global)))
                             print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_global))
                             Cross_Lin, Missed, Greater_one = cross_reactivity(([lin], g_var_recompute), 
                                                                               Escape_Fraction, 
@@ -1070,13 +1070,13 @@ elif Lin_name == "missing":
                                                                               mut_x_sites_dic,
                                                                               AA_change_dic = AA_change_dic,
                                                                               joblib = True,
-                                                                              cluster = False)
+                                                                              cluster = cluster,
+                                                                              n_jobs = n_jobs)
                             
-                            pdb.set_trace()
                             locs_recompute = np.array([list(Cross_react_dic["variant_list"]).index(g_var_recompute[i]) for i in range(len(g_var_recompute))])
                             Cross_react_dic[ab][lin_indx, locs_recompute] = Cross_Lin[ab]
-                            Cross_react_dic[ab][locs_recompute, lin_indx] = Cross_Lin[ab].T
-                        
+                            Cross_react_dic[ab][locs_recompute, lin_indx] = Cross_Lin[ab]
+                            
                             if lin in variant_global:
                                 id_lin_global = list(variant_global).index(lin)
                                 g_not_recomputed = g_var[s][~recomp_lin]
@@ -1085,9 +1085,9 @@ elif Lin_name == "missing":
                                     keep = np.array([g[s][~recomp_lin][i] for i in range(len(g_not_recomputed))])
                                     Cross_react_dic[ab][lin_indx, locs_not_recompt] = Cross_global[ab][id_lin_global, keep]
                                     Cross_react_dic[ab][locs_not_recompt, lin_indx] = Cross_global[ab][keep, id_lin_global]
-                
+                            n_0 += len(g_var_recompute)
+                            
                     print("Assess %d missing vs. %d missing with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss)))
-                    lin = Lin_miss[indx_lin]
                     sub_miss_reduced = [i for i in range(len(Lin_miss)) if (Lin_miss[i] in variant_global) and (sub_miss[lin][list(variant_global).index(Lin_miss[i])])] + [i for i in range(len(Lin_miss)) if Lin_miss[i] not in variant_global]
                     recomp_lin_miss = np.array(sub_miss_reduced)
                     Lin_miss_recompute = list(np.array(Lin_miss)[recomp_lin_miss])
@@ -1096,11 +1096,12 @@ elif Lin_name == "missing":
                                                               [ab],
                                                               mut_x_sites_dic,
                                                               AA_change_dic = AA_change_dic,
-                                                              joblib = True,
-                                                              cluster = False)
+                                                              cluster = cluster,
+                                                              n_jobs = n_jobs)
                     
                     miss_locs = np.array([list(Cross_react_dic["variant_list"]).index(Lin_miss_recompute[i]) for i in range(len(Lin_miss_recompute))])
                     Cross_react_dic[ab][lin_indx, miss_locs] = Cross_Lin[ab]
+                    Cross_react_dic[ab][miss_locs, lin_indx] = Cross_Lin[ab]
                     
                     if lin in variant_global:
                         id_lin_global = list(variant_global).index(lin)
@@ -1112,36 +1113,37 @@ elif Lin_name == "missing":
                             ind2_global = list(variant_global).index(Lin_miss_not_recomputed[ind2])
                             Cross_react_dic[ab][lin_indx, loc2] = Cross_global[ab][id_lin_global, ind2_global]
                             Cross_react_dic[ab][loc2, lin_indx] = Cross_global[ab][ind2_global, id_lin_global]
-                        
-                elif ab == "NTD":
-                    n = len(Cross_react_dic["variant_list"])
-                    FR_NTD = np.ones((n, n))
-                    for i in range(n):
-                        var_1 = Cross_react_dic["variant_list"][i]
-                        for j in range(n):
-                            if i > j:
-                                var_2 = Cross_react_dic["variant_list"][j]
+                
+            elif ab == "NTD":
+                n = len(Cross_react_dic["variant_list"])
+                FR_NTD = np.ones((n, n))
+                for i in range(n):
+                    var_1 = Cross_react_dic["variant_list"][i]
+                    for j in range(n):
+                        if i > j:
+                            var_2 = Cross_react_dic["variant_list"][j]
+                
+                            sites_1 = set([*AA_change_dic[var_1].values()]) 
+                            sites_2 = set([*AA_change_dic[var_2].values()])
+                            
+                            sites = list(sites_1.symmetric_difference(sites_2))
+                            FR_sites = 1
+                            pos_done = []
+                            for s in sites:
+                                pos0 = re.findall(r'\d+', s)
+                                if len(pos0) == 1:
+                                    s = int(pos0[0])
+                                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                                        if s in pos_done:
+                                            FR_sites *= 10
+                                            pos_done.append(s)
+                                        
+                            FR_NTD[i, j] = FR_sites
+                            FR_NTD[j, i] = FR_sites
                     
-                                sites_1 = set([*AA_change_dic[var_1].values()]) 
-                                sites_2 = set([*AA_change_dic[var_2].values()])
-                                
-                                sites = list(sites_1.symmetric_difference(sites_2))
-                                FR_sites = 1
-                                pos_done = []
-                                for s in sites:
-                                    pos0 = re.findall(r'\d+', s)
-                                    if len(pos0) == 1:
-                                        s = int(pos0[0])
-                                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                            if s in pos_done:
-                                                FR_sites *= 10
-                                                pos_done.append(s)
-                                            
-                                FR_NTD[i, j] = FR_sites
-                                FR_NTD[j, i] = FR_sites
-                        
-                    Cross_react_dic[ab] = FR_NTD
+                Cross_react_dic[ab] = FR_NTD
             
+                
             if w_global is not None:
                 ### Include not missing and not recomputed
                 for lin in Cross_react_dic["variant_list"]:
@@ -1152,7 +1154,7 @@ elif Lin_name == "missing":
                         Cross_react_dic[ab][:, :len(variants_in_global)][id_lin, :] = Cross_global[ab][id_lin_global, not_miss_recomputed]
                         Cross_react_dic[ab][:len(variants_in_global), :][:, id_lin] = Cross_global[ab][not_miss_recomputed, id_lin_global]
             
-            a +=1 
+        a +=1     
         
     Cross_react_dic["Mutations"] = {"positions":mut_x_sites_dic, "AA_changes":AA_change_dic}
     file0 = open(sys.argv[7], "wb") 
@@ -1250,7 +1252,7 @@ elif Lin_name == "FR_DMS_sites":
             if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
                 FR_wght_dic[One_mut_lin_new[i]] = FR_Sites_Ab[:, i]
             else:
-                FR_wght_dic[One_mut_lin_new[i]] = FR_Sites_Ab[:, i]/Mean_IC50
+                FR_wght_dic[One_mut_lin_new[i]] = FR_Sites_Ab[:, i]*Mean_IC50
     
     FR_df = pd.DataFrame(FR_dic)
     FR_df.to_csv(sys.argv[7])
