@@ -942,7 +942,7 @@ elif Lin_name == "ALL":
     file0.close()
 
 elif Lin_name == "missing":
-    file_c = open(sys.argv[5], "rb") ### hard-coded specifically for Lin_name = missing sys.argv[5] must be results/Cross_react_dic_spikegroups_ALL.pck
+    file_c = open(sys.argv[5], "rb") ### hard-coded specifically for cross_missing = TRUE, sys.argv[5] = results/Cross_react_dic_spikegroups_ALL.pck
     Cross_global = pickle.load(file_c)
     variant_global = list(Cross_global["variant_list"])
     
@@ -1096,6 +1096,7 @@ elif Lin_name == "missing":
                                                               [ab],
                                                               mut_x_sites_dic,
                                                               AA_change_dic = AA_change_dic,
+                                                              joblib = True,
                                                               cluster = cluster,
                                                               n_jobs = n_jobs)
                     

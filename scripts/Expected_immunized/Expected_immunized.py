@@ -830,11 +830,11 @@ else:
     
     else:
         spikegroups_proportion_adjust = spikegroups_proportion.copy()
-    
+            
     for i in range(len(SpikeGroups_list)):
         if SpikeGroups_list[i] in variants_in_cross or SpikeGroups_list[i] in list(Pseudogroup_dic.keys()):
             if add_print:
-                print("A smaller set of spikesgroups are being simulated for all_il = TRUE \n Make sure this is what you want otherwise set the parameter cross_missing to TRUE")
+                print("A smaller set of spikesgroups are being simulated for all_il = TRUE \n Make sure this is what you want otherwise set the parameter cross_missing to TRUE (\n NB: remove WRONG/OLDER file results/Cross_react_dic_spikegroups_present.pck)")
                 miss_num = len(SpikeGroups_list)-len(SpikeGroups_list_index)
                 print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1: missing %d spikegroups)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list_index)-1, miss_num))
             else:
