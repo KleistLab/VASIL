@@ -258,7 +258,7 @@ if config["cross_major"]:
                 cross_spk=config["cross_major_file"],
             params:
                 cross_lin="None",
-                lin_name="None",
+                lin_name=config["added_lineage"],
                 plot_major="True",
                 not_add="not_add",
             output:
