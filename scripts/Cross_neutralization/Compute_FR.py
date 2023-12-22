@@ -942,7 +942,7 @@ elif Lin_name == "ALL":
     file0.close()
 
 elif Lin_name == "missing":
-    file_c = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") 
+    file_c = open(sys.argv[5], "rb") ### hard-coded specifically for Lin_name = missing sys.argv[5] must be results/Cross_react_dic_spikegroups_ALL.pck
     Cross_global = pickle.load(file_c)
     variant_global = list(Cross_global["variant_list"])
     
@@ -1143,7 +1143,7 @@ elif Lin_name == "missing":
                     
                 Cross_react_dic[ab] = FR_NTD
             
-                
+
             if w_global is not None:
                 ### Include not missing and not recomputed
                 for lin in Cross_react_dic["variant_list"]:
