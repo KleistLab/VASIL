@@ -310,6 +310,14 @@ if len(Top_Pseudo)!=0:
     except:
         pass
       
+    # compute mean IC50 per Ab_classes
+    IC50_group = Escape_Fraction.groupby('condition', as_index=False).first()[['condition', 'IC50', 'group']]
+    mean_IC50_per_group = IC50_group.groupby('group')['IC50'].mean().reset_index()
+    print("Mean IC50 per Epitope Classes")
+    print(mean_IC50_per_group)
+    
+    Cross_react_dic_wght = {}
+    
     for ab in Ab_classes:
         print("Assess major lineages/pseudogroups with the NTD-RBD mutation positions ")
         print("Cross reactivity countdown", a, "out of %d epitope clases"%len(Ab_classes))
@@ -323,14 +331,16 @@ if len(Top_Pseudo)!=0:
             
             FRxy_ab = Cross_Lin[ab]
             Cross_react_dic[ab] = FRxy_ab
-            
+            Cross_react_dic_wght[ab] = FRxy_ab/((mean_IC50_per_group["IC50"].values[mean_IC50_per_group["group"] == ab])[0])
         a +=1
     
     Cross_react_dic["variant_list"] = list(Top_Pseudo)
+    Cross_react_dic_wght["variant_list"] = list(Top_Pseudo)
+    
     
     """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
     n = len(Cross_react_dic["variant_list"])
-    FR_NTB = np.ones((n, n))
+    FR_NTD = np.ones((n, n))
     for i in range(n):
         var_1 = Cross_react_dic["variant_list"][i]
         for j in range(n):
@@ -352,10 +362,16 @@ if len(Top_Pseudo)!=0:
                                 FR_sites *= 10
                                 pos_done.append(s)
                             
-                FR_NTB[i, j] = FR_sites
-                FR_NTB[j, i] = FR_sites
+                FR_NTD[i, j] = FR_sites
+                FR_NTD[j, i] = FR_sites
         
-    Cross_react_dic["NTD"] = FR_NTB
+    Cross_react_dic["NTD"] = FR_NTD
+    Cross_react_dic_wght["NTD"] = FR_NTD
+    
     file0 = open(sys.argv[k], "wb") 
     pickle.dump(Cross_react_dic, file0)
-    file0.close()    
+    file0.close()
+
+    file1 = open(str(sys.argv[k])[:-4]+"_weighted.pck", "wb") 
+    pickle.dump(Cross_react_dic_wght, file1)
+    file1.close()     
