@@ -10,6 +10,7 @@ rule_all_common = [
     "results/SpikeGroups.pck",
     "results/Mutation_Profiles.pck",
     "results/epitope_data/dms_per_ab_per_site.csv",
+    "results/Cross_with_delta_valitation.pck",
 ]
 
 try:
@@ -103,22 +104,6 @@ rule all:
     input:
         rule_all_common,
 
-if not os.path.exists("results/Cross_with_delta_valitation.pck"):
-
-    rule compute_cross_delta:
-        input:
-            spikes_dic="results/SpikeGroups.pck",
-            mutations_dic="results/Mutation_Profiles.pck",
-            dms_data_regrouped="results/epitope_data/dms_per_ab_per_site.csv",
-        params:
-            lineage_focus="only_delta",
-            mutation_focus="None",
-        output:
-            cross_delta="results/Cross_with_delta_valitation.pck",
-            cross_spk="None",
-        shell:
-            "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {output.cross_spk}"
-
 
 rule get_epitope_landscape:
     input:
@@ -170,6 +155,21 @@ rule get_mutation_and_spikegroups:
     shell:
         "Rscript {workflow.basedir}/scripts/mutationprofile/mutation_profile.R {input.covsonar} {output.dir} {params.prefix} {params.mutation_threshold} {params.date_start} {params.date_end} {input.dms_data}"
 
+if not os.path.exists("results/Cross_with_delta_valitation.pck"):
+    rule compute_cross_delta:
+        input:
+            spikes_dic="results/SpikeGroups.pck",
+            mutations_dic="results/Mutation_Profiles.pck",
+            dms_data_regrouped="results/epitope_data/dms_per_ab_per_site.csv",
+        params:
+            lineage_focus="only_delta",
+            mutation_focus="None",
+            cross_spk="None",
+        output:
+            cross_delta="results/Cross_with_delta_valitation.pck",
+        shell:
+            "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {params.cross_spk}"
+
 
 rule get_spikegroups_frequencies:
     input:
@@ -199,13 +199,13 @@ if config["cross_focus"]:
         params:
             lineage_focus=config["lineage_focus"],
             mutation_focus=config["mutation_focus"],
+            cross_delta="None_Focus",            
         output:
-            cross_delta="None_Focus",
             cross_spk="results/Cross_react_dic_spikegroups_"
             + config["lineage_focus"]
             + ".pck",
         shell:
-            "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {output.cross_spk}"
+            "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {params.cross_delta} {output.cross_spk}"
 
 
 if config["focus_il"]:
@@ -249,11 +249,11 @@ if config["cross_all"]:
         params:
             lineage_focus="ALL",
             mutation_focus="None",
+            cross_delta="None_ALL",
         output:
-            cross_delta="None_ALL"",
             cross_spk="results/Cross_react_dic_spikegroups_ALL.pck",
         shell:
-            "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {output.cross_spk}"
+            "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {params.cross_delta} {output.cross_spk}"
 
 
 if config["cross_missing"]:
@@ -266,11 +266,11 @@ if config["cross_missing"]:
         params:
             lineage_focus="missing",
             mutation_focus="None",
+            cross_delta="None_missing",
         output:
-            cross_delta="results/Cross_with_delta_validation_recomputed_again.pck",
             cross_spk="results/Cross_react_dic_spikegroups_present.pck",
         shell:
-            "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {output.cross_delta} {output.cross_spk}"
+            "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.lineage_focus} {params.mutation_focus} {params.cross_delta} {output.cross_spk}"
 
     if os.path.exists("None"):
         os.remove("None")
@@ -409,7 +409,7 @@ if config["groups_il"]:
         rule get_EI_groups:
             input:
                 cases=config["cases"],
-                cross_delta="results/Cross_with_delta_validation.pck",
+                cross_delta="results/Cross_with_delta_valitation.pck",
                 cross_spk_dir="results/Cross_react_dic_groups",
                 spikes_dic="results/SpikeGroups.pck",
                 spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
@@ -514,8 +514,8 @@ if config["FR_DMS_sites"]:
         params:
             dms_sites="FR_DMS_sites",
             mutation_focus="None",
-        output:
             cross_delta="None_FR",
+        output:
             cross_dms="results/Fold_Resistance_DMS_Sites_Epitopes.csv",
         shell:
-            "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.dms_sites} {params.mutation_focus} {output.cross_delta} {output.cross_dms}"
+            "python {workflow.basedir}/scripts/Cross_neutralization/Compute_FR.py {input.spikes_dic} {input.mutations_dic} {input.dms_data_regrouped} {params.dms_sites} {params.mutation_focus} {params.cross_delta} {output.cross_dms}"
