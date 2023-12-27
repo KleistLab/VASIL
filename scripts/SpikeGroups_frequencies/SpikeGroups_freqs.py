@@ -174,7 +174,11 @@ try:
        Lin_df.to_csv("results/Daily_Lineages_Freq_%s_percent.csv"%str(int(filt_params*100)))
        SpikeGroups_dic["Frequencies"] = Lin_df
 except:
-    pass
+    if "week_num" in list(fq_cols):
+        frequency_lineage_df.drop(columns = "week_num", inplace = True)
+    
+    SpikeGroups_dic["Frequencies"] = frequency_lineage_df
+    
 
 """ Save frequency pseudogroup data """
 freq_dic = {}
@@ -188,11 +192,14 @@ if "Wuhan-Hu-1" not in SpikeGroups_list:
     print("Number of Spikegroups: %d + 1 Wuhan-Hu-1"%(len(SpikeGroups_list) - 1))
 else:
     print("Number of Spikegroups: %d + 1 Wuhan-Hu-1"%(len(SpikeGroups_list) - 2))
+        
 
 freq_df = pd.DataFrame(freq_dic, index = np.arange(0, len(date_list)))
 freq_df.to_csv(sys.argv[4])
 
-print("Number of lineages composing Spikegroups: %d"%len(list(SpikeGroups_dic.keys())))
+
+print("Number of lineages composing Spikegroups: %d"%(len(list(SpikeGroups_dic.keys())) - 1))
+    
 ### Save SpikeGroups_list and Mutation_Profiles
 spk_file = open(sys.argv[5], "wb")
 pickle.dump({"names":SpikeGroups_list}, spk_file)

@@ -361,19 +361,19 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop, mask = prop_mask)
 
             ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
-            ax_twin.plot(t_prop, Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
-            ax_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
+            ax_twin.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
+            #ax_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
 
             ### Plot spikegroups frequencies
             if np.all(plot_prop):
                 Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop, mask=prop_mask)
                 ax_prop.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
-                ax_prop.scatter(t_prop, 100*Pseudo_Prop_masked, marker = ".", color = color_list[k])
+                #ax_prop.scatter(t_prop, 100*Pseudo_Prop_masked, marker = ".", color = color_list[k])
 
             
             ax_k.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
-            ax_k_twin.plot(t_prop, Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
-            ax_k_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
+            ax_k_twin.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
+            #ax_k_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
             ax_k.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
             
             ymin1, ymax1 = ax_k.get_ylim()
@@ -470,7 +470,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ax_k.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
             ax_k_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
             ax_k.set_ylabel("Relative fitness", fontsize = 20)
-            ax_k_twin.set_ylabel("Variant abundance (daily)", fontsize = 20)
+            ax_k_twin.set_ylabel("Spikegroups Frequency (daily %)", fontsize = 20)
             pdf_k = PdfPages(sys.argv[w_save]+"/relative_fitness_%s_vs_prop.pdf"%(lab_k_fn))
             pdf_k.savefig(fig_k, bbox_inches = "tight")
             pdf_k.close()
@@ -626,7 +626,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
     ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
     ax.set_ylabel("Relative fitness", fontsize = 20)
-    ax_twin.set_ylabel("Variant abundance (daily)", fontsize = 20)
+    ax_twin.set_ylabel("Spikegroup Frequency (daily %)", fontsize = 20)
     pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_groups.pdf")
     pdf.savefig(fig, bbox_inches = "tight")
     pdf.close()
@@ -703,7 +703,11 @@ s = 0
 for i in range(num_groups):
     lineage_list.append(str(sys.argv[k+i]))
     try:
-        color_list.append(str(sys.argv[k+num_groups+i]))
+        if "/" not in str(sys.argv[k+num_groups+i]):
+            color_list.append(str(sys.argv[k+num_groups+i]))
+        else:
+            split_col = str(sys.argv[k+num_groups+i]).split("/")
+            color_list.append(tuple([float(split_col[c]) for c in range(len(split_col))])) ### anything else is error)
     except:
         rand_num = np.random.choice(1, 100)
         if s<len(custom_col):
@@ -715,12 +719,13 @@ for i in range(num_groups):
 status_list, already_prop, ax_prop, perday_orig, fig_prop = plot_fit(ES_lin_dir, lineage_list, color_list, w_save, already_prop = np.zeros((len(t_prop))))
 ### Group Plot proportion of all other spikegroups
 ax_prop.plot(t_prop, (100 - 100*already_prop), linewidth = 3, color = "grey", label = "Other")
-ax_prop.scatter(t_prop, (100 - 100*already_prop), marker = ".", color = "grey")
+#ax_prop.scatter(t_prop, (100 - 100*already_prop), marker = ".", color = "grey")
 ymin, ymax = ax_prop.get_ylim()
-ax_prop.set_ylim(((0, 1.1*ymax)))
+
+ax_prop.set_ylim(((0, 1.0*ymax)))
 ax_prop.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
 pdf2 = PdfPages(sys.argv[w_save]+"/Groups_proportions.pdf")
-ax_prop.set_ylabel("Frequency (daily %)", fontsize = 20)
+ax_prop.set_ylabel("Spikegroups Frequency (daily %)", fontsize = 20)
 pdf2.savefig(fig_prop, bbox_inches = "tight")
 fig_prop.savefig(sys.argv[w_save]+"/Groups_proportions.svg")
 pdf2.close()

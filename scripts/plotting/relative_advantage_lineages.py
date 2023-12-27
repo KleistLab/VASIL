@@ -66,6 +66,7 @@ col_sums = freqs.sum(axis = 1).values
 freqs = freqs.divide(col_sums, axis="rows")
 freqs = freqs.fillna(0)
 variant_freq.loc[:, variant_freq.columns != 'date'] = freqs
+print("Number of spikegroups: %d + 1 Wuhan-Hu-1"%len(variant_freq.columns[variant_freq.columns!="Wuhan-Hu-1"]))
 day_prop = variant_freq["date"].tolist()
 t_prop = np.arange(len(day_prop)).astype(int)
 
@@ -94,6 +95,7 @@ try:
     freqs = freqs.divide(col_sums, axis="rows")
     freqs = freqs.fillna(0)
     Lineage_freqs.loc[:, Lineage_freqs.columns != 'date'] = freqs
+    print("Number lineages composing Spikegroups: %d"%len(Lineage_freqs.columns[Lineage_freqs.columns!="Wuhan-Hu-1"]))
     day_prop = Lineage_freqs["date"].tolist()
     t_prop = np.arange(len(day_prop)).astype(int)
 except:
@@ -185,7 +187,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     es_cols = ES_df.columns
                     ES_df = ES_df[ES_df['Days'].isin(t_dates)]
                     ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))    
-                run = True
+                    run = True
             except:
                 try:
                     ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
@@ -213,7 +215,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                             es_cols = ES_df.columns
                             ES_df = ES_df[ES_df['Days'].isin(t_dates)]
                             ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
-                        run = True
+                            run = True
                     except:
                         try:
                             #if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
@@ -306,10 +308,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                                 sub_prop_lin = moving_average(Lineage_freqs[lineage], window = 14)
                             else:
                                 sub_prop_lin = sub_prop.copy()
-                            
-                            within_spike_weight.append(np.divide(sub_prop_lin, sub_prop, out= np.zeros(len(sub_prop)), where = sub_prop!=0))
-                            prop_list.append(sub_prop_lin)
                             Pseudo_Prop += sub_prop_lin
+                            prop_list.append(sub_prop_lin)
                             lab_done[lineage_list[k]] = lab_done[lineage_list[k]][:-1] + " + "+lab_k
                             if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
                                 already_prop += sub_prop_lin
@@ -329,7 +329,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                                 sub_prop_lin = sub_prop.copy()
                             
                             within_spike_weight.append(np.divide(sub_prop_lin, sub_prop, out= np.zeros(len(sub_prop)), where = sub_prop!=0))
-                            prop_list.append(sub_prop_lin)
                         else:
                             lab_done[lineage_list[k]] += " + "+lab_k
                     
@@ -359,8 +358,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         if (lab_k != "" and num_avail != 0):
             if (num_avail == len(ES_list)):
                 """Convert Spikegroup-specific to lineage-specific E[Susceptible]"""
-                ES_lin_corrected = np.array(within_spike_weight)[:, :ES_list[0].shape[0], np.newaxis]*np.array(ES_list)
-                #ES_lin_corrected = np.array(ES_list)
+                #ES_lin_corrected = np.array(within_spike_weight)[:, :ES_list[0].shape[0], np.newaxis]*np.array(ES_list)
+                ES_lin_corrected = np.array(ES_list)
                 """Compute weighted mean accross Lineages"""
                 #ES_ranges= np.mean(np.array(ES_list), axis = 0) # compute the mean
                 Props = np.array(prop_list)[:, :ES_list[0].shape[0]]
@@ -426,7 +425,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop, mask = prop_mask)
 
             ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
-            ax_twin.plot(t_prop, Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
+            ax_twin.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
             #ax_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
 
             ### Plot spikegroups frequencies
@@ -535,9 +534,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ax_k.axhline(xmin = 0, xmax = len(t_prop), ls = "--", linewidth = 2, color = "black")
             ax_k.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
             ax_k_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
-            ax_k.set_ylabel("Relative fitness", fontsize = 20)
-            #ax_k_twin.set_ylabel("Variant abundance (daily)", fontsize = 20)
-            ax_k_twin.set_ylabel("Frequency (%)", fontsize = 20)
+            ax_k_twin.set_ylabel("Lineage Frequency (daily %)", fontsize = 20)
             pdf_k = PdfPages(sys.argv[w_save]+"/relative_fitness_%s_vs_prop.pdf"%(lab_k_fn))
             pdf_k.savefig(fig_k, bbox_inches = "tight")
             pdf_k.close()
@@ -693,7 +690,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
     ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
     ax.set_ylabel("Relative fitness", fontsize = 20)
-    ax_twin.set_ylabel("Variant abundance (daily)", fontsize = 20)
+    ax_twin.set_ylabel("Lineage Frequency (daily %)", fontsize = 20)
     pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_groups.pdf")
     pdf.savefig(fig, bbox_inches = "tight")
     pdf.close()
@@ -770,7 +767,11 @@ s = 0
 for i in range(num_groups):
     lineage_list.append(str(sys.argv[k+i]))
     try:
-        color_list.append(str(sys.argv[k+num_groups+i]))
+        if "/" not in str(sys.argv[k+num_groups+i]):
+            color_list.append(str(sys.argv[k+num_groups+i]))
+        else:
+            split_col = str(sys.argv[k+num_groups+i]).split("/")
+            color_list.append(tuple([float(split_col[c]) for c in range(len(split_col))])) ### anything else is error)
     except:
         rand_num = np.random.choice(1, 100)
         if s<len(custom_col):
@@ -784,10 +785,10 @@ status_list, already_prop, ax_prop, perday_orig, fig_prop = plot_fit(ES_lin_dir,
 ax_prop.plot(t_prop, (100 - 100*already_prop), linewidth = 3, color = "grey", label = "Other")
 #ax_prop.scatter(t_prop, (100 - 100*already_prop), marker = ".", color = "grey")
 ymin, ymax = ax_prop.get_ylim()
-ax_prop.set_ylim(((0, 1.1*ymax)))
+ax_prop.set_ylim(((0, 1.0*ymax)))
 ax_prop.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
 pdf2 = PdfPages(sys.argv[w_save]+"/Groups_proportions.pdf")
-ax_prop.set_ylabel("Frequency (daily %)", fontsize = 20)
+ax_prop.set_ylabel("Lineage Frequency (daily %)", fontsize = 20)
 pdf2.savefig(fig_prop, bbox_inches = "tight")
 fig_prop.savefig(sys.argv[w_save]+"/Groups_proportions.svg")
 pdf2.close()
