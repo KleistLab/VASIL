@@ -168,24 +168,19 @@ try:
        Lin_df = pd.DataFrame(Lin_dic)
        col_sums = Lin_df.sum(axis = 1).values
        Lin_df = 100*Lin_df.divide(col_sums, axis="rows")
-       Lin_df["date"] = days_prop
+       Lin_df["date"] = date_list
+       Lin_df = Lin_df.fillna(0)
+       Lin_df.drop(index = Lin_df.index[np.array(Lin_df["date"]) == 0], inplace= True)
        Lin_df.to_csv("results/Daily_Lineages_Freq_%s_percent.csv"%str(int(filt_params*100)))
+       SpikeGroups_dic["Frequencies"] = Lin_df
 except:
     pass
-
-"""Interpolating missing proportion data """
-#inds_missing = np.arange(0, len(date_list), 1).astype(int)[mask_missing]
-#variant_proportion_interpolated = np.zeros(variant_proportion.shape)
-#for i in range(len(date_list)):
-#    variant_proportion_interpolated[]
-
-variant_proportion_interpolated = variant_proportion
 
 """ Save frequency pseudogroup data """
 freq_dic = {}
 freq_dic["date"] = date_list
 for x in range(len(SpikeGroups_list)):
-    freq_dic["Spike. "+SpikeGroups_list[x]] = variant_proportion_interpolated[x, :]*100 
+    freq_dic["Spike. "+SpikeGroups_list[x]] = variant_proportion[x, :]*100 
 
 if "Wuhan-Hu-1" not in SpikeGroups_list:
     freq_dic["Wuhan-Hu-1"] = np.zeros(variant_proportion.shape[1])
@@ -206,7 +201,7 @@ mut_file = open(sys.argv[6], "wb")
 pickle.dump({"positions": mut_x_sites_dic, "AA_changes":AA_change_dic}, mut_file)
 mut_file.close()
 
-### Save SpikeGroups_dic
+### Save SpikeGroups_dic also containing lineage frequencies for easier data handling
 file = open("Spikegroups_membership.pck", "wb")
 pickle.dump(SpikeGroups_dic,file)
 file.close()

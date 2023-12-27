@@ -349,7 +349,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             for i in range(ES_ranges.shape[1]):
                 S_x = ES_ranges[:, i]
                 S_mean = S_all_mean[:, i]
-                gamma_SI[:, i] = np.divide(S_x - S_mean, S_mean, out = S_x, where = S_mean != 0)
+                gamma_SI[:, i] = np.divide(S_x - S_mean, S_mean, out = S_x, where = (S_mean != 0)&(S_x!=0))
             
             
             # get min max gamma over PK at each timepoints
