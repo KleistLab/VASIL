@@ -529,7 +529,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             if (x_min is not None):
                 ax_k.set_xlim((x_min, x_max))
                 ax_k_twin.set_xlim((x_min1, x_max1))
-                
+            
             #ax_twin.set_ylim((-0.02, 0.02))
             ax_k.axhline(xmin = 0, xmax = len(t_prop), ls = "--", linewidth = 2, color = "black")
             ax_k.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
@@ -559,9 +559,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 rotation = 45, horizontalalignment = "right")
             
             if x_min is not None:
-                ax2.set_xlim((x_min, x_max))
-                ax2_twin.set_xlim((x_min, x_max))
-                
+                ax2.set_xlim((x_min, min(x_max, inds_dates[-1])))
+                ax2_twin.set_xlim((x_min, min(x_max, inds_dates[-1])))    
             
             ymin1, ymax1 = ax2.get_ylim()
             ymin2, ymax2 = ax2_twin.get_ylim()

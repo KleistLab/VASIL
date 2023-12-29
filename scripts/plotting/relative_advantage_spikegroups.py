@@ -75,7 +75,7 @@ file.close()
 def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, already_prop = np.zeros((len(t_prop)))):
     # plotting
     PreFig(xsize = 20, ysize = 20)
-    fig = plt.figure(figsize = (9, 7))
+    fig = plt.figure(figsize = (15, 7))
     ax = fig.add_subplot(1, 1, 1)
     ### end of observation line
     ax.axvline(x = len(t_dates) - 1, ymin = -1, ymax = 1, ls = "--", linewidth = 2, color = "grey")
@@ -84,7 +84,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     
     ### Separate figure for proportions
     PreFig(xsize = 20, ysize = 20)
-    fig_prop = plt.figure(figsize = (9, 7))
+    fig_prop = plt.figure(figsize = (15, 7))
     ax_prop = fig_prop.add_subplot(1, 1, 1)
     
     status_list = []
@@ -123,7 +123,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         num_avail = 0
         # plotting
         PreFig(xsize = 20, ysize = 20)
-        fig_k = plt.figure(figsize = (9, 7))
+        fig_k = plt.figure(figsize = (15, 7))
         ax_k = fig_k.add_subplot(1, 1, 1)
         ### end of observation line
         ax_k.axvline(x = len(t_dates) - 1, ymin = -1, ymax = 1, ls = "--", linewidth = 2, color = "grey")
@@ -311,7 +311,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             Pseudo_Prop2 = list(Pseudo_Prop2)
             gamma_prop = np.zeros(len(t_dates))
             SI_mask = np.zeros(len(t_dates)).astype(bool)
-            for l in range(len(t_dates)-1):
+            for l in range(len(t_dates)):
                 #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
                 ## Dates are already set to always be to be successive
                 if t_dates[l] in day_prop:
@@ -328,21 +328,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 else:
                     gamma_prop[l] = float('nan')
                     SI_mask[l] = True
-            
-            if t_dates[len(t_dates)-1] in day_prop and len(day_prop)>len(t_dates):
-                w_l = list(day_prop).index(t_dates[len(t_dates)-1])
-                try:
-                    if Pseudo_Prop2[w_l] == 0 or Pseudo_Prop2[w_l+1] == 0:
-                        gamma_prop[l] = float('nan')
-                        SI_mask[l] == True
-                    else:
-                        gamma_prop[l] = (Pseudo_Prop2[w_l+1]/Pseudo_Prop2[w_l]) - 1
-                except:
-                    gamma_prop[l] = float('nan')
-                    SI_mask[l] = True
-            else:
-                gamma_prop[l] = float('nan')
-                SI_mask[l] = True
             
             # calculation of relative fitness
             gamma_SI = np.zeros((len(t_dates), ES_ranges.shape[1]))
@@ -361,18 +346,18 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop, mask = prop_mask)
 
             ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
-            ax_twin.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
+            ax_twin.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[k], label = lab_k)
             #ax_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
 
             ### Plot spikegroups frequencies
             if np.all(plot_prop):
                 Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop, mask=prop_mask)
-                ax_prop.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
+                ax_prop.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[k], label = lab_k)
                 #ax_prop.scatter(t_prop, 100*Pseudo_Prop_masked, marker = ".", color = color_list[k])
 
             
             ax_k.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
-            ax_k_twin.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
+            ax_k_twin.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[k], label = lab_k)
             #ax_k_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
             ax_k.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
             
@@ -487,7 +472,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             
             gamma_prop_masked = ma.masked_array(gamma_prop, mask = SI_mask)
             ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = lab_k)
-            ax2_twin.plot(inds_dates, gamma_prop_masked, color = "orange", label=lab_k)
+            ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[k], linewidth = 4,  label=lab_k)
             #ax2_twin.scatter(inds_dates, gamma_prop_masked, marker = ".", color = "orange")
 
             ax2.set_xticks(perday_orig)
@@ -495,9 +480,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 rotation = 45, horizontalalignment = "right")
             
             if x_min is not None:
-                ax2.set_xlim((x_min, x_max))
-                ax2_twin.set_xlim((x_min, x_max))
-                
+                ax2.set_xlim((x_min, min(x_max, inds_dates[-1])))
+                ax2_twin.set_xlim((x_min, min(x_max, inds_dates[-1])))
             
             ymin1, ymax1 = ax2.get_ylim()
             ymin2, ymax2 = ax2_twin.get_ylim()
@@ -519,9 +503,80 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             pdf_2 = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lab_k_fn)
             pdf_2.savefig(fig2, bbox_inches = "tight")
             pdf_2.close()
-     
             fig2.savefig(sys.argv[w_save]+"/relative_fitness_%s.svg"%lab_k_fn, bbox_inches = "tight")
             plt.close()
+            
+            gamma_prop_ranges = inds_dates[~(np.isnan(gamma_prop_masked)|SI_mask)]
+            if len(gamma_prop_ranges)>=2:
+                x0, xf = gamma_prop_ranges[0], gamma_prop_ranges[-1]
+                if x_min is not None:
+                    x0 = max(x_min, x0-62)
+                    xf = min(x_max, xf+62, inds_dates[-1])
+                else:
+                    x0 = max(inds_dates[0], x0-62)
+                    xf = min(inds_dates[-1], xf+62)
+                
+                
+                inds_b0 = inds_dates[x0:xf+1]
+                
+                if len(gamma_prop_ranges)>200:
+                    pp = 7*4
+                else:
+                    pp = min(len(inds_b0), 14)
+                
+                inds_b = inds_b0[::pp]
+    
+                ticks_b = list(np.array(t_dates)[inds_b])
+                
+                if x0 not in inds_b:
+                    inds_b = np.append(x0, inds_b)
+                    ticks_b = [t_dates[x0]] + ticks_b
+                if xf not in inds_b:
+                    inds_b = np.append(inds_b, xf)
+                    ticks_b = ticks_b + [t_dates[xf]]
+                    
+                
+                
+                PreFig(xsize = 20, ysize = 20)
+                fig2b = plt.figure(figsize = (15, 7))
+                ax2b = fig2b.add_subplot(1, 1, 1)
+                # different axis for proportions
+                ax2b_twin = ax2b.twinx()
+                gamma_SI_min_b, gamma_SI_max_b = gamma_SI_min[x0:xf+1], gamma_SI_max[x0:xf+1]
+                inds_dates_b, gamma_prop_masked_b = inds_dates[x0:xf+1], gamma_prop_masked[x0:xf+1]
+                ax2b.fill_between(inds_dates_b, gamma_SI_min_b, gamma_SI_max_b, color = "green", alpha = 0.3, label = lab_k)
+                ax2b_twin.plot(inds_dates_b, gamma_prop_masked_b, color = color_list[k], linewidth = 4,  label=lab_k)
+                
+                ax2b.set_xticks(inds_b)
+                ax2b.set_xticklabels(ticks_b,
+                    rotation = 45, horizontalalignment = "right")
+                
+                ax2b.set_xlim((x0, xf))
+                ax2b_twin.set_xlim((x0,xf))
+                
+                ymin1, ymax1 = ax2b.get_ylim()
+                ymin2, ymax2 = ax2b_twin.get_ylim()
+                ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
+                
+                #loc0 = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
+                #mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, loc0)
+                mpl_axes_aligner.align.yaxes(ax2b, 0, ax2b_twin, 0, 0.5)
+                
+                if (ymin1/ymin2 >0.5) or (ymax1/ymax2>0.5) or (ymin2/ymin1 >0.5) or (ymax2/ymax1>0.5):
+                    ax2b.set_ylim((ymin, ymax))
+                    ax2b_twin.set_ylim((ymin, ymax))
+                
+                ax2b.axhline(xmin = 0, xmax = len(day_prop), ls = "--", linewidth = 2, color = "black")
+                ax2b.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+                ax2b_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+                ax2b.set_ylabel("Relative fitness $\gamma_y$", fontsize = 20)
+                ax2b_twin.set_ylabel("Change in proportion $\gamma_{prop}$", fontsize = 20)
+                
+                pdf_2b = PdfPages(sys.argv[w_save]+"/relative_fitness_%s_cropped.pdf"%lab_k_fn)
+                pdf_2b.savefig(fig2b, bbox_inches = "tight")
+                pdf_2b.close()
+                fig2.savefig(sys.argv[w_save]+"/relative_fitness_%s_cropped.svg"%lab_k_fn, bbox_inches = "tight")
+                plt.close()
             
             status_list.append(lab_status)
         
@@ -718,7 +773,7 @@ for i in range(num_groups):
 
 status_list, already_prop, ax_prop, perday_orig, fig_prop = plot_fit(ES_lin_dir, lineage_list, color_list, w_save, already_prop = np.zeros((len(t_prop))))
 ### Group Plot proportion of all other spikegroups
-ax_prop.plot(t_prop, (100 - 100*already_prop), linewidth = 3, color = "grey", label = "Other")
+ax_prop.plot(t_prop, (100 - 100*already_prop), linewidth = 4, color = "grey", label = "Other")
 #ax_prop.scatter(t_prop, (100 - 100*already_prop), marker = ".", color = "grey")
 ymin, ymax = ax_prop.get_ylim()
 

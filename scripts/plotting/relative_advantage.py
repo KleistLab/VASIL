@@ -92,7 +92,7 @@ def plot_fit(ES_df, lineage, w_save = 6):
     gamma_prop = np.zeros(len(t_dates))
     Pseudo_Prop = list(Pseudo_Prop)
     SI_mask = np.zeros(len(t_dates)).astype(bool)
-    for l in range(len(t_dates)-1):
+    for l in range(len(t_dates)):
         if t_dates[l] in day_prop:
             w_l = list(day_prop).index(t_dates[l])
             if Pseudo_Prop[w_l] == 0 or Pseudo_Prop[w_l+1] == 0:
@@ -103,21 +103,6 @@ def plot_fit(ES_df, lineage, w_save = 6):
         else:
             gamma_prop[l] = float('nan')
             SI_mask[l] = True
-    
-    if t_dates[len(t_dates)-1] in day_prop and len(day_prop)>len(t_dates):
-        w_l = list(day_prop).index(t_dates[len(t_dates)-1])
-        try:                        
-            if Pseudo_Prop[w_l] == 0 or Pseudo_Prop[w_l+1] == 0:
-                gamma_prop[l] = float('nan')
-                SI_mask[l] == True
-            else:
-                gamma_prop[l] = (Pseudo_Prop[w_l+1]/Pseudo_Prop[w_l]) - 1
-        except:
-            gamma_prop[l] = float('nan')
-            SI_mask[l] = True
-    else:
-        gamma_prop[l] = float('nan')
-        SI_mask[l] = True
         
     # plotting
     PreFig(xsize = 20, ysize = 20)
