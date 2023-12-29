@@ -1,8 +1,8 @@
 # 1a. Full path to GInPipe incidence data
-cases: "caseAscertainmentTable_reportedCasesRatio.csv"
-cases_column: "minNTrue" ## provide the data column name of the case ascertainment that you want to use
+cases: "smoothed_phi_estimates_Germany.csv"
+cases_column: "smoothed_phi" ## provide the data column name of the case ascertainment that you want to use
 # 1b. Fixed total population size for the region of interest
-total_population: 84334787
+total_population: 4045059.10462273
 # 1c. Fix time range for all figures
 time_start: "2022-03-01" ### show time range
 time_stop: "2023-07-27"  ### must be included at least in covsonar timeframe
