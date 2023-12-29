@@ -35,9 +35,6 @@ if config["plot_groups"]:
     if "Germany" in config["cases"]:
         rule_all_common.append("plots/relative_groups_Germany/As_Spikegroups/plot_status.csv")
         
-if config["plot_groups"]:
-    rule_all_common.append("plots/relative_groups/As_Lineages/plot_status.csv"),
-
 if config["p_neut_groups"]:
     rule_all_common.append("plots/P_neut_PK_groups/plot_status.csv"),
 
