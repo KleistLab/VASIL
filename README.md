@@ -220,7 +220,8 @@ The figure pipeline (`config_plots.yaml`) add new data to *results* folder and c
 		|-- plot_status.csv	  	# Writes if plot is "done" or "Error"
 		|-- relative_fitness_*.pdf/svg # relative growth advantage of lineage_focus
 	|-- relative_groups      # Relative fitness for compare_groups
-		|-- relative_fitness_group.pdf/svg # plot relative fitness for chosen variants (compare_groups)
+		|-- As_Spikegroups/relative_fitness_group.pdf/svg # plot relative fitness for chosen variants treating them as spikegroups (compare_groups)
+		|-- As_Lineages/relative_fitness_group.pdf/svg # plot relative fitness for chosen variants treating them as Lineages (compare_groups)
         |-- relative_all # relative fitness for all spikegroups
 		|-- plot_status_all.csv	  	# Writes if plot is "done" or "Error"
 		|-- relative_fitness_*.pdf/svg	# relative growth advantage for all spikegroups present in data
@@ -279,7 +280,7 @@ The figures are located as follows
               c-d: MS_data/plots/P_neut_*/P_Neut_.pdf,svg*
 |-- Figure 4: a: MS_data/plots/P_neut_groups/P_Neut_.pdf/svg*         
               b: MS_data/plots/relative or relative_all/relative_fitness_*.pdf,svg 
-              c: MS_data/plots/relative_groups_germany/relative_fitness_groups.pdf,svg (special file generated from scripts/plotting/relative_advantage_spikegroups_germany_special.py)         
+              c: MS_data/plots/relative_groups_germany/As_Spikegroups/relative_fitness_groups.pdf,svg (special file generated from scripts/plotting/relative_advantage_spikegroups_germany_special.py)         
 |-- Figure 5: a: generated off pipeline
               b: generated off pipepline                             
               c: MS_data/plots/absolute/absolute_estimate.pdf,svg
@@ -305,7 +306,7 @@ The plot for the estimation of change in relative fitness should look like this:
 ![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative_all/relative_fitness_Spike.%20BA.4.svg)
 
 The plot for the estimation of change in relative fitness for compared groups should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative_groups/relative_fitness_groups.svg)
+![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative_groups/As_Spikegroups/relative_fitness_groups.svg)
 
 ## Caution
 Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present (unless an input file is updated by another rule), remove older files from the *results* folder when needed.
