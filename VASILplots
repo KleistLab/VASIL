@@ -1,4 +1,4 @@
-# Main workflow of VASIL
+# Workflow of VASIL figure plotting
 
 
 report: "report/workflow.rst"
@@ -32,7 +32,9 @@ if config["p_neut"]:
 if config["plot_groups"]:
     rule_all_common.append("plots/relative_groups/As_Lineages/plot_status.csv"),
     rule_all_common.append("plots/relative_groups/As_Spikegroups/plot_status.csv"),
-
+    if "Germany" in config["cases"]:
+        rule_all_common.append("plots/relative_groups_Germany/As_Spikegroups/plot_status.csv")
+        
 if config["plot_groups"]:
     rule_all_common.append("plots/relative_groups/As_Lineages/plot_status.csv"),
 
@@ -165,7 +167,26 @@ if config["plot_groups"]:
             res="plots/relative_groups/As_Spikegroups/plot_status.csv",
         shell:
             "python {workflow.basedir}/scripts/plotting/relative_advantage_spikegroups.py {input.ES_lin_dir} {input.mean_trend} {input.spikes_freqs} {params.threshold} {params.time_start} {params.time_stop} {params.len_groups} {output.res_dir} {params.lineage_focus} {params.col_groups}"
-
+	
+    if "Germany" in config["cases"]:
+        rule get_relative_spikegroups_germany_special:
+            input:
+                ES_lin_dir=config["S_groups"],
+                spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
+                mean_trend="results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv",
+            params:
+                threshold=config["weight_prop"],
+                lineage_focus=config["compare_groups"],
+                time_start=config["time_start"],
+                time_stop=config["time_stop"],
+                col_groups=config["color_groups"],
+                len_groups=len(config["compare_groups"]),
+            output:
+                res_dir=directory("plots/relative_groups_Germany/As_Spikegroups"),
+                res="plots/relative_groups_Germany/As_Spikegroups/plot_status.csv",
+            shell:
+                "python {workflow.basedir}/scripts/plotting/relative_advantage_spikegroups_germany_special.py {input.ES_lin_dir} {input.mean_trend} {input.spikes_freqs} {params.threshold} {params.time_start} {params.time_stop} {params.len_groups} {output.res_dir} {params.lineage_focus} {params.col_groups}"
+	    
 
 if config["p_neut_groups"]:
 

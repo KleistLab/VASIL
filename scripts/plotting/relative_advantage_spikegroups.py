@@ -156,20 +156,21 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     es_cols = ES_df.columns
                     ES_df = ES_df[ES_df['Days'].isin(t_dates)]
                     ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))    
-                run = True
+                    run = True
             except:
                 try:
-                    ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
-                    num_avail +=1
-                    try:
-                        ES_df.drop(columns = "Unnamed: 0", inplace = True)
-                    except:
-                        pass
-                    
-                    es_cols = ES_df.columns
-                    ES_df = ES_df[ES_df['Days'].isin(t_dates)]
-                    ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
-                    run = True
+                    if "Placeholder"+ lineage not in (Pseudo_done[lineage_list[k]].split("/")):
+                        ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+                        num_avail +=1
+                        try:
+                            ES_df.drop(columns = "Unnamed: 0", inplace = True)
+                        except:
+                            pass
+                        
+                        es_cols = ES_df.columns
+                        ES_df = ES_df[ES_df['Days'].isin(t_dates)]
+                        ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
+                        run = True
                 except:
                     try:
                         if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
@@ -183,40 +184,41 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                             es_cols = ES_df.columns
                             ES_df = ES_df[ES_df['Days'].isin(t_dates)]
                             ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
-                        run = True
+                            run = True
                     except:
                         try:
                             if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
                                 ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
                                 num_avail +=1
                             
-                            try:
-                                ES_df.drop(columns = "Unnamed: 0", inplace = True)
-                            except:
-                                pass
-                            
-                            es_cols = ES_df.columns
-                            ES_df = ES_df[ES_df['Days'].isin(t_dates)]
-                            ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
-                            run = True
+                                try:
+                                    ES_df.drop(columns = "Unnamed: 0", inplace = True)
+                                except:
+                                    pass
+                                
+                                es_cols = ES_df.columns
+                                ES_df = ES_df[ES_df['Days'].isin(t_dates)]
+                                ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
+                                run = True
                         except:
                              try:
-                                 ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
-                                 num_avail +=1
-                                 try:
-                                     ES_df.drop(columns = "Unnamed: 0", inplace = True)
-                                 except:
-                                     pass
+                                 if "Placeholder"+ lineage not in (Pseudo_done[lineage_list[k]].split("/")):
+                                     ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+                                     num_avail +=1
+                                     try:
+                                         ES_df.drop(columns = "Unnamed: 0", inplace = True)
+                                     except:
+                                         pass
+                                        
+                                     es_cols = ES_df.columns
+                                     ES_df = ES_df[ES_df['Days'].isin(t_dates)]
+                                     ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
                                     
-                                 es_cols = ES_df.columns
-                                 ES_df = ES_df[ES_df['Days'].isin(t_dates)]
-                                 ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
-                                
-                                 run = True
+                                     run = True
                              except:
                                 print("Computation needed: Expected Susceptible file is not available for %s"%lineage)
                                 run = False
-            
+                                
             # processing of Proportions data
             if run:   
                 # change in relative frequency from genomic surveillance data 

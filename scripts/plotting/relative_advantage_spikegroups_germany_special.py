@@ -35,13 +35,9 @@ def upper_ci(z_crit, proportion, total_size):
 
 ES_lin_dir = sys.argv[1]
 S_mean_file = sys.argv[2]
+
 lineage_freq = pd.read_csv(sys.argv[3])
 threshold = float(sys.argv[4])
-
-#ES_df = pd.read_csv("demo/results/Immunological_Landscape/Susceptible_SpikeGroup_lineage_XXX_all_PK.csv")
-#lineage_freq = pd.read_csv("demo/results/Daily_Lineages_Freq.csv")
-#threshold = 0 #(percent)
-#variant = "BA.5.1"
 
 # needs to be updated to allow individual weighting 
 S_mean_df = pd.read_csv(S_mean_file)
@@ -184,20 +180,21 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     es_cols = ES_df.columns
                     ES_df = ES_df[ES_df['Days'].isin(t_dates)]
                     ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))    
-                run = True
+                    run = True
             except:
                 try:
-                    ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
-                    num_avail +=1
-                    try:
-                        ES_df.drop(columns = "Unnamed: 0", inplace = True)
-                    except:
-                        pass
-                    
-                    es_cols = ES_df.columns
-                    ES_df = ES_df[ES_df['Days'].isin(t_dates)]
-                    ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
-                    run = True
+                    if "Placeholder"+ lineage not in (Pseudo_done[lineage_list[k]].split("/")):
+                        ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+                        num_avail +=1
+                        try:
+                            ES_df.drop(columns = "Unnamed: 0", inplace = True)
+                        except:
+                            pass
+                        
+                        es_cols = ES_df.columns
+                        ES_df = ES_df[ES_df['Days'].isin(t_dates)]
+                        ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
+                        run = True
                 except:
                     try:
                         if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
@@ -211,36 +208,37 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                             es_cols = ES_df.columns
                             ES_df = ES_df[ES_df['Days'].isin(t_dates)]
                             ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
-                        run = True
+                            run = True
                     except:
                         try:
                             if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
                                 ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
                                 num_avail +=1
                             
-                            try:
-                                ES_df.drop(columns = "Unnamed: 0", inplace = True)
-                            except:
-                                pass
-                            
-                            es_cols = ES_df.columns
-                            ES_df = ES_df[ES_df['Days'].isin(t_dates)]
-                            ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
-                            run = True
+                                try:
+                                    ES_df.drop(columns = "Unnamed: 0", inplace = True)
+                                except:
+                                    pass
+                                
+                                es_cols = ES_df.columns
+                                ES_df = ES_df[ES_df['Days'].isin(t_dates)]
+                                ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
+                                run = True
                         except:
                              try:
-                                 ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
-                                 num_avail +=1
-                                 try:
-                                     ES_df.drop(columns = "Unnamed: 0", inplace = True)
-                                 except:
-                                     pass
+                                 if "Placeholder"+ lineage not in (Pseudo_done[lineage_list[k]].split("/")):
+                                     ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%lineage)
+                                     num_avail +=1
+                                     try:
+                                         ES_df.drop(columns = "Unnamed: 0", inplace = True)
+                                     except:
+                                         pass
+                                        
+                                     es_cols = ES_df.columns
+                                     ES_df = ES_df[ES_df['Days'].isin(t_dates)]
+                                     ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
                                     
-                                 es_cols = ES_df.columns
-                                 ES_df = ES_df[ES_df['Days'].isin(t_dates)]
-                                 ES_list.append(ES_df.to_numpy()[:, es_cols!="Days"].astype(float))
-                                
-                                 run = True
+                                     run = True
                              except:
                                 print("Computation needed: Expected Susceptible file is not available for %s"%lineage)
                                 run = False
@@ -399,6 +397,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 Prop_after = Prop_after.to_numpy()
             except:
                 1+1
+                
             Prop_after_lower = Prop_after - lower_ci(z_crit, Prop_after, genomes_month.values)
             Prop_after_lower[Prop_after_lower <0 ] = 0
             Prop_after_upper = Prop_after + upper_ci(z_crit, Prop_after, genomes_month.values)
@@ -547,8 +546,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 rotation = 45, horizontalalignment = "right")
             
             if x_min is not None:
-                ax2.set_xlim((x_min, x_max))
-                ax2_twin.set_xlim((x_min, x_max))
+                ax2.set_xlim((x_min, min(x_max, inds_dates[-1])))
+                ax2_twin.set_xlim((x_min, min(x_max, inds_dates[-1])))   
                 
             
             ymin1, ymax1 = ax2.get_ylim()
@@ -576,7 +575,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             plt.close()
             
             status_list.append(lab_status)
-        
+
         else:
             print("No lineages in group %s have E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k])
             status_list.append("No data")
