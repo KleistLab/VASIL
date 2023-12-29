@@ -34,7 +34,9 @@ if config["plot_groups"]:
     rule_all_common.append("plots/relative_groups/As_Spikegroups/plot_status.csv"),
     if "Germany" in config["cases"] and os.path.exists("Stichprobe_RKI-Jul2021_to_9thAug2023_KW.tsv"):
         rule_all_common.append("plots/relative_groups_Germany/As_Spikegroups/plot_status.csv")
-        
+    else:
+        print("Germany's covsonar file named Stichprobe_RKI-Jul2021_to_9thAug2023_KW.tsv is required to reproduce Fig 3B")
+                
 if config["p_neut_groups"]:
     rule_all_common.append("plots/P_neut_PK_groups/plot_status.csv"),
 
