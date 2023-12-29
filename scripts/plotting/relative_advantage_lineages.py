@@ -170,7 +170,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         start = 0
         ES_list = []
         prop_list = []
-        within_spike_weight = [] 
+        #within_spike_weight = [] 
         for x in range(len(splited_var)):
             lineage = splited_var[x]   
             try:
@@ -268,7 +268,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                             prop_list.append(sub_prop_lin)
                             Pseudo_Prop += sub_prop_lin
                             
-                            within_spike_weight.append(np.divide(sub_prop_lin, sub_prop, out= np.zeros(len(sub_prop)), where = sub_prop!=0))
+                            #within_spike_weight.append(np.divide(sub_prop_lin, sub_prop, out= np.zeros(len(sub_prop)), where = sub_prop!=0))
                                 
                             lab_done[lineage_list[k]] = lab_done[lineage_list[k]][:-1] + " + "+lab_k
                             if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
@@ -283,7 +283,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                             sub_prop = moving_average(variant_freq[Pseudogroup_dic[lineage]], window = 14)
                             sub_prop_lin = moving_average(Lineage_freqs[lineage], window = 14)
                             
-                            within_spike_weight.append(np.divide(sub_prop_lin, sub_prop, out= np.zeros(len(sub_prop)), where = sub_prop!=0))
+                            #within_spike_weight.append(np.divide(sub_prop_lin, sub_prop, out= np.zeros(len(sub_prop)), where = sub_prop!=0))
                             
                             prop_list.append(sub_prop_lin)
                             Pseudo_Prop += sub_prop_lin
@@ -309,6 +309,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                                 sub_prop_lin = sub_prop.copy()
                             Pseudo_Prop += sub_prop_lin
                             prop_list.append(sub_prop_lin)
+                            #within_spike_weight.append(np.divide(sub_prop_lin, sub_prop, out= np.zeros(len(sub_prop)), where = sub_prop!=0))
                             lab_done[lineage_list[k]] = lab_done[lineage_list[k]][:-1] + " + "+lab_k
                             if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
                                 already_prop += sub_prop_lin
@@ -328,7 +329,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                                 sub_prop_lin = sub_prop.copy()
                                 
                             prop_list.append(sub_prop_lin)
-                            within_spike_weight.append(np.divide(sub_prop_lin, sub_prop, out= np.zeros(len(sub_prop)), where = sub_prop!=0))
+                            #within_spike_weight.append(np.divide(sub_prop_lin, sub_prop, out= np.zeros(len(sub_prop)), where = sub_prop!=0))
                         else:
                             lab_done[lineage_list[k]] += " + "+lab_k
                     
