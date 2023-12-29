@@ -281,7 +281,7 @@ The figures are located as follows
 |-- Figure 4: a: MS_data/plots/P_neut_groups/P_Neut_.pdf/svg*         
               b: MS_data/plots/relative or relative_all/relative_fitness_*.pdf,svg 
               c: MS_data/plots/relative_groups_germany/As_Spikegroups/relative_fitness_groups.pdf,svg (special file generated from scripts/plotting/relative_advantage_spikegroups_germany_special.py)         
-|-- Figure 5: a/b: run command line: python scripts/plotting/compare_countries.py "path/to/Germany/new/path/to/USA" "Germany/USA" "GER/USA" 0.01 "2022-04-09/2022-04-26" "2022-08-21/2023-04-15" 2 Compared_Countries "BA.2.12.1" "BE.10.ALL" "red" "orange"                          
+|-- Figure 5: a/b: run command line: python scripts/plotting/compare_countries.py "path/to/Germany/new/path/to/USA" "Germany/USA" "GER/USA" 0.01 "2022-04-09/2022-04-26" "2022-08-21/2023-04-15" 2 path/to/folder_result "BA.2.12.1" "BE.10.ALL" "red" "orange"                          
               c: MS_data/plots/absolute/absolute_estimate.pdf,svg
               d: MS_data/plots/absolute/derivative_trends.pdf,svg
 ```

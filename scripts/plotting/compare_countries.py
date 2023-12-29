@@ -26,10 +26,20 @@ import pickle
 import mpl_axes_aligner
 import re
 
-#countries= ["Germany", "USA"]
-#countries_dir= ["ByCountry/Germany", "ByCountry/USA"] 
-#compare_variants= ["BA.2.12.1", "BE.10"]
-#countries_colors= ["orange", "#1f77b4"]
+"""
+Requires system arguments
+
+sys.argv[1]: "path/to/Country_1/new/path/to/Country_2/new/path/to/Country_3/..." ### as many countries as desired but always separated by /new/ and folder must include all country results
+sys.argv[2]: "Country_1/Country_2/Country_3/..." ### country names separated by / 
+sys.argv[2]: "Country_1/Country_2/Country_3/..." ### country labels separated by /
+sys.argv[4]: percentage to filter spikegroups #e.g. 0.01 
+sys.argv[5]: dates to start the comparison for each variants, separated by /, if only one then they will be all the same ### e.g. "2022-04-09/2022-04-26" for 2 variants
+sys.argv[6]: dates to end the comparison for each variants, separated by /, if only one then they will be all the same ### e.g. "2022-08-21/2023-04-15" for 2 variants
+sys.argv[7]: integer number of variants to check
+sys.argv[8]: folder path to store the results 
+sys.argv[9:9+sys.argv[7]]: list all lineages to simulate ### e.g "BE.10.ALL", "BE.10.ALL" 
+sys.argv[9+sys.argv[7]:len(sys.argv)]: list 1 color for each countries by their order in sys.argv[2] ### e.g. "red" "orange" for two countries
+"""
 
 def moving_average(X, window = 7):
     u = np.zeros(len(X))
@@ -543,11 +553,14 @@ countries_labels = str(sys.argv[3]).split("/")
 
 for i in range(num_groups):
     lineage_list.append(str(sys.argv[k+i]))
+    s+=1
+
+for j in range(len(countries_list)):
     try:
-        if "/" not in str(sys.argv[k+num_groups+i]):
-            color_list.append(str(sys.argv[k+num_groups+i]))
+        if "/" not in str(sys.argv[s+k+j]):
+            color_list.append(str(sys.argv[s+k+j]))
         else:
-            split_col = str(sys.argv[k+num_groups+i]).split("/")
+            split_col = str(sys.argv[s+k+j]).split("/")
             color_list.append(tuple([float(split_col[c]) for c in range(len(split_col))])) ### anything else is error)
     except:
         rand_num = np.random.choice(1, 100)
