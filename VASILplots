@@ -2,7 +2,7 @@
 
 
 report: "report/workflow.rst"
-
+import os
 
 rule_all_common = [
     "results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv",
@@ -32,7 +32,7 @@ if config["p_neut"]:
 if config["plot_groups"]:
     rule_all_common.append("plots/relative_groups/As_Lineages/plot_status.csv"),
     rule_all_common.append("plots/relative_groups/As_Spikegroups/plot_status.csv"),
-    if "Germany" in config["cases"]:
+    if "Germany" in config["cases"] and os.path.exists("Stichprobe_RKI-Jul2021_to_9thAug2023_KW.tsv"):
         rule_all_common.append("plots/relative_groups_Germany/As_Spikegroups/plot_status.csv")
         
 if config["p_neut_groups"]:
@@ -165,7 +165,7 @@ if config["plot_groups"]:
         shell:
             "python {workflow.basedir}/scripts/plotting/relative_advantage_spikegroups.py {input.ES_lin_dir} {input.mean_trend} {input.spikes_freqs} {params.threshold} {params.time_start} {params.time_stop} {params.len_groups} {output.res_dir} {params.lineage_focus} {params.col_groups}"
 	
-    if "Germany" in config["cases"]:
+    if "Germany" in config["cases"] and os.path.exists("Stichprobe_RKI-Jul2021_to_9thAug2023_KW.tsv"):
         rule get_relative_spikegroups_germany_special:
             input:
                 ES_lin_dir=config["S_groups"],
