@@ -100,8 +100,8 @@ try:
     else:
         x_max = len(t_dates) - 1
 except:
-    x_min = None
-    x_max = None
+    x_min = x[0]
+    x_max = x[-1]
 
 if (x_min is not None):
     ax.set_xlim((x_min, x_max))
@@ -150,3 +150,36 @@ pdf = PdfPages(sys.argv[4]+"/absolute_estimate.pdf")
 pdf.savefig(fig, bbox_inches = "tight")
 pdf.close()
 plt.savefig(sys.argv[4]+"/absolute_estimate.svg", bbox_inches='tight')
+
+
+# Fig presettings
+PreFig(xsize = 20, ysize = 20)
+fig4d = plt.figure(figsize = (14, 7))
+ax = fig4d.add_subplot(1, 1, 1)
+x = np.arange(0,len(t_dates)).astype(int)
+
+# f' plot
+plt.plot(x, dspl(x), color = "turquoise", label = r'$\dfrac{d}{dt} S(t)$', linewidth = 3)
+ax.axhline(xmin = 0, xmax = x[-1], ls = "--", linewidth = 4, color = "black") 
+plt.legend(loc = (0.46, 0.8), fontsize = 25)
+ax.set_xticks([x[x_min]]+list(x[x_min+pp:x_max][::pp])+[x[x_max]])
+ax.set_xticklabels([t_dates[x_min]]+list(t_dates[x_min+pp:x_max][::pp])+[t_dates[x_max]], 
+                   rotation = 45, horizontalalignment = "right")
+
+# f'' plot
+ax2 = ax.twinx()
+ax2.set_ylim(-abs(max(ddspl(x))),abs(max(ddspl(x))))
+plt.plot(x, ddspl(x), linewidth = 3, color = "orange", label = r'$\left(\dfrac{d}{dt}\right)^2 S(t)$')
+ax2.set_xlim((x[x_min], x[x_max]))
+
+ax.legend(loc = (1.2, 0.5) ,fontsize = 25)
+ax2.legend(loc = (1.2, 0.) ,fontsize = 25)
+# add vlines
+plt.vlines(x=r.real[abs(r.imag)<1e-5], ymin=min(ddspl(x)), ymax=max(ddspl(x)), colors="black", ls='--', lw=0.5, label='Delta infection')
+
+#plt.suptitle("First and Second Derivative of estimated Susceptibles", fontsize = 20)
+#plt.subplots_adjust(hspace=0.75, wspace=0.25)
+pdf = PdfPages(sys.argv[4]+"/derivative_trends.pdf")
+pdf.savefig(fig4d, bbox_inches = "tight")
+pdf.close()
+plt.savefig(sys.argv[4]+"/derivative_trends.svg")

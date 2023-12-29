@@ -279,11 +279,11 @@ The figures are located as follows
               c-d: MS_data/plots/P_neut_*/P_Neut_.pdf,svg*
 |-- Figure 4: a: MS_data/plots/P_neut_groups/P_Neut_.pdf/svg*         
               b: MS_data/plots/relative or relative_all/relative_fitness_*.pdf,svg 
-              c: MS_data/plots/relative_groups/relative_fitness_groups.pdf,svg (available also separated)         
-|-- Figure 5: a: TBA
-              b: TBA                                 
+              c: MS_data/plots/relative_groups_germany/relative_fitness_groups.pdf,svg (special file generated from scripts/plotting/relative_advantage_spikegroups_germany_special.py)         
+|-- Figure 5: a: generated off pipeline
+              b: generated off pipepline                             
               c: MS_data/plots/absolute/absolute_estimate.pdf,svg
-              d: TBA
+              d: MS_data/plots/absolute/derivative_trends.pdf,svg
 ```
 
 ### Expected Runtime for demo
