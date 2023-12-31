@@ -31,24 +31,48 @@ except:
 
 """Remove missing spikegroups data """
 i = 0
-for spk in SpikeGroups_list:
-    if not os.path.exists(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%spk):
-        if spk != "Wuhan-Hu-1": 
-            frequency_spk_df.drop(columns = "Spike. "+spk , inplace = True)  
+
+if results_dir != "vaccination_special":
+    results_dir_full = results_dir+"/Immunological_Landscape_ALL"
+    for spk in SpikeGroups_list:
+        if not os.path.exists(results_dir_full+"/Immunized_SpikeGroup_%s_all_PK.csv"%spk):
+            if spk != "Wuhan-Hu-1": 
+                frequency_spk_df.drop(columns = "Spike. "+spk , inplace = True)  
+            else:
+                frequency_spk_df.drop(columns = "Wuhan-Hu-1" , inplace = True)  
         else:
-            frequency_spk_df.drop(columns = "Wuhan-Hu-1" , inplace = True)  
-    else:
-        if i == 0:
-            phold_df = pd.read_csv(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%spk) # just a place holder
-            try:
-                phold_df.drop(columns = "Unnamed: 0", inplace = True)
-            except:
-                pass
-
-            pk_cols = phold_df.columns
-            t = np.arange(1, len(phold_df['Days'])+1, 1) 
-        i+=1
-
+            if i == 0:
+                phold_df = pd.read_csv(results_dir_full+"/Immunized_SpikeGroup_%s_all_PK.csv"%spk) # just a place holder
+                try:
+                    phold_df.drop(columns = "Unnamed: 0", inplace = True)
+                except:
+                    pass
+    
+                pk_cols = phold_df.columns
+                t = np.arange(1, len(phold_df['Days'])+1, 1) 
+            i+=1
+else:
+    results_dir= "vaccination" # hard-coded
+    results_dir_full = results_dir+"/Immunological_Landscape_ALL_vs_Vacc"
+    for spk in SpikeGroups_list:
+        if not os.path.exists(results_dir_full+"/Immunized_SpikeGroup_%s_all_PK.csv"%spk):
+            if spk != "Wuhan-Hu-1": 
+                frequency_spk_df.drop(columns = "Spike. "+spk , inplace = True)  
+            else:
+                frequency_spk_df.drop(columns = "Wuhan-Hu-1" , inplace = True)  
+        else:
+            if i == 0:
+                phold_df = pd.read_csv(results_dir_full+"/Immunized_SpikeGroup_%s_all_PK.csv"%spk) # just a place holder
+                try:
+                    phold_df.drop(columns = "Unnamed: 0", inplace = True)
+                except:
+                    pass
+    
+                pk_cols = phold_df.columns
+                t = np.arange(1, len(phold_df['Days'])+1, 1) 
+            i+=1
+    results_dir = "vaccination_special"       
+    
 if len(frequency_spk_df.columns) > 1:    
     days_prop = frequency_spk_df['date'][frequency_spk_df['date'].isin(phold_df['Days'])]
     frequency_spk_df = frequency_spk_df[frequency_spk_df['date'].isin(phold_df['Days'])]
@@ -68,8 +92,8 @@ p_prop = np.zeros(pS_all.shape)
 
 for x in range(len(SpikeGroups_list)):
     if SpikeGroups_list[x] != "Wuhan-Hu-1":
-        if os.path.exists(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%SpikeGroups_list[x]):
-            EI_df = pd.read_csv(results_dir+"/Immunological_Landscape_ALL/Immunized_SpikeGroup_%s_all_PK.csv"%SpikeGroups_list[x])
+        if os.path.exists(results_dir_full+"/Immunized_SpikeGroup_%s_all_PK.csv"%SpikeGroups_list[x]):
+            EI_df = pd.read_csv(results_dir_full+"/Immunized_SpikeGroup_%s_all_PK.csv"%SpikeGroups_list[x])
             try:
                 EI_df.drop(columns = "Unnamed: 0", inplace = True) ## column corresponds to indexes
             except:
@@ -133,7 +157,11 @@ dprop_mean = np.sum(dprop_all[~np.isnan(dprop_all)])
 
 #### save for future runs
 S_mean_df = pd.DataFrame(data = pS_all_mean, index = phold_df['Days'][:len(t)-1], columns = pk_cols[pk_cols!="Days"])
-S_mean_df.to_csv(results_dir+"/Susceptible_weighted_mean_over_spikegroups_all_PK.csv")
+if results_dir != "vaccination_special":
+    S_mean_df.to_csv(results_dir+"/Susceptible_weighted_mean_over_spikegroups_all_PK.csv")
+else:
+    results_dir= "vaccination" # hard-coded
+    S_mean_df.to_csv(results_dir+"/Susceptible_weighted_mean_over_spikegroups_vs_Vacc_all_PK.csv")
 
 dprop_df = pd.DataFrame(data = dprop_mean, index = phold_df['Days'][:len(t)-1], columns = ["Mean dProp"])
 dprop_df.to_csv(results_dir+"/mean_proportion_change_over_pseudogroups.csv")

@@ -334,18 +334,19 @@ def Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data, present_variant_
                                   IC50xx, Cross_react_dic, escape_per_sites = None, mut_sites_per_variant = None, parallel = False, mode_func = None):
     
     stop = min(len(infection_data), variant_proportion.shape[1])
-    Infected_l_vect = infection_data[np.newaxis, :stop]*variant_proportion[:, :stop]    
     
     Prob_Neut = P_Neut(t, present_variant_index, PK_dframe, tested_variant_list, variant_name, Ab_classes, IC50xx, Cross_react_dic)
     
-    Conv_Mat = signal.fftconvolve(Infected_l_vect, Prob_Neut, axes = 1)[:, :len(t)]
+    Infected_l_vect = infection_data[np.newaxis, :stop]*variant_proportion[:, :stop]    
+    
+    Conv_Mat = np.abs(signal.fftconvolve(Infected_l_vect, Prob_Neut, axes = 1)[:, :len(t)]) ## negative values are inherent to Fourier transforms https://stackoverflow.com/questions/66143660/why-is-my-fourier-transform-negative-in-python-how-do-i-fix-it#:~:text=Fourier%20transforms%20always%20go%20from,imaginary%20and%20real%20component%20respective.
     
     # No normalization
-    Expected_Immuned = np.sum(Conv_Mat, axis = 0)
+    Expected_Immunized = np.sum(Conv_Mat, axis = 0)
     """
     tested that this gives the as Immunity_dynamics and is 200x faster
     """
-    return Expected_Immuned
+    return Expected_Immunized
 
 ### Load spikegroups membership file
 file = open("Spikegroups_membership.pck", "rb")
@@ -454,16 +455,17 @@ for i in range(len(SpikeGroups_list)):
         for k in range(len(t)):
             if days_incidence[k] in list(frequency_spk_df["date"]): ### should always be true if data date were well aligned
                 ik = list(frequency_spk_df["date"]).index(days_incidence[k])
-                spikegroups_freq[i, k] = frequency_spk_df["Spike. "+SpikeGroups_list[i]][ik]
+                if "Spike. "+SpikeGroups_list[i] in list(frequency_spk_df.columns):
+                    spikegroups_freq[i, k] = frequency_spk_df["Spike. "+SpikeGroups_list[i]][ik]
 
 NormProp = np.sum(spikegroups_freq, axis = 0)
 prop_rounded = np.round(spikegroups_freq,decimals = 10)
 spikegroups_proportion = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
 
 ### end of simulation
-def ei_util(Lin_name, variants_in_cross, antigen_list, 
-            Cross_react_dic = None, save_pneut=None, w_save=len(sys.argv)-2, 
-            var_list_index = None, spikegroups_proportion_adjust=None):
+def ei_util(Lin_name, variants_in_cross, antigen_list,
+            Cross_react_dic = None, infection_data = infection_data_corrected, save_pneut=None, w_save=len(sys.argv)-2, 
+            var_list_index = None, spikegroups_proportion_adjust=None, var_name = None, save_suscept = True):
     
     variant_to_sim = [Lin_name]
     EI = {}
@@ -564,11 +566,11 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
                 spikegroups_proportion_adjust = spikegroups_proportion.copy()
         else:
            spikegroups_proportion_adjust = spikegroups_proportion_adjust
-           
+        
         for key in c_dframe_dic.keys():
             PK_dframe = c_dframe_dic[key]
             key_num = np.array(re.findall(r"\d+", key)).astype(int)
-            Res_sub_0 = Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data = infection_data_corrected, 
+            Res_sub_0 = Immunity_dynamics_fftconvolve(t, PK_dframe, infection_data = infection_data, 
                                                          present_variant_index = SpikeGroups_list_index, ### indexes of variant in variant_in_cross
                                                          tested_variant_list =  variant_to_sim, 
                                                          variant_name = variants_in_cross, ### Aligned with Cross_react_dic["variant_list"]
@@ -581,12 +583,18 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
             Susc["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = total_population - Res_sub_0
         """ Save Dynamics Without Vaccination """
         
-        
         EI_df = pd.DataFrame(EI)
-        EI_df.to_csv(sys.argv[w_save]+"/Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
-        
-        Susc_df = pd.DataFrame(Susc)
-        Susc_df.to_csv(sys.argv[w_save]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
+        if var_name is not None:
+            EI_df.to_csv(sys.argv[w_save]+"/Immunized_SpikeGroup_%s_all_PK.csv"%var_name)
+            
+            if save_suscept:
+                Susc_df = pd.DataFrame(Susc)
+                Susc_df.to_csv(sys.argv[w_save]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%var_name)
+        else:
+            EI_df.to_csv(sys.argv[w_save]+"/Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
+            if save_suscept:
+                Susc_df = pd.DataFrame(Susc)
+                Susc_df.to_csv(sys.argv[w_save]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
         return "Done"
         
     except:
@@ -603,8 +611,8 @@ Lin_name = str(sys.argv[13])
 file = open("Spikegroups_membership.pck", "rb")
 Pseudogroup_dic = pickle.load(file)
 file.close()
-if Lin_name != "ALL":
-    if not run_group or str(sys.argv[3][:31]) == "results/Cross_react_dic_groups_":
+if Lin_name not in ("ALL", "ALL_vs_Vacc"):
+    if not run_group or str(sys.argv[3][:31]) == "results/Cross_react_dic_groups_" or str(sys.argv[3][:22]) == "vaccination/Cross_Vacc":
         num_antigen = int(sys.argv[14])
         k=15
         antigen_list = []
@@ -625,11 +633,28 @@ if Lin_name != "ALL":
                 lineages = Cross_react_dic["Group"]
                 status_var = []
                 for var in lineages:
-                    variants_cross = variants_in_cross
-                    if var in list(Pseudogroup_dic.keys()):
-                        variants_cross[variants_in_cross.index(Pseudogroup_dic[var])] = var
+                    status_var.append(ei_util(var, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save))
                     
-                    status_var.append(ei_util(var, variants_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save))
+                Grouped = True
+            elif str(sys.argv[3][:22]) == "vaccination/Cross_Vacc": ## hard-coded for vaccination pseudo variants
+                vacc_infos = pd.read_csv(Lin_name)
+                lineages = vacc_infos.columns[(vacc_infos.columns != "date")&(vacc_infos.columns != "Unnamed: 0")].tolist()
+                status_var = []
+            
+                for i in range(len(lineages)):
+                    var = lineages[i]
+                    file1 = open(sys.argv[3]+"/Cross_%s.pck"%var, "rb")
+                    Cross_react_dic = pickle.load(file1)
+                    variants_in_cross = Cross_react_dic["variant_list"]
+                    Cross_react_dic.pop("variant_list")
+                    file1.close()
+                    print("Get Immunological landscape for vaccine %s (%d out of %d)" %(var, i+1, len(lineages)))
+                    
+                    ### Access vaccine against all spikegroups
+                    lin_clean = var.split("*_as_")[0]
+                    status_var.append(ei_util(lin_clean, variants_in_cross, antigen_list, Cross_react_dic, infection_data = vacc_infos[var].to_numpy(), save_pneut=save_pneut, w_save = w_save, var_name = var, save_suscept = False))
+                    
+                    
                 Grouped = True
             else:
                 status_var = ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save) 
@@ -650,7 +675,7 @@ if Lin_name != "ALL":
                     Cross_react_dic = pickle.load(file1)
                     variants_in_cross = list(Cross_react_dic["variant_list"])
                     ### insert lin_sim in the position of it's Pseudogroup
-                    Cross_react_dic["variant_list"][variants_cross.index(Pseudogroup_dic[Lin_name])] = Lin_name
+                    Cross_react_dic["variant_list"][variants_in_cross.index(Pseudogroup_dic[Lin_name])] = Lin_name
                     Cross_react_dic.pop("variant_list")
                     file1.close()
                     status_var = ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save) 
@@ -661,6 +686,7 @@ if Lin_name != "ALL":
             sim_df = pd.DataFrame({"Lineage":[Lin_name], "Simulation status":[status_var]})
             sim_df.to_csv(sys.argv[w_save]+"/simulation_status_%s.csv"%Lin_name)
         else:
+            
             sim_df = pd.DataFrame({"Lineage": lineages, "Simulation status":status_var})
             sim_df.to_csv(sys.argv[w_save]+"/simulation_status.csv")
     else:
@@ -758,8 +784,42 @@ if Lin_name != "ALL":
             sim_df.to_csv(sys.argv[w_save]+"/simulation_status_group.csv")    
 
 else:
+    
+    if Lin_name == "ALL_vs_Vacc":
+        ### Access all spikegroups against vaccine 
+        vacc_infos = frequency_spk_df.copy()
+        vacc_names = vacc_infos.columns[(vacc_infos.columns != "date")&(vacc_infos.columns != "Unnamed: 0")].tolist()
+        Counts = vacc_infos.to_numpy()[:, (vacc_infos.columns != "date")&(vacc_infos.columns != "Unnamed: 0")].astype(float)
+        weights = np.divide(Counts, np.sum(Counts, axis = 1)[:, np.newaxis], out = np.zeros(Counts.shape), where = np.sum(Counts, axis = 1)[:, np.newaxis]!= 0)
+        
+        # insert vaccine data into Main Cross_reactivity dic
+        variants_in_cross = variants_in_cross + list(vacc_names)
+            
+        for ab in Ab_classes:
+            add_cross = np.ones((len(variants_in_cross), len(variants_in_cross)))
+            add_cross[:len(variants_in_cross)-len(vacc_names), :len(variants_in_cross)-len(vacc_names)] = Cross_react_dic[ab]
+            
+            for j in range(len(vacc_names)):
+                var = vacc_names[j]
+                file1 = open("vaccination/Cross_Vacc"+"/Cross_%s.pck"%var, "rb") ### hard-coded
+                Cross_var = pickle.load(file1)
+                variants_var = Cross_var["variant_list"]
+                Cross_var.pop("variant_list")
+                file1.close()
+                lin_clean = var.split("*_as_")[0]
+            
+                for i in range(len(variants_in_cross)-len(vacc_names)):
+                    add_cross[len(variants_in_cross)-len(vacc_names)+j, i] = Cross_var[ab][list(variants_var).index(lin_clean), list(variants_var).index(variants_in_cross[i])] 
+                    add_cross[i, len(variants_in_cross)-len(vacc_names)+j] = add_cross[len(variants_in_cross)-len(vacc_names)+j, i]
+    
+            Cross_react_dic[ab] = add_cross
+                    
+        SpikeGroups_list_index =  [variants_in_cross.index(vacc_names[j]) for j in range(len(vacc_names))]
+        
+        spikegroups_proportion_adjust = weights.T
+                
+        
     status_var = []
-    SpikeGroups_list_index = []
     
     num_antigen = int(sys.argv[14])
     k=15
@@ -769,77 +829,85 @@ else:
         antigen_list.append(antigen)
         k+=1
     
-    for j in range(len(SpikeGroups_list)):
-        if SpikeGroups_list[j] in variants_in_cross:
-            SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
-        elif (SpikeGroups_list[j] in list(Pseudogroup_dic.keys())):
-            w_j_list = [list(variants_in_cross).index(x) for x in list(Pseudogroup_dic.keys()) if (x in variants_in_cross and Pseudogroup_dic[x] == Pseudogroup_dic[SpikeGroups_list[j]])]
-            if len(w_j_list) != 0:
-                w_j = w_j_list[0]
-                SpikeGroups_list_index.append(list(variants_in_cross)[w_j])  
     
-    SpikeGroups_list_index = np.array(SpikeGroups_list_index)
-    add_print = False
-    if len(SpikeGroups_list_index)!=len(SpikeGroups_list):
-         ### use updated cross ALL including missing if it was computed
-         if os.path.exists("results/Cross_react_dic_spikegroups_present.pck"):
-            file1 = open("results/Cross_react_dic_spikegroups_present.pck", "rb") 
-            Cross_react_dic = pickle.load(file1)
-            variants_in_cross = Cross_react_dic["variant_list"]
-            Cross_react_dic.pop("variant_list")
-            file1.close()
-            spikegroups_proportion_adjust = spikegroups_proportion.copy()
-            # regenerage the indexes
-            SpikeGroups_list_index = []
-            for j in range(len(SpikeGroups_list)):
-                if Pseudogroup_dic[SpikeGroups_list[j]] in variants_in_cross:
-                    SpikeGroups_list_index.append(list(variants_in_cross).index(Pseudogroup_dic[SpikeGroups_list[j]])) ### giving the cross neut of it's pseudogroup in extended data    
-            SpikeGroups_list_index = np.array(SpikeGroups_list_index)
-            
-            if len(SpikeGroups_list_index)!=len(SpikeGroups_list): ### must adjust if there are still some missing spikegroups
+    if Lin_name !=  "ALL_vs_Vacc":
+        SpikeGroups_list_index = []
+        for j in range(len(SpikeGroups_list)):
+            if SpikeGroups_list[j] in variants_in_cross:
+                SpikeGroups_list_index.append(list(variants_in_cross).index(SpikeGroups_list[j]))       
+            elif (SpikeGroups_list[j] in list(Pseudogroup_dic.keys())):
+                w_j_list = [list(variants_in_cross).index(x) for x in list(Pseudogroup_dic.keys()) if (x in variants_in_cross and Pseudogroup_dic[x] == Pseudogroup_dic[SpikeGroups_list[j]])]
+                if len(w_j_list) != 0:
+                    w_j = w_j_list[0]
+                    SpikeGroups_list_index.append(list(variants_in_cross)[w_j])  
+        
+        SpikeGroups_list_index = np.array(SpikeGroups_list_index)
+        add_print = False
+        if len(SpikeGroups_list_index)!=len(SpikeGroups_list):
+             ### use updated cross ALL including missing if it was computed
+             if os.path.exists("results/Cross_react_dic_spikegroups_present.pck"):
+                file1 = open("results/Cross_react_dic_spikegroups_present.pck", "rb") 
+                Cross_react_dic = pickle.load(file1)
+                variants_in_cross = Cross_react_dic["variant_list"]
+                Cross_react_dic.pop("variant_list")
+                file1.close()
+                spikegroups_proportion_adjust = spikegroups_proportion.copy()
+                # regenerage the indexes
+                SpikeGroups_list_index = []
+                for j in range(len(SpikeGroups_list)):
+                    if Pseudogroup_dic[SpikeGroups_list[j]] in variants_in_cross:
+                        SpikeGroups_list_index.append(list(variants_in_cross).index(Pseudogroup_dic[SpikeGroups_list[j]])) ### giving the cross neut of it's pseudogroup in extended data    
+                SpikeGroups_list_index = np.array(SpikeGroups_list_index)
+                
+                if len(SpikeGroups_list_index)!=len(SpikeGroups_list): ### must adjust if there are still some missing spikegroups
+                    add_print = True
+                    spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
+                    for j in range(len(SpikeGroups_list_index)):
+                        if SpikeGroups_list[j] in variants_in_cross:
+                            w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+                        elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
+                            w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list[j]])
+                        spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
+                    
+                    # renormalization
+                    NormProp = np.sum(spikegroups_proportion_adjust, axis = 0)
+                    prop_rounded = np.round(spikegroups_proportion_adjust,decimals = 10)
+                    spikegroups_proportion_adjust = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
+             else:
+                # readjust variant proportions to spikegroups available in cross react
                 add_print = True
                 spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
                 for j in range(len(SpikeGroups_list_index)):
                     if SpikeGroups_list[j] in variants_in_cross:
                         w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
+                        
                     elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
-                        w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list[j]])
+                        w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list[j]])   
+                    
                     spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
                 
                 # renormalization
                 NormProp = np.sum(spikegroups_proportion_adjust, axis = 0)
                 prop_rounded = np.round(spikegroups_proportion_adjust,decimals = 10)
                 spikegroups_proportion_adjust = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
-         else:
-            # readjust variant proportions to spikegroups available in cross react
-            add_print = True
-            spikegroups_proportion_adjust = np.zeros((len(SpikeGroups_list_index), spikegroups_proportion.shape[1]))
-            for j in range(len(SpikeGroups_list_index)):
-                if SpikeGroups_list[j] in variants_in_cross:
-                    w_j = list(SpikeGroups_list).index(variants_in_cross[SpikeGroups_list_index[j]])
-                    
-                elif SpikeGroups_list[j] in list(Pseudogroup_dic.keys()):
-                    w_j = list(SpikeGroups_list).index(Pseudogroup_dic[SpikeGroups_list[j]])   
-                
-                spikegroups_proportion_adjust[j, :] = spikegroups_proportion[w_j, :]
-            
-            # renormalization
-            NormProp = np.sum(spikegroups_proportion_adjust, axis = 0)
-            prop_rounded = np.round(spikegroups_proportion_adjust,decimals = 10)
-            spikegroups_proportion_adjust = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
-    
-    else:
-        spikegroups_proportion_adjust = spikegroups_proportion.copy()
+        
+        else:
+            spikegroups_proportion_adjust = spikegroups_proportion.copy()
             
     for i in range(len(SpikeGroups_list)):
         if SpikeGroups_list[i] in variants_in_cross or SpikeGroups_list[i] in list(Pseudogroup_dic.keys()):
-            if add_print:
-                print("A smaller set of spikesgroups are being simulated for all_il = TRUE \n Make sure this is what you want otherwise set the parameter cross_missing to TRUE (\n NB: remove WRONG/OLDER file results/Cross_react_dic_spikegroups_present.pck)")
-                miss_num = len(SpikeGroups_list)-len(SpikeGroups_list_index)
-                print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1: missing %d spikegroups)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list_index)-1, miss_num))
+            if Lin_name !=  "ALL_vs_Vacc":
+                if add_print:
+                    print("A smaller set of spikesgroups are being simulated for all_il = TRUE \n Make sure this is what you want otherwise set the parameter cross_missing to TRUE (\n NB: remove WRONG/OLDER file results/Cross_react_dic_spikegroups_present.pck)")
+                    miss_num = len(SpikeGroups_list)-len(SpikeGroups_list_index)
+                    print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1: missing %d spikegroups)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list_index)-1, miss_num))
+                else:
+                    print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list)-1))
             else:
-                print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list)-1))
+                print("Compute E[immunized] against all vaccines for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list)-1))
+
             status_var.append(ei_util(SpikeGroups_list[i], 
+                                      infection_data = infection_data_corrected,
                                       variants_in_cross = variants_in_cross,
                                       antigen_list = antigen_list,
                                       Cross_react_dic = Cross_react_dic,
@@ -847,6 +915,7 @@ else:
                                       var_list_index=SpikeGroups_list_index, 
                                       spikegroups_proportion_adjust=spikegroups_proportion_adjust, 
                                       w_save = w_save))
+                
         else:
             status_var.append("Not in cross")
     # Save file as a placeholder for exectuted codes, required for snakemake

@@ -422,25 +422,32 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
         file.close()
         
         k = 5
-        Lin_list = []
-        while k<(n_groups+5):
-            Lin_list.append(sys.argv[k])
-            k +=1
         
-        mut_sim = []
-        while k<(n_groups+5+len(Lin_list)):
-            mut_sim.append(sys.argv[k])
-            k +=1
-        
+        if (n_groups == 1) and str(sys.argv[k][-4:] == ".csv"): ### Hard coded for vaccination pseudo variants
+            vacc_infos = pd.read_csv(sys.argv[k])
+            Lin_list = vacc_infos.columns[(vacc_infos.columns != "date")&(vacc_infos.columns != "Unnamed: 0")].tolist()
+            mut_sim = ["avail"]*len(Lin_list)
+        else:
+            Lin_list = []
+            while k<(n_groups+5):
+                Lin_list.append(sys.argv[k])
+                k +=1
+            
+            mut_sim = []
+            while k<(n_groups+5+len(Lin_list)):
+                mut_sim.append(sys.argv[k])
+                k +=1
+
         mut_x_sites_dic_updated = mut_x_sites_dic.copy()
         AA_change_dic_updated = AA_change_dic.copy()
         Grouped = []
         Lin_exists = []
+        Lin_exists_names = []
         single_lin = 0
         Lin_list_grouped = {}
         for j in range(len(Lin_list)):
             Lin_list_grouped[Lin_list[j]] = [Lin_list[j]]
-            if Lin_list[j] not in list(Pseudogroup_dic.keys()):
+            if Lin_list[j] not in list(Pseudogroup_dic.keys()) and mut_sim[j] != "avail":
                 try:
                     mut_file = open(mut_sim[j], "r")
                     mut_lin0 = mut_file.readlines()
@@ -463,6 +470,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     AA_change_dic_updated[Lin_list[j]] = aa_lin
                     Grouped.append(False)
                     Lin_exists.append(Lin_list[j])
+                    Lin_exists_names.append(Lin_list[j])
                 except:
                     try:
                         data_file = open(mut_sim[j], "rb")
@@ -497,18 +505,27 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                         Lin_list_grouped["inds"] = inds_spk
                         Grouped.append(True)
                         Lin_exists.append(Lin_list[j])
+                        Lin_exists_names.append(Lin_list[j])                       
                         single_lin += len(variants_spk)
                     except:
                         pass
+            elif ("*_as_" in Lin_list[j]): ### hard-coded in vaccines pseudo names
+                lin_clean = Lin_list[j].split("*_as_")[0]
+                mut_x_sites_dic_updated[lin_clean] = mut_x_sites_dic[Pseudogroup_dic[lin_clean]]
+                AA_change_dic_updated[lin_clean] = AA_change_dic_updated[Pseudogroup_dic[lin_clean]]
+                Grouped.append(False)
+                Lin_exists.append(lin_clean)
+                Lin_exists_names.append(Lin_list[j])
             else:
                 mut_x_sites_dic_updated[Lin_list[j]] = mut_x_sites_dic[Pseudogroup_dic[Lin_list[j]]]
                 AA_change_dic_updated[Lin_list[j]] = AA_change_dic_updated[Pseudogroup_dic[Lin_list[j]]]
                 Grouped.append(False)
                 Lin_exists.append(Lin_list[j])
-        
+                Lin_exists_names.append(Lin_list[j])
         
         ### Update to available data
         Lin_list = Lin_exists
+        Lin_list_names = Lin_exists_names
         
         g = []
         g_var =[]
@@ -539,9 +556,8 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
             Cross_i = {}
             Cross_i["variant_list"] = list(variant_x_names_cross)
             
-            Lin_list_i = Lin_list_grouped[Lin_list[i]]
-
             if Grouped[i]:
+                Lin_list_i = Lin_list_grouped[Lin_list[i]]
                 Cross_i["Group"] = Lin_list_i
             
             try:
@@ -792,15 +808,15 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                 
                 status_sim.append("Done")
                 Cross_i["Mutations"] = {"positions":mut_x_sites_dic_updated, "AA_changes":AA_change_dic_updated}
-                file0 = open(sys.argv[len(sys.argv)-1]+"/Cross_%s.pck"%Lin_list[i], "wb") 
+                file0 = open(sys.argv[len(sys.argv)-1]+"/Cross_%s.pck"%Lin_list_names[i], "wb") 
                 pickle.dump(Cross_i, file0)
                 file0.close()
             except:
-                print("Ignored Cross of %s: Give mutation file or chose a lineage with pseudogroup present in covsonar data"%Lin_list[i])
-                status_sim.append("No mutation profile for %s, give mutation file or chose a lineage present in covsonar data"%Lin_list[i])
+                print("Ignored Cross of %s: Give mutation file or chose a lineage with pseudogroup present in covsonar data"%Lin_list_names[i])
+                status_sim.append("No mutation profile for %s, give mutation file or chose a lineage present in covsonar data"%Lin_list_names[i])
             
         if len(status_sim)>0:
-            stat_df = pd.DataFrame({"Lineages":Lin_list, "computed_cross":status_sim})
+            stat_df = pd.DataFrame({"Lineages":Lin_list_names, "computed_cross":status_sim})
             stat_df.to_csv(sys.argv[len(sys.argv)-1]+"/cross_status.csv")
             
 elif Lin_name == "ALL":  
