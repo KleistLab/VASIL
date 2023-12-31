@@ -20,6 +20,11 @@ color = sys.argv[3]
 t_dates = S_mean_df["Days"]
 infection_data_corrected  = infection_data_corrected[infection_data_corrected['date'].isin(t_dates)]
 
+try:
+    S_mean_df.drop(columns = "Unnamed: 0", inplace = True)
+except:
+    pass
+
 # fit cubic splines to model predictions 
 r_ABS_min, r_ABS_max = np.min(S_mean_df, axis = 1), np.max(S_mean_df, axis = 1)
 

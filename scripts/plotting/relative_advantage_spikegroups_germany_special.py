@@ -41,7 +41,7 @@ threshold = float(sys.argv[4])
 
 # needs to be updated to allow individual weighting 
 S_mean_df = pd.read_csv(S_mean_file)
-S_all_mean = S_mean_df.to_numpy()[:, S_mean_df.columns != "Days"].astype(float)
+S_all_mean = S_mean_df.to_numpy()[:, (S_mean_df.columns != "Days")&(S_mean_df.columns != "Unnamed: 0")].astype(float)
 t_dates = S_mean_df["Days"]
 
 # processing of frequency data

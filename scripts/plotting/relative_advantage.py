@@ -59,8 +59,12 @@ def PreFig(xsize = 12, ysize = 12):
     matplotlib.rc('ytick', labelsize=ysize)
     
 def plot_fit(ES_df, lineage, w_save = 6):
-    # processing of susceptibles 
-    ES_df.drop(columns = "Unnamed: 0", inplace = True)
+    # processing of susceptibles
+    try:
+        ES_df.drop(columns = "Unnamed: 0", inplace = True)
+    except:
+        pass
+    
     es_cols = ES_df.columns
     ES_df = ES_df[ES_df['Days'].isin(t_dates)]
     ES_ranges = ES_df.to_numpy()[:, es_cols!="Days"].astype(float)
@@ -70,10 +74,10 @@ def plot_fit(ES_df, lineage, w_save = 6):
     
     for i in range(ES_ranges.shape[1]):
         S_x = ES_ranges[:, i]
+        
         S_mean = S_all_mean[:, i]
-    
         gamma_SI[:, i] = np.divide(S_x - S_mean, S_mean, out = S_x, where = S_mean != 0)
-    
+        
     # get min max gamma over PK at each timepoints
     gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
     
@@ -95,15 +99,19 @@ def plot_fit(ES_df, lineage, w_save = 6):
     for l in range(len(t_dates)):
         if t_dates[l] in day_prop:
             w_l = list(day_prop).index(t_dates[l])
-            if Pseudo_Prop[w_l] == 0 or Pseudo_Prop[w_l+1] == 0:
-                gamma_prop[l] = float('nan')
-                SI_mask[l] == True
+            if w_l + 1 < len(Pseudo_Prop):
+                if Pseudo_Prop[w_l] == 0 or Pseudo_Prop[w_l+1] == 0:
+                    gamma_prop[l] = float('nan')
+                    SI_mask[l] = True
+                else:
+                    gamma_prop[l] = (Pseudo_Prop[w_l+1]/Pseudo_Prop[w_l]) - 1
             else:
-                gamma_prop[l] = (Pseudo_Prop[w_l+1]/Pseudo_Prop[w_l]) - 1
+                gamma_prop[l] = float("nan")
+                SI_mask = True
         else:
             gamma_prop[l] = float('nan')
             SI_mask[l] = True
-        
+
     # plotting
     PreFig(xsize = 20, ysize = 20)
     fig = plt.figure(figsize = (15, 7))
@@ -145,7 +153,7 @@ def plot_fit(ES_df, lineage, w_save = 6):
         pp = 7*4
     else:
         pp = min(len(t_dates_show), 14)
-    
+
     perday = np.arange(0,len(t_dates_show), pp)
     date_ticks = t_dates_show[perday].tolist()
     if t_dates[len(t_dates) - 1] not in date_ticks:
@@ -171,6 +179,9 @@ def plot_fit(ES_df, lineage, w_save = 6):
     ax.set_xticklabels(date_ticks,
         rotation = 45, horizontalalignment = "right")
     
+    if lineage == "EG.1.3":
+        print(4)
+        pdb.set_trace() 
     
     ymin1, ymax1 = ax.get_ylim()
     ymin2, ymax2 = ax_twin.get_ylim()
@@ -219,15 +230,14 @@ else:
                 ES_df = pd.read_csv(sys.argv[1]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant[7:])
             else:
                 ES_df = pd.read_csv(sys.argv[1]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant)
-                
+            
             plot_fit(ES_df, variant, w_save = w_save)
             status_list.append("Done")
         except:
-            
             print(num, "Was not computed: %s Not present in file Cross_react_dic_spikegroups_ALL.pck"%variant[7:])
             num +=1
             status_list.append("Not computed: %s Not present in file Cross_react_dic_spikegroups_ALL.pck"%variant[7:])
-    
+
     status = pd.DataFrame({"lineage":lineage_freq.columns.astype(str), "relative_advantage":status_list})
     status.to_csv(sys.argv[w_save]+"/plot_status_all.csv")
         
