@@ -64,6 +64,7 @@ if date_start in unique_days_prop:
     
 print("Timeline of lineage proportions: %s -- %s"%(unique_days_prop[0], unique_days_prop[-1]))
 unique_lineage_timeframe = np.unique(lineages_all)
+print("Number of lineages: ", len(unique_lineage_timeframe))
 
 try:
     seq_thres = int(sys.argv[4])
@@ -77,6 +78,7 @@ if seq_thres is not None:
         count_u = np.sum(days_prop == unique_days_prop[u])
         num_seq.append(count_u)
     
+    print("Number of genomes: ", np.sum(num_seq))
     i = 0
     n_i = 0
     days_prop_new = days_prop.copy()
