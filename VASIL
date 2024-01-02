@@ -155,6 +155,7 @@ rule get_mutation_and_spikegroups:
     shell:
         "Rscript {workflow.basedir}/scripts/mutationprofile/mutation_profile.R {input.covsonar} {output.dir} {params.prefix} {params.mutation_threshold} {params.date_start} {params.date_end} {input.dms_data}"
 
+
 rule compute_cross_delta:
     input:
         spikes_dic="results/SpikeGroups.pck",
@@ -198,7 +199,7 @@ if config["cross_focus"]:
         params:
             lineage_focus=config["lineage_focus"],
             mutation_focus=config["mutation_focus"],
-            cross_delta="None_Focus",            
+            cross_delta="None_Focus",
         output:
             cross_spk="results/Cross_react_dic_spikegroups_"
             + config["lineage_focus"]
@@ -259,20 +260,23 @@ if config["cross_missing"]:
     if not os.path.exists("results/Cross_react_dic_spikegroups_present.pck"):
         comp_miss = True
     else:
-        ask_user = input("File results/Cross_react_dic_spikegroups_present.pck already exists for Cross of missing variant \n Do you want to recompute it? Yes/No: ")
+        ask_user = input(
+            "File results/Cross_react_dic_spikegroups_present.pck already exists for Cross of missing variant \n Do you want to recompute it? Yes/No: "
+        )
         if ask_user == "Yes":
             comp_miss = True
             os.remove("results/Cross_react_dic_spikegroups_present.pck")
         else:
             comp_miss = False
-            
+
     if comp_miss:
+
         rule get_cross_neutralization_missing:
             input:
                 spikes_dic="results/SpikeGroups.pck",
                 mutations_dic="results/Mutation_Profiles.pck",
                 dms_data_regrouped="results/epitope_data/dms_per_ab_per_site.csv",
-                cross_all = "results/Cross_react_dic_spikegroups_ALL.pck"
+                cross_all="results/Cross_react_dic_spikegroups_ALL.pck",
             params:
                 lineage_focus="missing",
                 cross_delta="None_missing",
@@ -446,7 +450,7 @@ if config["all_il"]:
         rule get_Immunological_Landscape_all:
             input:
                 cases=config["cases"],
-                cross_delta="results/Cross_with_delta_validation.pck",
+                cross_delta="results/Cross_with_delta_valitation.pck",
                 cross_spk="results/Cross_react_dic_spikegroups_ALL.pck",
                 spikes_dic="results/SpikeGroups.pck",
                 spikes_freqs="results/Daily_SpikeGroups_Freq.csv",

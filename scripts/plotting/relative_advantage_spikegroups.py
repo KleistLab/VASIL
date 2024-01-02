@@ -518,16 +518,18 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     x0 = max(inds_dates[0], x0-62)
                     xf = min(inds_dates[-1], xf+62)
                 
+                if (x0 < xf):
+                    inds_b0 = inds_dates[x0:xf+1]
+                else:
+                    inds_b0 = inds_dates[gamma_prop_ranges[0]:min(gamma_prop_ranges[-1]+62, inds_dates[-1])+1]
                 
-                inds_b0 = inds_dates[x0:xf+1]
-                
+                x0, xf = inds_b0[0], inds_b0[-1]
                 if len(gamma_prop_ranges)>200:
                     pp = 7*4
                 else:
                     pp = min(len(inds_b0), 14)
                 
                 inds_b = inds_b0[::pp]
-    
                 ticks_b = list(np.array(t_dates)[inds_b])
                 
                 if x0 not in inds_b:
@@ -537,7 +539,6 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     inds_b = np.append(inds_b, xf)
                     ticks_b = ticks_b + [t_dates[xf]]
                     
-                
                 
                 PreFig(xsize = 20, ysize = 20)
                 fig2b = plt.figure(figsize = (15, 7))
@@ -564,11 +565,12 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 #mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, loc0)
                 mpl_axes_aligner.align.yaxes(ax2b, 0, ax2b_twin, 0, 0.5)
                 
+                ax2b.axhline(xmin = 0, xmax = len(day_prop), ls = "--", linewidth = 2, color = "black")
+
                 if (ymin1/ymin2 >0.5) or (ymax1/ymax2>0.5) or (ymin2/ymin1 >0.5) or (ymax2/ymax1>0.5):
                     ax2b.set_ylim((ymin, ymax))
                     ax2b_twin.set_ylim((ymin, ymax))
                 
-                ax2b.axhline(xmin = 0, xmax = len(day_prop), ls = "--", linewidth = 2, color = "black")
                 ax2b.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
                 ax2b_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
                 ax2b.set_ylabel("Relative fitness $\gamma_y$", fontsize = 20)
@@ -577,7 +579,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 pdf_2b = PdfPages(sys.argv[w_save]+"/relative_fitness_%s_cropped.pdf"%lab_k_fn)
                 pdf_2b.savefig(fig2b, bbox_inches = "tight")
                 pdf_2b.close()
-                fig2.savefig(sys.argv[w_save]+"/relative_fitness_%s_cropped.svg"%lab_k_fn, bbox_inches = "tight")
+                fig2b.savefig(sys.argv[w_save]+"/relative_fitness_%s_cropped.svg"%lab_k_fn, bbox_inches = "tight")
                 plt.close()
             
             status_list.append(lab_status)
