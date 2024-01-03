@@ -27,18 +27,18 @@ import mpl_axes_aligner
 import re
 
 """
-Requires system arguments
+Requires system arguments to compare several trends from different simulations
 
-sys.argv[1]: "path/to/Country_1/new/path/to/Country_2/new/path/to/Country_3/..." ### as many countries as desired but always separated by /new/ and folder must include all country results
-sys.argv[2]: "Country_1/Country_2/Country_3/..." ### country names separated by / 
-sys.argv[2]: "Country_1/Country_2/Country_3/..." ### country labels separated by /
+sys.argv[1]: "path/to/Trend_1/new/path/to/Trend_2/new/path/to/Trend_3/..." ### as many Trends as desired but always separated by /new/ and folder must include all Trend results
+sys.argv[2]: "Trend_1/Trend_2/Trend_3/..." ### Trend names separated by / 
+sys.argv[2]: "Trend_1/Trend_2/Trend_3/..." ### Trend labels separated by /
 sys.argv[4]: percentage to filter spikegroups #e.g. 0.01 
 sys.argv[5]: dates to start the comparison for each variants, separated by /, if only one then they will be all the same ### e.g. "2022-04-09/2022-04-26" for 2 variants
 sys.argv[6]: dates to end the comparison for each variants, separated by /, if only one then they will be all the same ### e.g. "2022-08-21/2023-04-15" for 2 variants
 sys.argv[7]: integer number of variants to check
 sys.argv[8]: folder path to store the results 
 sys.argv[9:9+sys.argv[7]]: list all lineages to simulate ### e.g "BE.10.ALL", "BE.10.ALL" 
-sys.argv[9+sys.argv[7]:len(sys.argv)]: list 1 color for each countries by their order in sys.argv[2] ### e.g. "red" "orange" for two countries
+sys.argv[9+sys.argv[7]:len(sys.argv)]: list 1 color for each Trends by their order in sys.argv[2] ### e.g. "red" "orange" for two Trends
 """
 
 def moving_average(X, window = 7):
@@ -59,9 +59,9 @@ def PreFig(xsize = 12, ysize = 12):
     matplotlib.rc('ytick', labelsize=ysize)
 
    
-def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list, color_list, w_save = len(sys.argv)-1):
+def plot_fit(Trends_dir_list, Trends_list, Trends_labels, lineage_list, color_list, w_save = len(sys.argv)-1):
     status_list = []
-    lineage_list_countries = []    
+    lineage_list_Trends = []    
     for k in range(len(lineage_list)):
         t_dates_list = []
         S_all_mean_list = []
@@ -70,8 +70,8 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
         lineage_freqs_list = []
         prop_mask_list = []
         day_prop_list = []
-        for c_ind in range(len(countries_list)):
-            S_mean_file = countries_dir_list[c_ind]+"/results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv"
+        for c_ind in range(len(Trends_list)):
+            S_mean_file = Trends_dir_list[c_ind]+"/results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv"
             # needs to be updated to allow individual weighting 
             S_mean_df = pd.read_csv(S_mean_file)
             S_all_mean_list.append(S_mean_df.to_numpy()[:, S_mean_df.columns != "Days"].astype(float))
@@ -79,7 +79,7 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
             all_dates += list(S_mean_df["Days"])
             
             # processing of frequency data
-            lineage_freq = pd.read_csv(countries_dir_list[c_ind]+"/results/Daily_SpikeGroups_Freq.csv")
+            lineage_freq = pd.read_csv(Trends_dir_list[c_ind]+"/results/Daily_SpikeGroups_Freq.csv")
             threshold = float(sys.argv[4])
             try:
                 lineage_freq.drop(columns = "Unnamed: 0", inplace = True)
@@ -130,12 +130,12 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
         # different axis for proportions
         ax2_twin = ax2.twinx()
         
-        for c_ind in range(len(countries_list)):
-            file = open(countries_dir_list[c_ind]+"/Spikegroups_membership.pck", "rb")
+        for c_ind in range(len(Trends_list)):
+            file = open(Trends_dir_list[c_ind]+"/Spikegroups_membership.pck", "rb")
             Pseudogroup_dic = pickle.load(file)
             file.close() 
             
-            ES_df_dir = countries_dir_list[c_ind]+"/results/Immunological_Landscape_ALL"
+            ES_df_dir = Trends_dir_list[c_ind]+"/results/Immunological_Landscape_ALL"
             day_prop = day_prop_list[c_ind]
             t_prop = t_prop_all[list(all_prop_dates).index(day_prop[0]):list(all_prop_dates).index(day_prop[-1])+1]
             prop_mask = prop_mask_list[c_ind]
@@ -334,7 +334,7 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
             if lab_status[:3] == " + ":
                 lab_status = lab_status[3:]
             
-            lab_status = "%s : "%countries_labels[c_ind] + lab_status
+            lab_status = "%s : "%Trends_labels[c_ind] + lab_status
                 
                 
             if (lab_k != "" and num_avail != 0):
@@ -389,23 +389,23 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
                 gamma_SI_min = ma.masked_array(gamma_SI_min, mask = SI_mask)
                 Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop_aligned, mask = prop_mask_aligned)
     
-                ax_twin.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lab_k + " -- %s"%countries_labels[c_ind])
-                ax.plot(inds_dates, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[c_ind], label = lab_k + " -- %s"%countries_labels[c_ind])
+                ax_twin.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lab_k + " -- %s"%Trends_labels[c_ind])
+                ax.plot(inds_dates, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[c_ind], label = lab_k + " -- %s"%Trends_labels[c_ind])
                 #ax_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
     
                 ### Separate figure for relative fitness vs change in proportion
                 gamma_prop_masked = ma.masked_array(gamma_prop, mask = SI_mask)
-                ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.2, label = lab_k + " -- %s"%countries_labels[c_ind])
-                ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  label=lab_k + " -- %s"%countries_labels[c_ind])
+                ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.2, label = lab_k + " -- %s"%Trends_labels[c_ind])
+                ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  label=lab_k + " -- %s"%Trends_labels[c_ind])
                 #ax2_twin.scatter(inds_dates, gamma_prop_masked, marker = ".", color = "orange")
                             
                 status_list.append(lab_status)
             
             else:
                 print("No lineages in group %s have E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k])
-                status_list.append("%s : No data"%countries_labels[c_ind])
+                status_list.append("%s : No data"%Trends_labels[c_ind])
             
-            lineage_list_countries.append("%s : %s"%(countries_labels[c_ind], lineage_list[k]))
+            lineage_list_Trends.append("%s : %s"%(Trends_labels[c_ind], lineage_list[k]))
         
         ax_twin.axhline(xmin = 0, xmax = len(all_dates), ls = "--", linewidth = 2, color = "black")
         
@@ -537,7 +537,7 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
         fig2.savefig(sys.argv[w_save]+"/relative_fitness_%s.svg"%lab_k_fn, bbox_inches = "tight")
         plt.close()
         
-    return status_list, lineage_list_countries
+    return status_list, lineage_list_Trends
 
 num_groups = int(sys.argv[7])
 w_save = 8
@@ -547,15 +547,15 @@ color_list = []
 custom_col = sns.color_palette("Set2", 100) 
 s = 0
 
-countries_dir_list = str(sys.argv[1]).split("/new/")
-countries_list = str(sys.argv[2]).split("/")
-countries_labels = str(sys.argv[3]).split("/")
+Trends_dir_list = str(sys.argv[1]).split("/new/")
+Trends_list = str(sys.argv[2]).split("/")
+Trends_labels = str(sys.argv[3]).split("/")
 
 for i in range(num_groups):
     lineage_list.append(str(sys.argv[k+i]))
     s+=1
 
-for j in range(len(countries_list)):
+for j in range(len(Trends_list)):
     try:
         if "/" not in str(sys.argv[s+k+j]):
             color_list.append(str(sys.argv[s+k+j]))
@@ -570,9 +570,9 @@ for j in range(len(countries_list)):
             color_list.append(sns.color_palette("rocked", rand_num)[0])
         s +=1
 
-status_list, lineage_list_countries = plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list, color_list, w_save)
+status_list, lineage_list_Trends = plot_fit(Trends_dir_list, Trends_list, Trends_labels, lineage_list, color_list, w_save)
 
-status = pd.DataFrame({"lineage":lineage_list_countries, "spikegroups_found":status_list})
+status = pd.DataFrame({"lineage":lineage_list_Trends, "spikegroups_found":status_list})
 status.to_csv(sys.argv[w_save]+"/plot_status.csv")
  
 
