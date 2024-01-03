@@ -78,8 +78,12 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
             t_dates_list.append(S_mean_df["Days"])
             all_dates += list(S_mean_df["Days"])
             
-            # processing of frequency data
-            lineage_freq = pd.read_csv(countries_dir_list[c_ind]+"/results/Daily_SpikeGroups_Freq.csv")
+            # processing of lineage frequency data            
+            file = open(countries_dir_list[c_ind]+"/Spikegroups_membership.pck", "rb") #hard-coded for vaccination simulations
+            Pseudogroup_dic = pickle.load(file)
+            file.close() 
+            
+            lineage_freq = Pseudogroup_dic["Frequencies"].copy()
             threshold = float(sys.argv[4])
             try:
                 lineage_freq.drop(columns = "Unnamed: 0", inplace = True)
@@ -131,9 +135,6 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
         ax2_twin = ax2.twinx()
         
         for c_ind in range(len(countries_list)):
-            file = open(countries_dir_list[c_ind]+"/Spikegroups_membership.pck", "rb")
-            Pseudogroup_dic = pickle.load(file)
-            file.close() 
             
             ES_df_dir = countries_dir_list[c_ind]+"/results/Immunological_Landscape_ALL"
             day_prop = day_prop_list[c_ind]
@@ -142,41 +143,62 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
             t_dates = t_dates_list[c_ind].tolist()
             inds_dates = inds_dates_all[list(all_dates).index(t_dates[0]):list(all_dates).index(t_dates[-1])+1]
             S_all_mean = S_all_mean_list[c_ind]
-            lineage_freq = lineage_freqs_list[c_ind].copy()
+            variant_freq = lineage_freqs_list[c_ind].copy()
             Pseudo_done_global = []
-        
-            if lineage_list[k][-4:] == ".ALL" and not re.search("/", lineage_list[k]):
-                splited_var = []
-                for x in list(Pseudogroup_dic.keys()):
-                    if (x[:len(lineage_list[k][:-4])] == lineage_list[k][:-4]):
-                        if len(x) == len(lineage_list[k][:-4]):
-                            splited_var.append(x)
-                        elif len(x)>len(lineage_list[k][:-4]):
-                            if x[len(lineage_list[k][:-4])] == ".":
-                                splited_var.append(x)
-                        
-            else:
-                splited_var = np.array(lineage_list[k].split("/"))
-                splited_var = splited_var[~(splited_var == "")]
-                splited_var = splited_var[~(splited_var == " ")]
-             
-            splited_var0 = np.array(splited_var).copy()
-            splited_var = []
-            for var in splited_var0:
-                if var[-4:] == ".ALL":
+            
+            file = open(countries_dir_list[c_ind]+"/Spikegroups_membership.pck", "rb") #hard-coded for vaccination simulations
+            Pseudogroup_dic = pickle.load(file)
+            file.close() 
+            
+            if c_ind == 0: 
+                try:
+                    Pseudogroup_dic.pop("Frequencies")
+                except:
+                    pass
+                
+                """### The first country is always the one we want to illustrate"""
+                if lineage_list[k][-4:] == ".ALL" and not re.search("/", lineage_list[k]):
+                    splited_var = []
                     for x in list(Pseudogroup_dic.keys()):
-                        if x[:len(var[:-4])] == var[:-4]:
-                            if len(x) == len(var[:-4]):
+                        if (x[:len(lineage_list[k][:-4])] == lineage_list[k][:-4]):
+                            if len(x) == len(lineage_list[k][:-4]):
                                 splited_var.append(x)
-                            elif len(x)>len(var[:-4]):
-                                if x[len(var[:-4])] == ".":
+                            elif len(x)>len(lineage_list[k][:-4]):
+                                if x[len(lineage_list[k][:-4])] == ".":
                                     splited_var.append(x)
+                            
                 else:
-                    splited_var.append(var)
+                    splited_var = np.array(lineage_list[k].split("/"))
+                    splited_var = splited_var[~(splited_var == "")]
+                    splited_var = splited_var[~(splited_var == " ")]
+             
+                splited_var0 = np.array(splited_var).copy()
+                splited_var = []
+                for var in splited_var0:
+                    if var[-4:] == ".ALL":
+                        for x in list(Pseudogroup_dic.keys()):
+                            if x[:len(var[:-4])] == var[:-4]:
+                                if len(x) == len(var[:-4]):
+                                    splited_var.append(x)
+                                elif len(x)>len(var[:-4]):
+                                    if x[len(var[:-4])] == ".":
+                                        splited_var.append(x)
+                    else:
+                        splited_var.append(var)
+                
+                """### Get all the lineages belonging to the spikegroups relevant to lineage_list[k]"""
+                relevant_groups = []
+                for x in list(Pseudogroup_dic.keys()):
+                    for var in splited_var:
+                        if var in list(Pseudogroup_dic.keys()):
+                            if Pseudogroup_dic[x] == Pseudogroup_dic[var]:
+                                relevant_groups.append(x)   
+                splited_var = relevant_groups
+            else:
+                """### The group we compare is always the same as the list of lineages that are relevant to lineage_list[k] for the first country"""
+                splited_var = relevant_groups
             
             num_avail = 0
-            
-            
             lab_done = {}
             lab_done[lineage_list[k]] = ""
             Pseudo_done = {}
@@ -187,10 +209,12 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
             ES_list = []
             prop_list = []
             for x in range(len(splited_var)):
-                lineage = splited_var[x]                
+                lineage = splited_var[x]
                 try:
-                    if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
+                    if lineage not in (Pseudo_done[lineage_list[k]].split("/")):
                         ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
+                        print("-------------------------------------------------------------")
+                        print(countries_labels[c_ind], ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
                         num_avail +=1 
                         
                         try:
@@ -218,7 +242,7 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
                             run = True
                     except:
                         try:
-                            if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
+                            if lineage not in (Pseudo_done[lineage_list[k]].split("/")):
                                 ES_df = pd.read_csv("results/Immunological_Landscape_ALL/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
                                 num_avail +=1
                                 try:
@@ -232,7 +256,7 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
                                 run = True
                         except:
                             try:
-                                if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
+                                if lineage not in (Pseudo_done[lineage_list[k]].split("/")):
                                     ES_df = pd.read_csv("results/Immunological_Landscape/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
                                     num_avail +=1
                                 
@@ -261,67 +285,76 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
                                         
                                          run = True
                                  except:
-                                    print("Computation needed: Expected Susceptible file is not available for %s"%lineage)
+                                    print("Computation needed: Expected Susceptible file is not available for %s"%lineage, ES_df_dir)
                                     run = False
                                     
                 # processing of Proportions data
                 if run:   
-                    # change in relative frequency from genomic surveillance data 
-                    if lineage in list(Pseudogroup_dic.keys()):
-                        lab_k = lineage + "*"+"/"
-                        plot_prop.append(True)
-                        if "Spike. " + Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
-                            if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
-                                sub_prop = moving_average(lineage_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)
-                                prop_list.append(sub_prop)
-                                Pseudo_Prop += sub_prop
-                                lab_done[lineage_list[k]] = lab_done[lineage_list[k]][:-1] + " + "+lab_k
-                                if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
-                                    Pseudo_done_global.append(Pseudogroup_dic[lineage])
-                            else:
-                                lab_done[lineage_list[k]] += lab_k
-                        elif Pseudogroup_dic[lineage] in lineage_freq.columns.astype(str):
-                            if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
-                                sub_prop = moving_average(lineage_freq[Pseudogroup_dic[lineage]], window = 14)
-                                prop_list.append(sub_prop)
-                                Pseudo_Prop += sub_prop
-                                lab_done[lineage_list[k]] = lab_done[lineage_list[k]][:-1] + " + "+lab_k
-                                if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
-                                    Pseudo_done_global.append(Pseudogroup_dic[lineage])
-                            else:
-                                lab_done[lineage_list[k]] += lab_k
-                        
-                        if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
-                            Pseudo_done[lineage_list[k]] += Pseudogroup_dic[lineage] + "/"
-                        
-                    else:
-                        lab_k = lineage+"/"
-                        if lineage in lineage_freq.columns.astype(str):
-                            plot_prop.append(True)
-                            if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
-                                sub_prop = moving_average(lineage_freq[lineage], window = 14)
-                                prop_list.append(sub_prop)
-                                Pseudo_Prop += sub_prop
-                                lab_done[lineage_list[k]] = lab_done[lineage_list[k]][:-1] + " + "+lab_k
-                                if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
-                                    Pseudo_done_global.append(lineage)
-                            else:
-                                lab_done[lineage_list[k]] += lab_k
+                   # change in relative frequency from genomic surveillance data 
+                   if lineage in list(Pseudogroup_dic.keys()):
+                       #lab_k = lineage + "*"+"/" 
+                       lab_k = lineage + "/"
+                       plot_prop.append(True)
+                       if "Spike. " + Pseudogroup_dic[lineage] in variant_freq.columns.astype(str):
+                           #if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
+                           if lineage not in Pseudo_done[lineage_list[k]].split("/"):
+                               sub_prop_lin = moving_average(variant_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)                                  
+                               prop_list.append(sub_prop_lin)
+                               Pseudo_Prop += sub_prop_lin
+                                   
+                               lab_done[lineage_list[k]] = lab_done[lineage_list[k]][:-1] + " + "+lab_k
+                               if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
+                                   Pseudo_done_global.append(lineage)#(Pseudogroup_dic[lineage]) 
+                           else:
+                               lab_done[lineage_list[k]] += lab_k
+                               
+                       elif Pseudogroup_dic[lineage] in variant_freq.columns.astype(str): 
+                           #if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
+                           if lineage not in Pseudo_done[lineage_list[k]].split("/"):
+                               sub_prop_lin = moving_average(variant_freq[Pseudogroup_dic[lineage]], window = 14)
+                                                             
+                               prop_list.append(sub_prop_lin)
+                               Pseudo_Prop += sub_prop_lin
+                               lab_done[lineage_list[k]] = lab_done[lineage_list[k]][:-1] + " + "+lab_k
+                               if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
+                                   Pseudo_done_global.append(lineage)#Pseudogroup_dic[lineage])
+                           else:
+                               lab_done[lineage_list[k]] += lab_k
+                       
+                       if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
+                           Pseudo_done[lineage_list[k]] += lineage + "/" #Pseudogroup_dic[lineage] + "/"
+                       
+                   else: 
+                       lab_k = lineage+"/"
+                       if lineage in variant_freq.columns.astype(str):
+                           plot_prop.append(True)
+                           if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
+                               sub_prop_lin = moving_average(variant_freq[lineage], window = 14)
+                               Pseudo_Prop += sub_prop_lin
+                               prop_list.append(sub_prop_lin)
+
+                               lab_done[lineage_list[k]] = lab_done[lineage_list[k]][:-1] + " + "+lab_k
+                               if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
+                                   Pseudo_done_global.append(lineage)
+                           else:
+                               lab_done[lineage_list[k]] += lab_k
     
-                        else:
-                            plot_prop.append(False)
-                            Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
-                            if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
-                                lab_done[lineage_list[k]] += " + "+lab_k
-                                prop_list.append(ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool)))
-                            else:
-                                lab_done[lineage_list[k]] += " + "+lab_k
-                        
-                        if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
-                            Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"
+                       else:
+                           plot_prop.append(False)
+                           Pseudo_Prop += ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
+                           if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
+                               lab_done[lineage_list[k]] += " + "+lab_k
+                               sub_prop_lin = ma.masked_array(np.zeros(len(t_prop)), mask = np.ones(len(t_prop), dtype = bool))
+                                   
+                               prop_list.append(sub_prop_lin)
+                           else:
+                               lab_done[lineage_list[k]] += " + "+lab_k
+                       
+                       if "Placeholder"+lineage not in (Pseudo_done[lineage_list[k]].split("/")):
+                           Pseudo_done[lineage_list[k]]+="Placeholder"+ lineage +"/"
                     
-                    start +=1
-            
+                   start +=1
+                   
             lab_status = lab_done[lineage_list[k]][:-1]
             if not re.search(".ALL",lineage_list[k]):
                 lab_k = lab_done[lineage_list[k]][:-1]
@@ -388,24 +421,38 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
                 gamma_SI_max = ma.masked_array(gamma_SI_max, mask = SI_mask)
                 gamma_SI_min = ma.masked_array(gamma_SI_min, mask = SI_mask)
                 Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop_aligned, mask = prop_mask_aligned)
-    
-                ax_twin.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lab_k + " -- %s"%countries_labels[c_ind])
-                ax.plot(inds_dates, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[c_ind], label = lab_k + " -- %s"%countries_labels[c_ind])
+                
+                if c_ind == 0:
+                    ### only plot the fitness of the main country investigated
+                    ax_twin.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lineage_list[k]+ "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
+                else:
+                    ### placeholder for legend
+                    ax_twin.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0, label = lineage_list[k]+ "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
+                
+                ax.plot(inds_dates, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[c_ind], label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
                 #ax_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
     
                 ### Separate figure for relative fitness vs change in proportion
                 gamma_prop_masked = ma.masked_array(gamma_prop, mask = SI_mask)
-                ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.2, label = lab_k + " -- %s"%countries_labels[c_ind])
-                ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  label=lab_k + " -- %s"%countries_labels[c_ind])
+                
+                if c_ind == 0:
+                    ### only plot the fitness of the main country investigated
+                    ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
+                else:
+                    ### placeholder for legend
+                    ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0., label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
+
+                
+                ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
                 #ax2_twin.scatter(inds_dates, gamma_prop_masked, marker = ".", color = "orange")
                             
                 status_list.append(lab_status)
             
             else:
-                print("No lineages in group %s have E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k])
+                print("No lineages in group %s have E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k], ES_df_dir)
                 status_list.append("%s : No data"%countries_labels[c_ind])
             
-            lineage_list_countries.append("%s : %s"%(countries_labels[c_ind], lineage_list[k]))
+            lineage_list_countries.append("%s"%(lineage_list[k]))
         
         ax_twin.axhline(xmin = 0, xmax = len(all_dates), ls = "--", linewidth = 2, color = "black")
         
@@ -497,10 +544,10 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
         ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
         ax_twin.set_ylabel("Relative fitness", fontsize = 20)
         ax.set_ylabel("Spikegroup Frequency (daily %)", fontsize = 20)
-        pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_prop_%s.pdf"%lab_k_fn)
+        pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_prop_%s.pdf"%lineage_list[k])
         pdf.savefig(fig, bbox_inches = "tight")
         pdf.close()
-        fig.savefig(sys.argv[w_save]+"/relative_fitness_prop_%s.svg"%lab_k_fn, bbox_inches = "tight")
+        fig.savefig(sys.argv[w_save]+"/relative_fitness_prop_%s.svg"%lineage_list[k], bbox_inches = "tight")
         plt.close()
         
         ### vs proportions
@@ -531,10 +578,10 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
         ax2_twin.set_ylabel("Change in proportion $\gamma_{prop}$", fontsize = 20)
         ax2.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
         ax2_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
-        pdf_2 = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lab_k_fn)
+        pdf_2 = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lineage_list[k])
         pdf_2.savefig(fig2, bbox_inches = "tight")
         pdf_2.close()
-        fig2.savefig(sys.argv[w_save]+"/relative_fitness_%s.svg"%lab_k_fn, bbox_inches = "tight")
+        fig2.savefig(sys.argv[w_save]+"/relative_fitness_%s.svg"%lineage_list[k], bbox_inches = "tight")
         plt.close()
         
     return status_list, lineage_list_countries
@@ -572,7 +619,7 @@ for j in range(len(countries_list)):
 
 status_list, lineage_list_countries = plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list, color_list, w_save)
 
-status = pd.DataFrame({"lineage":lineage_list_countries, "spikegroups_found":status_list})
+status = pd.DataFrame({"lineage":lineage_list_countries, "lineages used":status_list})
 status.to_csv(sys.argv[w_save]+"/plot_status.csv")
  
 

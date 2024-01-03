@@ -285,10 +285,10 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
                        #lab_k = lineage + "*"+"/" 
                        lab_k = lineage + "/"
                        plot_prop.append(True)
-                       if "Spike. " + Pseudogroup_dic[lineage] in variant_freq.columns.astype(str):
+                       if lineage in variant_freq.columns.astype(str):
                            #if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
                            if lineage not in Pseudo_done[lineage_list[k]].split("/"):
-                               sub_prop_lin = moving_average(variant_freq["Spike. " + Pseudogroup_dic[lineage]], window = 14)                                  
+                               sub_prop_lin = moving_average(variant_freq[lineage], window = 14)                                  
                                prop_list.append(sub_prop_lin)
                                Pseudo_Prop += sub_prop_lin
                                    
@@ -297,20 +297,7 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
                                    Pseudo_done_global.append(lineage)#(Pseudogroup_dic[lineage]) 
                            else:
                                lab_done[lineage_list[k]] += lab_k
-                               
-                       elif Pseudogroup_dic[lineage] in variant_freq.columns.astype(str): 
-                           #if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
-                           if lineage not in Pseudo_done[lineage_list[k]].split("/"):
-                               sub_prop_lin = moving_average(variant_freq[Pseudogroup_dic[lineage]], window = 14)
-                                                             
-                               prop_list.append(sub_prop_lin)
-                               Pseudo_Prop += sub_prop_lin
-                               lab_done[lineage_list[k]] = lab_done[lineage_list[k]][:-1] + " + "+lab_k
-                               if Pseudogroup_dic[lineage] not in Pseudo_done_global: ### Repeating Pseudogroups in variants combinations cannot be accounted twice in final proportion plot
-                                   Pseudo_done_global.append(lineage)#Pseudogroup_dic[lineage])
-                           else:
-                               lab_done[lineage_list[k]] += lab_k
-                       
+                              
                        if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
                            Pseudo_done[lineage_list[k]] += lineage + "/" #Pseudogroup_dic[lineage] + "/"
                        
