@@ -512,6 +512,9 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
             lab_k_fn = lab_k_fn[:10] + "_et_al"
         
         ax_twin.set_zorder(-1) ### send the legend of ax_twin in the background
+        ax_twin.patch.set_visible(False) ### make sure that the axis plots do not get hiden in the background
+        ax.patch.set_visible(False) ### make sure that the axis plots ddo not get hiden in the background
+
         ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = 1)
         ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = 1)
         ax_twin.set_ylabel("Relative fitness", fontsize = 20)

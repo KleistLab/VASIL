@@ -542,11 +542,14 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
         if len(lab_k_fn) > 10: # can't be too long
             lab_k_fn = lab_k_fn[:10] + "_et_al"
         
-        ax_twin.set_zorder(-1) ### send the legend of ax_twin in the background 
-        ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
-        ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+        ax_twin.set_zorder(-1) ### send the legend of ax_twin in the background
+        ax_twin.patch.set_visible(False) ### make sure that the axis plots do not get hiden in the background
+        ax.patch.set_visible(False) ### make sure that the axis plots ddo not get hiden in the background
+        
         ax_twin.set_ylabel("Relative fitness", fontsize = 20)
         ax.set_ylabel("Spikegroup Frequency (daily %)", fontsize = 20)
+        ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+        ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
         pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_prop_%s.pdf"%lineage_list[k])
         pdf.savefig(fig, bbox_inches = "tight")
         pdf.close()
