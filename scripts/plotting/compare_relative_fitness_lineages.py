@@ -510,9 +510,9 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
         lab_k_fn = (lab_k.replace("/", "_")).replace("*","").replace("+", "_") ## for filename 
         if len(lab_k_fn) > 10: # can't be too long
             lab_k_fn = lab_k_fn[:10] + "_et_al"
-            
-        ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = 1)
+        
         ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = 1)
+        ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = 1)
         ax_twin.set_ylabel("Relative fitness", fontsize = 20)
         ax.set_ylabel("Spikegroup Frequency (daily %)", fontsize = 20)
         pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_prop_%s.pdf"%lab_k_fn)

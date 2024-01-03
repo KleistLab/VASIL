@@ -425,11 +425,13 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
                 if c_ind == 0:
                     ### only plot the fitness of the main country investigated
                     ax_twin.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lineage_list[k]+ "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
+                    ax.plot(inds_dates, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[c_ind], label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
+
                 else:
                     ### placeholder for legend
                     ax_twin.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0, label = lineage_list[k]+ "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
-                
-                ax.plot(inds_dates, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[c_ind], label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
+                    ax.plot(inds_dates, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[c_ind], label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
+                    
                 #ax_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
     
                 ### Separate figure for relative fitness vs change in proportion
@@ -437,13 +439,14 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
                 
                 if c_ind == 0:
                     ### only plot the fitness of the main country investigated
+                    ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
                     ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
                 else:
                     ### placeholder for legend
+                    ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
                     ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0., label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
 
                 
-                ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
                 #ax2_twin.scatter(inds_dates, gamma_prop_masked, marker = ".", color = "orange")
                             
                 status_list.append(lab_status)
@@ -539,9 +542,9 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
         lab_k_fn = (lab_k.replace("/", "_")).replace("*","").replace("+", "_") ## for filename 
         if len(lab_k_fn) > 10: # can't be too long
             lab_k_fn = lab_k_fn[:10] + "_et_al"
-            
-        ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+          
         ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+        ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
         ax_twin.set_ylabel("Relative fitness", fontsize = 20)
         ax.set_ylabel("Spikegroup Frequency (daily %)", fontsize = 20)
         pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_prop_%s.pdf"%lineage_list[k])
@@ -619,7 +622,7 @@ for j in range(len(countries_list)):
 
 status_list, lineage_list_countries = plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list, color_list, w_save)
 
-status = pd.DataFrame({"lineage":lineage_list_countries, "lineages used":status_list})
+status = pd.DataFrame({"lineage":lineage_list_countries, "Relevant lineages":status_list})
 status.to_csv(sys.argv[w_save]+"/plot_status.csv")
  
 
