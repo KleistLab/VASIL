@@ -40,24 +40,32 @@ Timeline = {}
 Timeline["date"] = dates_vacc
 col_kept = []
 for col in Columns:
-    if ("gi" in col) or ("boost" in col):
+    if ("boost3" in col) or ("boost4" in col):
+    #if ("gi" in col) or ("boost" in col):
         if ("kumulativ" not in col) & ("impfungen" in col):
             for v_n in ("biontech", "astra", "novavax", "valneva", "moderna", "johnson"):
                 if v_n in col:
                     col_kept.append(col)
                     col_new = col
-                    vacc_wt = np.zeros(len(dates_vacc))
                     
-                    vacc_wt[:dates_vacc.index(switch_vacc)] = np.array(df_Vaccines[col])[:dates_vacc.index(switch_vacc)]
-                    Timeline["Wuhan-Hu-1*_as_"+col_new] = vacc_wt
-                    
-                    vacc_var1 = np.zeros(len(dates_vacc))
-                    vacc_var1[dates_vacc.index(switch_vacc):] = 0.5*np.array(df_Vaccines[col])[dates_vacc.index(switch_vacc):]
-                    Timeline["BA.4*_as_"+col_new] = vacc_var1
-                    
-                    vacc_var2 = np.zeros(len(dates_vacc))
-                    vacc_var2[dates_vacc.index(switch_vacc):] = 0.5*np.array(df_Vaccines[col])[dates_vacc.index(switch_vacc):]
-                    Timeline["BA.5*_as_"+col_new] = vacc_var2
+                    if switch_vacc not in ("none", "None"):
+                        vacc_wt = np.zeros(len(dates_vacc))
+                        vacc_wt[:dates_vacc.index(switch_vacc)] = np.array(df_Vaccines[col])[:dates_vacc.index(switch_vacc)]
+                        Timeline["Wuhan-Hu-1*_as_"+col_new] = vacc_wt
+                        
+                        vacc_var1 = np.zeros(len(dates_vacc))
+                        vacc_var1[dates_vacc.index(switch_vacc):] = 0.5*np.array(df_Vaccines[col])[dates_vacc.index(switch_vacc):]
+                        Timeline["BA.4*_as_"+col_new] = vacc_var1
+                        
+                        vacc_var2 = np.zeros(len(dates_vacc))
+                        vacc_var2[dates_vacc.index(switch_vacc):] = 0.5*np.array(df_Vaccines[col])[dates_vacc.index(switch_vacc):]
+                        Timeline["BA.5*_as_"+col_new] = vacc_var2
+                    else:
+                        if "bivalent" in col:
+                            Timeline["BA.5*_as_"+col_new] = np.array(df_Vaccines[col])
+                        else:
+                            Timeline["Wuhan-Hu-1*_as_"+col_new] = np.array(df_Vaccines[col])
+                        
             
             
 print("Vaccines condidered:", col_kept)

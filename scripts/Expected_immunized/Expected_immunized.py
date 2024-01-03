@@ -582,24 +582,29 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
             EI["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = Res_sub_0
             Susc["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = total_population - Res_sub_0
         """ Save Dynamics Without Vaccination """
-        
         EI_df = pd.DataFrame(EI)
-        if var_name is not None:
-            EI_df.to_csv(sys.argv[w_save]+"/Immunized_SpikeGroup_%s_all_PK.csv"%var_name)
+        Susc_df = pd.DataFrame(Susc)
+        if w_save is not None:
             
-            if save_suscept:
-                Susc_df = pd.DataFrame(Susc)
-                Susc_df.to_csv(sys.argv[w_save]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%var_name)
+            if var_name is not None:
+                EI_df.to_csv(sys.argv[w_save]+"/Immunized_SpikeGroup_%s_all_PK.csv"%var_name)
+            
+                if save_suscept:
+                    Susc_df.to_csv(sys.argv[w_save]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%var_name)
+            else:
+                EI_df.to_csv(sys.argv[w_save]+"/Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
+                if save_suscept:
+                    Susc_df = pd.DataFrame(Susc)
+                    Susc_df.to_csv(sys.argv[w_save]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
+            return "Done"
         else:
-            EI_df.to_csv(sys.argv[w_save]+"/Immunized_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
-            if save_suscept:
-                Susc_df = pd.DataFrame(Susc)
-                Susc_df.to_csv(sys.argv[w_save]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%variant_to_sim[0])
-        return "Done"
+            return EI_df, Susc_df, "Done"
         
     except:
-        
-        return "Error"
+        if w_save is not None:
+            return "Error"
+        else:
+            return EI_df, Susc_df, "Error"
     
 w_save = 11 # index of resdir
 save_pneut = str(sys.argv[12])
@@ -611,7 +616,7 @@ Lin_name = str(sys.argv[13])
 file = open("Spikegroups_membership.pck", "rb")
 Pseudogroup_dic = pickle.load(file)
 file.close()
-if Lin_name not in ("ALL", "ALL_vs_Vacc"):
+if Lin_name not in ("ALL", "ALL_vs_Vacc_ver1", "ALL_vs_Vacc_ver2"):
     if not run_group or str(sys.argv[3][:31]) == "results/Cross_react_dic_groups_" or str(sys.argv[3][:22]) == "vaccination/Cross_Vacc":
         num_antigen = int(sys.argv[14])
         k=15
@@ -686,7 +691,6 @@ if Lin_name not in ("ALL", "ALL_vs_Vacc"):
             sim_df = pd.DataFrame({"Lineage":[Lin_name], "Simulation status":[status_var]})
             sim_df.to_csv(sys.argv[w_save]+"/simulation_status_%s.csv"%Lin_name)
         else:
-            
             sim_df = pd.DataFrame({"Lineage": lineages, "Simulation status":status_var})
             sim_df.to_csv(sys.argv[w_save]+"/simulation_status.csv")
     else:
@@ -785,9 +789,9 @@ if Lin_name not in ("ALL", "ALL_vs_Vacc"):
 
 else:
     
-    if Lin_name == "ALL_vs_Vacc":
+    if Lin_name in ("ALL_vs_Vacc_ver1", "ALL_vs_Vacc_ver2"): ### hard-coded for vaccination simulations
         ### Access all spikegroups against vaccine 
-        vacc_infos = frequency_spk_df.copy()
+        vacc_infos = pd.read_csv("vaccination/Timeline/Vaccination_Timeline.csv") ### hard-coded
         vacc_names = vacc_infos.columns[(vacc_infos.columns != "date")&(vacc_infos.columns != "Unnamed: 0")].tolist()
         Counts = vacc_infos.to_numpy()[:, (vacc_infos.columns != "date")&(vacc_infos.columns != "Unnamed: 0")].astype(float)
         weights = np.divide(Counts, np.sum(Counts, axis = 1)[:, np.newaxis], out = np.zeros(Counts.shape), where = np.sum(Counts, axis = 1)[:, np.newaxis]!= 0)
@@ -813,12 +817,28 @@ else:
                     add_cross[i, len(variants_in_cross)-len(vacc_names)+j] = add_cross[len(variants_in_cross)-len(vacc_names)+j, i]
     
             Cross_react_dic[ab] = add_cross
-                    
-        SpikeGroups_list_index =  [variants_in_cross.index(vacc_names[j]) for j in range(len(vacc_names))]
         
-        spikegroups_proportion_adjust = weights.T
-                
+        if Lin_name == "ALL_vs_Vacc_ver1":
+            """Assumes that population only gets immunity from vaccines"""
+            SpikeGroups_list_index =  [variants_in_cross.index(vacc_names[j]) for j in range(len(vacc_names))]
+            spikegroups_proportion_adjust = weights.T
         
+        elif Lin_name == "ALL_vs_Vacc_ver2":
+            """Assumes that population gets immunity from vaccines and from historical variants"""
+            vacc_list_index =  np.array([variants_in_cross.index(vacc_names[j]) for j in range(len(vacc_names))])
+            weights_aligned = np.zeros((len(vacc_names), len(t)))
+            Vacc_Total = np.sum(Counts, axis = 1)
+            Vacc_Total_Aligned = np.zeros(len(t))          
+            date_vacc = vacc_infos["date"].tolist()
+            
+            for k in range(len(t)):
+                if days_incidence[k] in date_vacc:
+                    wk = date_vacc.index(days_incidence[k])
+                    Vacc_Total_Aligned[k] = Vacc_Total[wk]
+                    for i in range(len(vacc_names)):
+                            weights_aligned[i, k] = weights[wk, i]                
+            status_var_vacc = []
+            
     status_var = []
     
     num_antigen = int(sys.argv[14])
@@ -829,8 +849,7 @@ else:
         antigen_list.append(antigen)
         k+=1
     
-    
-    if Lin_name !=  "ALL_vs_Vacc":
+    if Lin_name not in ("ALL_vs_Vacc_ver1", ):
         SpikeGroups_list_index = []
         for j in range(len(SpikeGroups_list)):
             if SpikeGroups_list[j] in variants_in_cross:
@@ -896,29 +915,72 @@ else:
             
     for i in range(len(SpikeGroups_list)):
         if SpikeGroups_list[i] in variants_in_cross or SpikeGroups_list[i] in list(Pseudogroup_dic.keys()):
-            if Lin_name !=  "ALL_vs_Vacc":
-                if add_print:
-                    print("A smaller set of spikesgroups are being simulated for all_il = TRUE \n Make sure this is what you want otherwise set the parameter cross_missing to TRUE (\n NB: remove WRONG/OLDER file results/Cross_react_dic_spikegroups_present.pck)")
-                    miss_num = len(SpikeGroups_list)-len(SpikeGroups_list_index)
-                    print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1: missing %d spikegroups)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list_index)-1, miss_num))
+            if Lin_name not in ("ALL_vs_Vacc_ver2", ):
+                if Lin_name == "ALL":
+                    if add_print:
+                        print("A smaller set of spikesgroups are being simulated for all_il = TRUE \n Make sure this is what you want otherwise set the parameter cross_missing to TRUE (\n NB: remove WRONG/OLDER file results/Cross_react_dic_spikegroups_present.pck)")
+                        miss_num = len(SpikeGroups_list)-len(SpikeGroups_list_index)
+                        print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1: missing %d spikegroups)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list_index)-1, miss_num))
+                    else:
+                        print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list)-1))
                 else:
-                    print("Compute E[immunized] for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list)-1))
+                    print("Compute E[immunized] against all vaccines for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list)-1))
+                    
+                status_var.append(ei_util(SpikeGroups_list[i], 
+                                          infection_data = infection_data_corrected,
+                                          variants_in_cross = variants_in_cross,
+                                          antigen_list = antigen_list,
+                                          Cross_react_dic = Cross_react_dic,
+                                          save_pneut = save_pneut, 
+                                          var_list_index=SpikeGroups_list_index, 
+                                          spikegroups_proportion_adjust=spikegroups_proportion_adjust, 
+                                          w_save = w_save))
+            
             else:
-                print("Compute E[immunized] against all vaccines for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list)-1))
+                print("Compute E[immunized] added vaccines effect for %s (%d out of %d spikegroups + Wuhan-Hu-1)"%(SpikeGroups_list[i], i+1, len(SpikeGroups_list)-1))
+                
+                EI_df_0, ES_df_0, st_var = ei_util(SpikeGroups_list[i], 
+                                          infection_data = infection_data_corrected,
+                                          variants_in_cross = variants_in_cross,
+                                          antigen_list = antigen_list,
+                                          Cross_react_dic = Cross_react_dic,
+                                          save_pneut = save_pneut, 
+                                          var_list_index=SpikeGroups_list_index, 
+                                          spikegroups_proportion_adjust=spikegroups_proportion_adjust, 
+                                          w_save = None)
+                
+                status_var.append(status_var)
+                
+                EI_df_vacc, ES_df_vacc, st_var_vacc = ei_util(SpikeGroups_list[i], 
+                                          infection_data = Vacc_Total_Aligned,
+                                          variants_in_cross = variants_in_cross,
+                                          antigen_list = antigen_list,
+                                          Cross_react_dic = Cross_react_dic,
+                                          save_pneut = save_pneut, 
+                                          var_list_index = vacc_list_index, 
+                                          spikegroups_proportion_adjust= weights_aligned, 
+                                          w_save = None)
+                
+                status_var_vacc.append(status_var_vacc)
+                
+                EI_df = EI_df_0.add(EI_df_vacc) ### dataframes are already aligned
+                EI_df["Days"] = days_incidence
 
-            status_var.append(ei_util(SpikeGroups_list[i], 
-                                      infection_data = infection_data_corrected,
-                                      variants_in_cross = variants_in_cross,
-                                      antigen_list = antigen_list,
-                                      Cross_react_dic = Cross_react_dic,
-                                      save_pneut = save_pneut, 
-                                      var_list_index=SpikeGroups_list_index, 
-                                      spikegroups_proportion_adjust=spikegroups_proportion_adjust, 
-                                      w_save = w_save))
+                Susc_df = pd.DataFrame({"Days":days_incidence}.update({EI_df.columns[i]:(total_population - EI_df[EI_df.columns[i]].to_numpy()) for i in range(len(EI_df.columns)) if EI_df.columns[i]!="Days"})) ### dataframes are already aligned
+                
+                EI_df.to_csv(sys.argv[w_save]+"/Immunized_SpikeGroup_%s_all_PK.csv"%SpikeGroups_list[i]) 
+                Susc_df.to_csv(sys.argv[w_save]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%SpikeGroups_list[i])
                 
         else:
             status_var.append("Not in cross")
+            if Lin_name == "ALL_vs_Vacc_ver2":
+                status_var_vacc.append("Not in cross")
+                
     # Save file as a placeholder for exectuted codes, required for snakemake
-    sim_df = pd.DataFrame({"SpikeGroups":SpikeGroups_list, "Simulation status":status_var})
-    sim_df.to_csv(sys.argv[w_save]+"/simulation_status_ALL.csv")
+    if Lin_name not in ("ALL_vs_Vacc_ver2", ):
+        sim_df = pd.DataFrame({"SpikeGroups":SpikeGroups_list, "Simulation status":status_var})
+        sim_df.to_csv(sys.argv[w_save]+"/simulation_status_ALL.csv")
+    else:
+        sim_df = pd.DataFrame({"SpikeGroups":SpikeGroups_list, "Simulation status ALL":status_var, "Simulation status vacc":status_var_vacc})
+        sim_df.to_csv(sys.argv[w_save]+"/simulation_status_ALL.csv")
     

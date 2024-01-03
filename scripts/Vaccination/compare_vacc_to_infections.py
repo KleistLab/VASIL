@@ -16,6 +16,15 @@ import numpy as np
 import numpy.ma as ma
 import pandas as pd
 import sys
+import os
+
+def moving_average(X, window = 7):
+    u = np.zeros(len(X))
+    u[:window] = X[:window]
+    for i in range(window, len(X)):
+        u[i] = np.mean(X[i-window:i+1])
+    
+    return u
 
 #### Visualisation ###  
 def PreFig(xsize = 12, ysize = 12):
@@ -176,7 +185,78 @@ def Display_Envelops(t, t_dates, Y, Z, is_log, labels, figsize = (7, 7), xysize 
         return fig, ax, pdf
     else:
         return fig, ax
+    
+    
+def Display(t, t_dates, Y, is_log, labels, figsize = (7, 7), xysize = (15,15), labsize = 20, save_to = "test", xval = "x", yval = "f(x)", 
+            linewidth = 3, palette = None, linestyle = None, color = None, ax = None, fig = None, linecolor = None ,alpha = 0.5, mode = None, get_file = False):
+    
+    if fig == None:
+        PreFig(xsize = xysize[0], ysize = xysize[1])
+        fig = plt.figure(figsize = figsize)
+        if ax == None:
+            ax = fig.add_subplot(1, 1, 1)
+    
+    if linestyle is None:
+        linestyle = ["."]*Y.shape[0]
+    
+    labels = list(labels) 
+    if palette is None:
+        for i in range(Y.shape[0]):
+            if color is None:
+                ax.plot(t, Y[i, :], label = labels[i], alpha = alpha, linewidth = linewidth)
+            else:
+                ax.plot(t, Y[i, :], label = labels[i], linewidth = linewidth, color = color[i], alpha = alpha)
 
+    else:
+        col = list(sns.color_palette(palette, 2*(Y.shape[0]))[::2])
+        for i in range(Y.shape[0]):
+            ax.plot(t, Y[i, :], label = labels[i],linewidth = linewidth, color = col[i], alpha = alpha)
+        
+    
+    if is_log:
+        plt.ylabel("%s (log$_{10}$)"%yval, fontsize = labsize)
+    else:
+        plt.ylabel("%s"%yval, fontsize = labsize)  
+    
+    plt.xlabel(xval, fontsize = labsize)
+    plt.legend(loc = (1.2, 0), fontsize = labsize, ncols = np.ceil(len(labels)/15).astype(int))
+    
+    if len(t)<500:
+        pp = 14
+    else:
+        pp = 28
+        
+    t_ticks = np.array(t)[::pp]
+    t_ticks_labels = np.array(t_dates)[::pp]
+    if t[-1] not in t_ticks:
+        t_ticks = np.append(t_ticks, t[-1])
+        t_ticks_labels = np.append(t_ticks_labels, t_dates[-1])
+    
+    ax.set_xticks(t_ticks)
+    ax.set_xticklabels(t_ticks_labels, rotation = 45, horizontalalignment = "right")
+        
+    
+    if save_to[-3:] == "pdf":
+        ### save figure in pdf ###
+        pdf = PdfPages(save_to)
+        pdf.savefig(fig, bbox_inches = "tight")
+        if not get_file:
+            pdf.close()
+        fig.savefig(save_to[:-4]+".svg", bbox_inches = "tight")
+        plt.close()
+
+    else:
+        plt.savefig(save_to)
+        pdf = None
+        
+    if get_file:
+        return fig, ax, pdf
+    else:
+        return fig, ax
+
+
+col1 = "coolwarm"
+col2 = "coolwarm"
 "Mean susceptible from infection Landscape"
 file1, file2 = str(sys.argv[1]), str(sys.argv[2])
 S_mean_df = pd.read_csv(file1)
@@ -189,11 +269,13 @@ S_all_mean_orig_2 = S_mean_df_2.to_numpy()[:, (S_mean_df_2.columns != "Days")&(S
 t_dates_orig_2 = S_mean_df_2["Days"].tolist()
 
 
-"Vaccination Immunological Landscapes "
+"Vaccination data "
 vacc_infos = pd.read_csv(sys.argv[3])
 vacc_names = vacc_infos.columns[(vacc_infos.columns != "date")&(vacc_infos.columns != "Unnamed: 0")].tolist()
 Counts = vacc_infos.to_numpy()[:, (vacc_infos.columns != "date")&(vacc_infos.columns != "Unnamed: 0")].astype(float)
 weights = np.divide(Counts, np.sum(Counts, axis = 1)[:, np.newaxis], out = np.zeros(Counts.shape), where = np.sum(Counts, axis = 1)[:, np.newaxis]!= 0)
+t_vacc = vacc_infos["date"].tolist() ### the same for all the vacc_name and equale to date column in vacc_infos
+
 
 S_vacc_dir = sys.argv[4] ## IL Vacc vs Spikes
 S_all_dir = sys.argv[5] ## IL Spike vs Vacc
@@ -218,65 +300,114 @@ Y = []
 lin_cleaned = []
 lin_cleaned_labs = []
 cleaned_weight = {}
+cleaned_Counts = {}
 
 lin_cleaned_ver2 = []
 lin_cleaned_ver2_labs = []
 cleaned_weight_ver2 = {}
+cleaned_Counts_ver2 = {}
 
 weights_aligned = {}
+Counts_aligned = {}
 S_mask0 = np.zeros((len(vacc_names), len(t_dates))).astype(bool)
 for i in range(len(vacc_names)):
     vacc = vacc_names[i]
     I_vacc_df = pd.read_csv(S_vacc_dir + "/Immunized_SpikeGroup_%s_all_PK.csv"%vacc)
     I_vacc_min_all = I_vacc_df.to_numpy()[:, (I_vacc_df.columns != "Days")&(I_vacc_df.columns != "Unnamed: 0")].astype(float)
-    t_vacc = I_vacc_df["Days"].tolist() ### the same for all the vacc_name and equale to date column in vacc_infos
     I_vacc = np.zeros((len(t_dates), I_vacc_min_all.shape[1]))
-    weights_aligned[vacc] = np.zeros(len(t_dates))
+    wght_aligned = np.zeros(len(t_dates))
+    c_aligned = np.zeros(len(t_dates))
+    t_0  = I_vacc_df["Days"].tolist()
     
     lin = vacc.split("_as_")[0]
     no_t_dates = np.zeros(len(t_dates)).astype(bool)
+    #weights[:, i] = moving_average(weights[:, i], window = 14)
+    j_list = []
     for j in range(len(t_dates)):
         if t_dates[j] in t_vacc:
             w_j = list(t_vacc).index(t_dates[j])
-            I_vacc[j] = I_vacc_min_all[w_j, :]
-            weights_aligned[vacc][j] = weights[w_j, i]
+            wght_aligned[j] = weights[w_j, i]
+            c_aligned[j] = Counts[w_j, i]
+            j_list.append(w_j)
         else:
             no_t_dates[j] = True
         
+        if t_dates[j] in t_0:
+            w_j0 = list(t_0).index(t_dates[j])
+            I_vacc[j] = I_vacc_min_all[w_j0, :]
+
+    weights_aligned[vacc] = wght_aligned
+    Counts_aligned[vacc] = c_aligned
+        
     weights_aligned[vacc] = ma.masked_array(weights_aligned[vacc], mask = no_t_dates)
     S_mask0[i, :] = no_t_dates
+
     if lin not in lin_cleaned:
         lin_cleaned.append(lin)
-        lin_cleaned_labs.append(lin+" (impf gi + boost 1-4 + bivalent)")
+        if "bivalent" in vacc:
+            lin_cleaned_labs.append(lin+" (bivalent boost 3-4)")
+        else:
+            lin_cleaned_labs.append(lin+" (boost 3-4)")
         cleaned_weight[lin] = weights_aligned[vacc]
+        cleaned_Counts[lin] = Counts_aligned[vacc]
     else:
         cleaned_weight[lin] += weights_aligned[vacc]
+        cleaned_Counts[lin] += Counts_aligned[vacc]
     
     for v_n in ("biontech", "astra", "novavax", "valneva", "moderna", "johnson"):
         if v_n in vacc:
-            if lin + v_n  not in lin_cleaned_ver2:
-                lin_cleaned_ver2.append(lin + v_n)
-                lin_cleaned_ver2_labs.append(lin + " (%s impf gi + boost 1-4 + bivalent)"%v_n)
-                cleaned_weight_ver2[lin + v_n] = weights_aligned[vacc]
+            if "bivalent" in vacc:
+                if lin + v_n + " (bivalent)" not in lin_cleaned_ver2:
+                    lin_cleaned_ver2.append(lin + v_n + " (bivalent)")
+                    cleaned_weight_ver2[lin + v_n + " (bivalent)"] = weights_aligned[vacc]
+                    cleaned_Counts_ver2[lin + v_n + " (bivalent)"] = Counts_aligned[vacc]
+                    lin_cleaned_ver2_labs.append(lin + " (%s bivalent boost 3-4)"%v_n)
+                else:
+                    cleaned_weight_ver2[lin + v_n + " (bivalent)"] += weights_aligned[vacc] 
+                    cleaned_Counts_ver2[lin + v_n + " (bivalent)"] += Counts_aligned[vacc]
             else:
-                cleaned_weight_ver2[lin + v_n] += weights_aligned[vacc]
-                 
+                if lin + v_n  not in lin_cleaned_ver2:
+                    lin_cleaned_ver2.append(lin + v_n)
+                    lin_cleaned_ver2_labs.append(lin + " (%s boost 3-4)"%v_n)
+                    cleaned_weight_ver2[lin + v_n] = weights_aligned[vacc] 
+                    cleaned_Counts_ver2[lin + v_n] = Counts_aligned[vacc]
+                else:
+                    cleaned_weight_ver2[lin + v_n] += weights_aligned[vacc]
+                    cleaned_Counts_ver2[lin + v_n] += Counts_aligned[vacc]
+                   
     Y.append(I_vacc)
 
+
+""" Needs further check about why the weights does not sum up to 1 accross vaccine axis (this is not important for the manuscript)"""
+Sum1 = np.sum(np.array([weights_aligned[vacc] for vacc in list(weights_aligned.keys())]), axis = 0)
+
+for vacc in list(weights_aligned.keys()):
+    weights_aligned[vacc] = np.divide(weights_aligned[vacc], Sum1, out = np.zeros(len(t_dates)), where = Sum1 != 0)
+
+Sum2 = np.sum(np.array([cleaned_weight[vacc] for vacc in list(cleaned_weight.keys())]), axis = 0)
+for vacc in list(cleaned_weight.keys()):
+    cleaned_weight[vacc] = np.divide(cleaned_weight[vacc], Sum2, out = np.zeros(len(t_dates)), where = Sum2 != 0)
+    
+Sum3 = np.sum(np.array([cleaned_weight_ver2[vacc] for vacc in list(cleaned_weight_ver2.keys())]), axis = 0)
+for vacc in list(cleaned_weight_ver2.keys()):
+    cleaned_weight_ver2[vacc] = np.divide(cleaned_weight_ver2[vacc], Sum3, out = np.zeros(len(t_dates)), where = Sum3 != 0)
+    
+
+"""Process and plot Susceptible trends"""
 Y_grouped_vacc = N_pop - np.sum(np.array(Y), axis = 0)
 grouped_min, grouped_max , grouped_mean = np.min(Y_grouped_vacc, axis = 1), np.max(Y_grouped_vacc, axis = 1), np.mean(Y_grouped_vacc, axis = 1)
 Y_grouped_vacc_min = np.row_stack((grouped_min, np.min(S_all_mean, axis = 1)))
 Y_grouped_vacc_max = np.row_stack((grouped_max, np.max(S_all_mean, axis = 1)))
 
 S_mask0 = np.all(S_mask0, axis = 0)
-
 #### Plot Vacc vs ALL
 # plotting
 PreFig(xsize = 20, ysize = 20)
 fig = plt.figure(figsize = (15, 7))
 ax = fig.add_subplot(1, 1, 1) 
 
-filename = sys.argv[-1]+"/Susceptible_Trends_Vacc_vs_ALL.pdf"
+os.mkdir(sys.argv[-1]+"/Vacc_vs_ALL")
+filename = sys.argv[-1]+"/Vacc_vs_ALL"+"/Susceptible_Trends_Vacc_vs_ALL.pdf"
 
 Y_grouped_vacc_min = ma.masked_array(Y_grouped_vacc_min, mask = np.row_stack(tuple([S_mask0 for i in range(Y_grouped_vacc_min.shape[0])])))
 Y_grouped_vacc_max = ma.masked_array(Y_grouped_vacc_max, mask = np.row_stack(tuple([S_mask0 for i in range(Y_grouped_vacc_min.shape[0])])))
@@ -289,14 +420,21 @@ fig, ax = Display_Envelops(t, t_dates, Y_grouped_vacc_min, Y_grouped_vacc_max, i
 PreFig(xsize = 20, ysize = 20)
 fig = plt.figure(figsize = (15, 7))
 ax = fig.add_subplot(1, 1, 1) 
-filename = sys.argv[-1]+"/Susceptible_Trends_Vacc_vs_ALL_ver1.pdf"
+filename = sys.argv[-1]+"/Vacc_vs_ALL"+"/Susceptible_Trends_Vacc_vs_ALL_ver1.pdf"
+
+lab_orig = lin_cleaned.copy()
+lin_cleaned.sort()
+lin_cleaned_labs_sorted = [lin_cleaned_labs[lab_orig.index(lin_cleaned[0])]]
 
 Y_grouped_vacc_min_1 = [Y_grouped_vacc_min[0, :]]
 Y_grouped_vacc_max_1 = [Y_grouped_vacc_min[0, :] + cleaned_weight[lin_cleaned[0]]*(Y_grouped_vacc_max[0, :] - Y_grouped_vacc_min[0, :])]
+Vacc_Counts = [cleaned_Counts[lin_cleaned[0]]]
 for i in range(1, len(lin_cleaned)):
     Y_grouped_vacc_min_1.append(Y_grouped_vacc_max_1[-1])
     Y_grouped_vacc_max_1.append(Y_grouped_vacc_max_1[-1] + cleaned_weight[lin_cleaned[i]]*(Y_grouped_vacc_max[0, :] - Y_grouped_vacc_min[0, :]))
-
+    Vacc_Counts.append(cleaned_Counts[lin_cleaned[1]])
+    lin_cleaned_labs_sorted.append(lin_cleaned_labs[lab_orig.index(lin_cleaned[i])])
+    
 Y_grouped_vacc_min_1.append(Y_grouped_vacc_min[1, :])
 Y_grouped_vacc_max_1.append(Y_grouped_vacc_max[1, :])
 Y_grouped_vacc_min_1 = np.array(Y_grouped_vacc_min_1)
@@ -306,29 +444,44 @@ Y_grouped_vacc_min_1 = ma.masked_array(Y_grouped_vacc_min_1, mask = np.row_stack
 Y_grouped_vacc_max_1 = ma.masked_array(Y_grouped_vacc_max_1, mask = np.row_stack(tuple([S_mask0 for i in range(Y_grouped_vacc_min_1.shape[0])])))
 
 t = np.arange(len(t_dates))
-fig, ax = Display_Envelops(t, t_dates, Y_grouped_vacc_min_1, Y_grouped_vacc_max_1, is_log = False, labels = lin_cleaned_labs + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"], color = ["red","orange", "green", "#1f77b4"], figsize = None, save_to = filename, xval = "dates", yval = "$\mathbb{E}$[Susceptible]", 
+fig, ax = Display_Envelops(t, t_dates, Y_grouped_vacc_min_1, Y_grouped_vacc_max_1, is_log = False, labels = lin_cleaned_labs_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"], color = ["red","orange", "#1f77b4"], figsize = None, save_to = filename, xval = "dates", yval = "$\mathbb{E}$[Susceptible]", 
                           linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None)
 
+# plotting proportions
+PreFig(xsize = 20, ysize = 20)
+fig = plt.figure(figsize = (15, 7))
+ax = fig.add_subplot(1, 1, 1) 
+filename = sys.argv[-1]+"/Vacc_counts_ver1.pdf"
+Vacc_Counts_ver1 = np.array(Vacc_Counts)
+fig, ax = Display(t, t_dates, np.cumsum(Vacc_Counts_ver1, axis = 1), is_log = False, labels = lin_cleaned_labs_sorted, palette = col2, figsize = None, save_to = filename, xval = "dates", yval = "Counts (CumSum)", 
+                        linewidth = 5, ax = ax, fig = fig,alpha = 0.3, mode = None)
+
+cdic = {"dates":t_dates}
+cdic.update({lin_cleaned_labs_sorted[i]:np.cumsum(Vacc_Counts_ver1[i, :]) for i in range(len(lin_cleaned_labs))})
+c_df = pd.DataFrame(cdic)
+c_df.to_csv(sys.argv[-1]+"/Vacc_counts_ver1.csv")
 
 # plotting
 PreFig(xsize = 20, ysize = 20)
 fig = plt.figure(figsize = (15, 7))
 ax = fig.add_subplot(1, 1, 1) 
-filename = sys.argv[-1]+"/Susceptible_Trends_Vacc_vs_ALL_ver2.pdf"
+filename = sys.argv[-1]+"/Vacc_vs_ALL"+"/Susceptible_Trends_Vacc_vs_ALL_ver2.pdf"
 
 #### sort groups
 lab_orig = lin_cleaned_ver2.copy()
 lin_cleaned_ver2.sort()
 lin_cleaned_ver2_labs_sorted = [lin_cleaned_ver2_labs[lab_orig.index(lin_cleaned_ver2[0])]]
 
+
 Y_grouped_vacc_min_2 = [Y_grouped_vacc_min[0, :]]
 Y_grouped_vacc_max_2 = [Y_grouped_vacc_min[0, :] + cleaned_weight_ver2[lin_cleaned_ver2[0]]*(Y_grouped_vacc_max[0, :] - Y_grouped_vacc_min[0, :])]
+Vacc_Counts = [cleaned_Counts_ver2[lin_cleaned_ver2[0]]]
 for i in range(1, len(lin_cleaned_ver2)):
     Y_grouped_vacc_min_2.append(Y_grouped_vacc_max_2[-1])
     Y_grouped_vacc_max_2.append(Y_grouped_vacc_max_2[-1] + cleaned_weight_ver2[lin_cleaned_ver2[i]]*(Y_grouped_vacc_max[0, :] - Y_grouped_vacc_min[0, :]))
+    Vacc_Counts.append(cleaned_Counts_ver2[lin_cleaned_ver2[i]])
     lin_cleaned_ver2_labs_sorted.append(lin_cleaned_ver2_labs[lab_orig.index(lin_cleaned_ver2[i])])
-
-
+    
 Y_grouped_vacc_min_2.append(Y_grouped_vacc_min[1, :])
 Y_grouped_vacc_max_2.append(Y_grouped_vacc_max[1, :])
  
@@ -339,14 +492,30 @@ Y_grouped_vacc_min_2 = ma.masked_array(Y_grouped_vacc_min_2, mask = np.row_stack
 Y_grouped_vacc_max_2 = ma.masked_array(Y_grouped_vacc_max_2, mask = np.row_stack(tuple([S_mask0 for i in range(Y_grouped_vacc_min_2.shape[0])])))
 
 t = np.arange(len(t_dates))
-fig, ax = Display_Envelops(t, t_dates, Y_grouped_vacc_min_2, Y_grouped_vacc_max_2, is_log = False, labels = lin_cleaned_ver2_labs_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"] + ["ALL vs VACC ($\mathbb{E}$[Susceptible])"], palette = "husl", figsize = None, save_to = filename, xval = "dates", yval = "$\mathbb{E}$[Susceptible]", 
-                        linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None)
+fig, ax = Display_Envelops(t, t_dates, Y_grouped_vacc_min_2, Y_grouped_vacc_max_2, is_log = False, labels = lin_cleaned_ver2_labs_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"] + ["run_ver ($\mathbb{E}$[Susceptible])"], palette = col1, figsize = None, save_to = filename, xval = "dates", yval = "$\mathbb{E}$[Susceptible]", 
+                        linewidth = 5, ax = ax, fig = fig,alpha = 0.3, mode = None)
+
+# plotting proportions
+PreFig(xsize = 20, ysize = 20)
+fig = plt.figure(figsize = (15, 7))
+ax = fig.add_subplot(1, 1, 1) 
+filename = sys.argv[-1]+"/Vacc_counts_ver2.pdf"
+Vacc_Counts_ver2 = np.array(Vacc_Counts)
+t = np.arange(len(t_dates))
+fig, ax = Display(t, t_dates, np.cumsum(Vacc_Counts_ver2, axis = 1), is_log = False, labels = lin_cleaned_ver2_labs_sorted, palette = col2, figsize = None, save_to = filename, xval = "dates", yval = "Counts (CumSum)", 
+                        linewidth = 5, ax = ax, fig = fig,alpha = 0.3, mode = None)
+
+cdic = {"dates":t_dates}
+cdic.update({lin_cleaned_ver2_labs_sorted[i]:np.cumsum(Vacc_Counts_ver2[i, :]) for i in range(len(lin_cleaned_ver2))})
+c_df = pd.DataFrame(cdic)
+c_df.to_csv(sys.argv[-1]+"/Vacc_counts_ver2.csv")
+
 
 # plotting
 PreFig(xsize = 20, ysize = 20)
 fig = plt.figure(figsize = (15, 7))
 ax = fig.add_subplot(1, 1, 1) 
-filename = sys.argv[-1]+"/Susceptible_Trends_Vacc_vs_ALL_ver_all.pdf"
+filename = sys.argv[-1]+"/Vacc_vs_ALL"+"/Susceptible_Trends_Vacc_vs_ALL_ver_all.pdf"
 
 ### sort groups
 vacc_names.sort()
@@ -367,12 +536,12 @@ Y_grouped_vacc_min_all = ma.masked_array(Y_grouped_vacc_min_all, mask = np.row_s
 Y_grouped_vacc_max_all = ma.masked_array(Y_grouped_vacc_max_all, mask = np.row_stack(tuple([S_mask0 for i in range(Y_grouped_vacc_min_all.shape[0])])))
 
 t = np.arange(len(t_dates))
-fig, ax = Display_Envelops(t, t_dates, Y_grouped_vacc_min_all, Y_grouped_vacc_max_all, is_log = False, labels = vacc_names_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"], palette = "husl", figsize = None, save_to = filename, xval = "dates", yval = "$\mathbb{E}$[Susceptible]", 
+fig, ax = Display_Envelops(t, t_dates, Y_grouped_vacc_min_all, Y_grouped_vacc_max_all, is_log = False, labels = vacc_names_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"], palette = col1, figsize = None, save_to = filename, xval = "dates", yval = "$\mathbb{E}$[Susceptible]", 
                           linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None)
 
 
 
-### plot ALL vs Vacc
+### plot run_ver
 S2 = np.zeros(S_all_mean.shape)
 S_mask = np.zeros(S_all_mean.shape).astype(bool)
 for i in range(len(t_dates)):
@@ -409,7 +578,11 @@ ax = fig.add_subplot(1, 1, 1)
 filename = sys.argv[-1]+"/Susceptible_Trends_ALL_vs_Vacc.pdf"
 
 t = np.arange(len(t_dates))
-fig, ax = Display_Envelops(t, t_dates, Y_2_min, Y_2_max, is_log = False, labels = ["ALL vs Vacc",  "ALL vs ALL (mean $\mathbb{E}$[Susceptible])"], color = ["red", "#1f77b4"], figsize = None, save_to = filename, xval = "dates", yval = "Mean $\mathbb{E}$[Susceptible]", 
+if str(sys.argv[-1][-4:]) == "ver1":
+    run_ver = "ALL vs VACC only"
+elif str(sys.argv[-1][-4:]) == "ver2":
+    run_ver = "ALL vs (ALL + VACC)"
+fig, ax = Display_Envelops(t, t_dates, Y_2_min, Y_2_max, is_log = False, labels = [run_ver,  "ALL vs ALL (mean $\mathbb{E}$[Susceptible])"], color = ["red", "#1f77b4"], figsize = None, save_to = filename, xval = "dates", yval = "Mean $\mathbb{E}$[Susceptible]", 
                           linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None)
 
 
@@ -425,6 +598,7 @@ for i in range(1, len(lin_cleaned)):
     Y_2b_min.append(Y_2b_max[-1])
     Y_2b_max.append(Y_2b_max[-1] + cleaned_weight[lin_cleaned[i]]*(Y_2_max[0, :] - Y_2_min[0, :]))
 
+
 Y_2b_min.append(np.min(S_all_mean, axis = 1))
 Y_2b_max.append(np.max(S_all_mean, axis = 1))
 
@@ -435,9 +609,8 @@ Y_2b_min = ma.masked_array(Y_2b_min, mask = np.row_stack(tuple([S_mask_sum for i
 Y_2b_max = ma.masked_array(Y_2b_max, mask = np.row_stack(tuple([S_mask_sum for i in range(Y_2b_min.shape[0])])))
 
 t = np.arange(len(t_dates))
-fig, ax = Display_Envelops(t, t_dates, Y_2b_min, Y_2b_max, is_log = False, labels = lin_cleaned_labs + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"], color = ["red","orange", "green", "#1f77b4"], figsize = None, save_to = filename, xval = "dates", yval = "Mean $\mathbb{E}$[Susceptible]", 
+fig, ax = Display_Envelops(t, t_dates, Y_2b_min, Y_2b_max, is_log = False, labels = lin_cleaned_labs_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"], color = ["red","orange", "#1f77b4"], figsize = None, save_to = filename, xval = "dates", yval = "Mean $\mathbb{E}$[Susceptible]", 
                           linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None)
-
 
 # plotting
 PreFig(xsize = 20, ysize = 20)
@@ -446,16 +619,11 @@ ax = fig.add_subplot(1, 1, 1)
 filename = sys.argv[-1]+"/Susceptible_Trends_ALL_vs_Vacc_ver2.pdf"
 
 #### sort groups
-lab_orig = lin_cleaned_ver2.copy()
-lin_cleaned_ver2.sort()
-lin_cleaned_ver2_labs_sorted = [lin_cleaned_ver2_labs[lab_orig.index(lin_cleaned_ver2[0])]]
-
 Y_2c_min = [Y_2_min[0, :]]
 Y_2c_max = [Y_2_min[0, :] + cleaned_weight_ver2[lin_cleaned_ver2[0]]*(Y_2_max[0, :] - Y_2_min[0, :])]
 for i in range(1, len(lin_cleaned_ver2)):
     Y_2c_min.append(Y_2c_max[-1])
     Y_2c_max.append(Y_2c_max[-1] + cleaned_weight_ver2[lin_cleaned_ver2[i]]*(Y_2_max[0, :] - Y_2_min[0, :]))
-    lin_cleaned_ver2_labs_sorted.append(lin_cleaned_ver2_labs[lab_orig.index(lin_cleaned_ver2[i])])
     
 Y_2c_min.append(np.min(S_all_mean, axis = 1))
 Y_2c_max.append(np.max(S_all_mean, axis = 1))
@@ -468,7 +636,7 @@ Y_2c_max = ma.masked_array(Y_2c_max, mask = np.row_stack(tuple([S_mask_sum for i
 
 
 t = np.arange(len(t_dates))
-fig, ax = Display_Envelops(t, t_dates, Y_2c_min, Y_2c_max, is_log = False, labels = lin_cleaned_ver2_labs_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"] + ["ALL vs VACC ($\mathbb{E}$[Susceptible])"], palette = "husl", figsize = None, save_to = filename, xval = "dates", yval = "Mean $\mathbb{E}$[Susceptible]", 
+fig, ax = Display_Envelops(t, t_dates, Y_2c_min, Y_2c_max, is_log = False, labels = lin_cleaned_ver2_labs_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"] + ["run_ver ($\mathbb{E}$[Susceptible])"], palette = col2, figsize = None, save_to = filename, xval = "dates", yval = "Mean $\mathbb{E}$[Susceptible]", 
                         linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None)
 
 # plotting
@@ -478,14 +646,11 @@ ax = fig.add_subplot(1, 1, 1)
 filename = sys.argv[-1]+"/Susceptible_Trends_ALL_vs_Vacc_ver_all.pdf"
 
 ### sort groups
-vacc_names.sort()
-vacc_names_sorted = [vacc_names[0]]
 Y_2_all_min = [Y_2_min[0, :]]
 Y_2_all_max = [Y_2_min[0, :] + weights_aligned[vacc_names[0]]*(Y_2_max[0, :] - Y_2_min[0, :])]
 for i in range(1, len(vacc_names)):
     Y_2_all_min.append(Y_2_all_max[-1])
     Y_2_all_max.append(Y_2_all_max[-1] + weights_aligned[vacc_names[i]]*(Y_2_max[0, :] - Y_2_min[0, :]))
-    vacc_names_sorted.append(vacc_names[i])
     
 Y_2_all_min.append(np.min(S_all_mean, axis = 1))
 Y_2_all_max.append(np.max(S_all_mean, axis = 1))
@@ -497,7 +662,7 @@ Y_2_all_min = ma.masked_array(Y_2_all_min, mask = np.row_stack(tuple([S_mask_sum
 Y_2_all_max = ma.masked_array(Y_2_all_max, mask = np.row_stack(tuple([S_mask_sum for i in range(Y_2_all_min.shape[0])])))
 
 t = np.arange(len(t_dates))
-fig, ax = Display_Envelops(t, t_dates, Y_2_all_min, Y_2_all_max, is_log = False, labels = vacc_names_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"], palette = "husl", figsize = None, save_to = filename, xval = "dates", yval = "Mean $\mathbb{E}$[Susceptible]", 
+fig, ax = Display_Envelops(t, t_dates, Y_2_all_min, Y_2_all_max, is_log = False, labels = vacc_names_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"], palette = col2, figsize = None, save_to = filename, xval = "dates", yval = "Mean $\mathbb{E}$[Susceptible]", 
                           linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None)
 
                               
