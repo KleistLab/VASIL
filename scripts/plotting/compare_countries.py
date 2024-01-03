@@ -443,9 +443,8 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
                     ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
                 else:
                     ### placeholder for legend
-                    ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
                     ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0., label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
-
+                    ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  label = lineage_list[k] + "*$^{%s}$ -- %s"%(countries_labels[0], countries_labels[c_ind]))
                 
                 #ax2_twin.scatter(inds_dates, gamma_prop_masked, marker = ".", color = "orange")
                             
@@ -542,9 +541,10 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
         lab_k_fn = (lab_k.replace("/", "_")).replace("*","").replace("+", "_") ## for filename 
         if len(lab_k_fn) > 10: # can't be too long
             lab_k_fn = lab_k_fn[:10] + "_et_al"
-          
-        ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+        
+        ax_twin.set_zorder(-1) ### send the legend of ax_twin in the background 
         ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+        ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
         ax_twin.set_ylabel("Relative fitness", fontsize = 20)
         ax.set_ylabel("Spikegroup Frequency (daily %)", fontsize = 20)
         pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_prop_%s.pdf"%lineage_list[k])
