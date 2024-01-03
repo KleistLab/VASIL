@@ -85,10 +85,10 @@ def Display_Stacked(t, t_dates, Y, is_log, labels, figsize = (7, 7), xysize = (1
     plt.xlabel(xval, fontsize = labsize)
     plt.legend(loc = (1.2, 0), fontsize = labsize, ncols = np.ceil(len(labels)/20).astype(int))
     
-    if len(t)<500:
-        pp = 14
+    if len(t)>200:
+        pp = 7*4
     else:
-        pp = 28
+        pp = 14
         
     t_ticks = np.array(t)[::pp]
     t_ticks_labels = np.array(t_dates)[::pp]
@@ -99,7 +99,9 @@ def Display_Stacked(t, t_dates, Y, is_log, labels, figsize = (7, 7), xysize = (1
     ax.set_xticks(t_ticks)
     ax.set_xticklabels(t_ticks_labels, rotation = 45, horizontalalignment = "right")
         
-    
+    ax.set_xlim((t[0], t[-1]))
+
+
     if save_to[-3:] == "pdf":
         ### save figure in pdf ###
         pdf = PdfPages(save_to)
@@ -153,10 +155,10 @@ def Display_Envelops(t, t_dates, Y, Z, is_log, labels, figsize = (7, 7), xysize 
     plt.xlabel(xval, fontsize = labsize)
     plt.legend(loc = (1.2, 0), fontsize = labsize, ncols = np.ceil(len(labels)/15).astype(int))
     
-    if len(t)<500:
-        pp = 14
+    if len(t)>200:
+        pp = 7*4
     else:
-        pp = 28
+        pp = 14
         
     t_ticks = np.array(t)[::pp]
     t_ticks_labels = np.array(t_dates)[::pp]
@@ -166,7 +168,8 @@ def Display_Envelops(t, t_dates, Y, Z, is_log, labels, figsize = (7, 7), xysize 
     
     ax.set_xticks(t_ticks)
     ax.set_xticklabels(t_ticks_labels, rotation = 45, horizontalalignment = "right")
-        
+    
+    ax.set_xlim((t[0], t[-1]))
     
     if save_to[-3:] == "pdf":
         ### save figure in pdf ###
@@ -221,10 +224,10 @@ def Display(t, t_dates, Y, is_log, labels, figsize = (7, 7), xysize = (15,15), l
     plt.xlabel(xval, fontsize = labsize)
     plt.legend(loc = (1.2, 0), fontsize = labsize, ncols = np.ceil(len(labels)/15).astype(int))
     
-    if len(t)<500:
-        pp = 14
+    if len(t)>200:
+        pp = 7*4
     else:
-        pp = 28
+        pp = 14
         
     t_ticks = np.array(t)[::pp]
     t_ticks_labels = np.array(t_dates)[::pp]
@@ -234,7 +237,8 @@ def Display(t, t_dates, Y, is_log, labels, figsize = (7, 7), xysize = (15,15), l
     
     ax.set_xticks(t_ticks)
     ax.set_xticklabels(t_ticks_labels, rotation = 45, horizontalalignment = "right")
-        
+    ax.set_xlim((t[0], t[-1]))
+ 
     
     if save_to[-3:] == "pdf":
         ### save figure in pdf ###
@@ -292,8 +296,8 @@ if date_start not in t_dates_orig:
     date_start = t_dates_orig[0]
 if date_end not in t_dates_orig:
     date_end = t_dates_orig[-1]
-t_dates = np.array(t_dates_orig)[t_dates_orig.index(date_start):t_dates_orig.index(date_end)]
-S_all_mean = S_all_mean_orig[t_dates_orig.index(date_start):t_dates_orig.index(date_end), :]
+t_dates = np.array(t_dates_orig)[t_dates_orig.index(date_start):t_dates_orig.index(date_end)+1]
+S_all_mean = S_all_mean_orig[t_dates_orig.index(date_start):t_dates_orig.index(date_end)+1, :]
 
 Y = []
 
@@ -494,6 +498,7 @@ Y_grouped_vacc_max_2 = ma.masked_array(Y_grouped_vacc_max_2, mask = np.row_stack
 t = np.arange(len(t_dates))
 fig, ax = Display_Envelops(t, t_dates, Y_grouped_vacc_min_2, Y_grouped_vacc_max_2, is_log = False, labels = lin_cleaned_ver2_labs_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"] + ["run_ver ($\mathbb{E}$[Susceptible])"], palette = col1, figsize = None, save_to = filename, xval = "dates", yval = "$\mathbb{E}$[Susceptible]", 
                         linewidth = 5, ax = ax, fig = fig,alpha = 0.3, mode = None)
+
 
 # plotting proportions
 PreFig(xsize = 20, ysize = 20)

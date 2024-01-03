@@ -59,7 +59,7 @@ def PreFig(xsize = 12, ysize = 12):
     matplotlib.rc('ytick', labelsize=ysize)
 
    
-def plot_fit(Trends_dir_list, Trends_list, Trends_labels, lineage_list, color_list, w_save = len(sys.argv)-1):
+def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, color_list, w_save = len(sys.argv)-1):
     status_list = []
     lineage_list_Trends = []    
     for k in range(len(lineage_list)):
@@ -70,8 +70,17 @@ def plot_fit(Trends_dir_list, Trends_list, Trends_labels, lineage_list, color_li
         lineage_freqs_list = []
         prop_mask_list = []
         day_prop_list = []
-        for c_ind in range(len(Trends_list)):
-            S_mean_file = Trends_dir_list[c_ind]+"/results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv"
+        for c_ind in range(len(Trends_subdir_list)):
+            if "ImL_ALL_vs_Vacc_ver2" in Trends_subdir_list[c_ind]:
+                S_mean_file = Trends_dir_list[c_ind]+"/Susceptible_weighted_mean_over_spikegroups_vs_Vacc_ver2_all_PK.csv"
+            elif "ImL_ALL_vs_Vacc_ver1" in Trends_subdir_list[c_ind]:
+                S_mean_file = Trends_dir_list[c_ind]+"/Susceptible_weighted_mean_over_spikegroups_vs_Vacc_ver1_all_PK"
+            else:
+                S_mean_file = Trends_dir_list[c_ind]+"/Susceptible_weighted_mean_over_spikegroups_all_PK.csv"
+            
+            print("-------------------------------------------------------------")
+            print(Trends_labels[c_ind], "open S_mean", S_mean_file)
+
             # needs to be updated to allow individual weighting 
             S_mean_df = pd.read_csv(S_mean_file)
             S_all_mean_list.append(S_mean_df.to_numpy()[:, S_mean_df.columns != "Days"].astype(float))
@@ -79,7 +88,7 @@ def plot_fit(Trends_dir_list, Trends_list, Trends_labels, lineage_list, color_li
             all_dates += list(S_mean_df["Days"])
             
             # processing of frequency data
-            lineage_freq = pd.read_csv(Trends_dir_list[c_ind]+"/results/Daily_SpikeGroups_Freq.csv")
+            lineage_freq = pd.read_csv(Trends_dir_list[c_ind].replace("vaccination", "/results")+"/Daily_SpikeGroups_Freq.csv") # hard-coded for vaccination simulations
             threshold = float(sys.argv[4])
             try:
                 lineage_freq.drop(columns = "Unnamed: 0", inplace = True)
@@ -130,12 +139,13 @@ def plot_fit(Trends_dir_list, Trends_list, Trends_labels, lineage_list, color_li
         # different axis for proportions
         ax2_twin = ax2.twinx()
         
-        for c_ind in range(len(Trends_list)):
-            file = open(Trends_dir_list[c_ind]+"/Spikegroups_membership.pck", "rb")
+        for c_ind in range(len(Trends_subdir_list)):
+            file = open(Trends_dir_list[c_ind].replace("/vaccination", "")+"/Spikegroups_membership.pck", "rb") #hard-coded for vaccination simulations
             Pseudogroup_dic = pickle.load(file)
             file.close() 
             
-            ES_df_dir = Trends_dir_list[c_ind]+"/results/Immunological_Landscape_ALL"
+            ES_df_dir = Trends_dir_list[c_ind]+"/"+Trends_subdir_list[c_ind]
+            
             day_prop = day_prop_list[c_ind]
             t_prop = t_prop_all[list(all_prop_dates).index(day_prop[0]):list(all_prop_dates).index(day_prop[-1])+1]
             prop_mask = prop_mask_list[c_ind]
@@ -187,10 +197,13 @@ def plot_fit(Trends_dir_list, Trends_list, Trends_labels, lineage_list, color_li
             ES_list = []
             prop_list = []
             for x in range(len(splited_var)):
-                lineage = splited_var[x]                
+                lineage = splited_var[x]  
                 try:
                     if Pseudogroup_dic[lineage] not in (Pseudo_done[lineage_list[k]].split("/")):
                         ES_df = pd.read_csv(ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
+                        print("-------------------------------------------------------------")
+                        print(Trends_labels[c_ind], ES_df_dir+"/Susceptible_SpikeGroup_%s_all_PK.csv"%Pseudogroup_dic[lineage])
+                        
                         num_avail +=1 
                         
                         try:
@@ -261,11 +274,12 @@ def plot_fit(Trends_dir_list, Trends_list, Trends_labels, lineage_list, color_li
                                         
                                          run = True
                                  except:
-                                    print("Computation needed: Expected Susceptible file is not available for %s"%lineage)
+                                    print("Computation needed: Expected Susceptible file is not available for %s"%lineage, ES_df_dir)
                                     run = False
                                     
                 # processing of Proportions data
-                if run:   
+                if run:  
+                    
                     # change in relative frequency from genomic surveillance data 
                     if lineage in list(Pseudogroup_dic.keys()):
                         lab_k = lineage + "*"+"/"
@@ -390,22 +404,31 @@ def plot_fit(Trends_dir_list, Trends_list, Trends_labels, lineage_list, color_li
                 Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop_aligned, mask = prop_mask_aligned)
     
                 ax_twin.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lab_k + " -- %s"%Trends_labels[c_ind])
-                ax.plot(inds_dates, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[c_ind], label = lab_k + " -- %s"%Trends_labels[c_ind])
+                
+                if ("ImL_ALL_vs_Vacc_ver2" not in Trends_subdir_list[c_ind]) and ("ImL_ALL_vs_Vacc_ver1" not in Trends_subdir_list[c_ind]):
+                    ax.plot(inds_dates, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[c_ind], label = lab_k + " -- %s"%Trends_labels[c_ind])
+                else:
+                    ax.plot(inds_dates, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[c_ind],  alpha = 0., label = lab_k + " -- %s"%Trends_labels[c_ind])
+                    
                 #ax_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
     
                 ### Separate figure for relative fitness vs change in proportion
                 gamma_prop_masked = ma.masked_array(gamma_prop, mask = SI_mask)
-                ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.2, label = lab_k + " -- %s"%Trends_labels[c_ind])
-                ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  label=lab_k + " -- %s"%Trends_labels[c_ind])
+                ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lab_k + " -- %s"%Trends_labels[c_ind])
+                
+                if ("ImL_ALL_vs_Vacc_ver2" not in Trends_subdir_list[c_ind]) and ("ImL_ALL_vs_Vacc_ver1" not in Trends_subdir_list[c_ind]):
+                    ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  label=lab_k + " -- %s"%Trends_labels[c_ind])
+                else:
+                    ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  alpha = 0., label=lab_k + " -- %s"%Trends_labels[c_ind])
                 #ax2_twin.scatter(inds_dates, gamma_prop_masked, marker = ".", color = "orange")
                             
                 status_list.append(lab_status)
             
             else:
-                print("No lineages in group %s have E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k])
+                print("No lineages in group %s have E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k], ES_df_dir)
                 status_list.append("%s : No data"%Trends_labels[c_ind])
             
-            lineage_list_Trends.append("%s : %s"%(Trends_labels[c_ind], lineage_list[k]))
+            lineage_list_Trends.append("%s"%(lineage_list[k]))
         
         ax_twin.axhline(xmin = 0, xmax = len(all_dates), ls = "--", linewidth = 2, color = "black")
         
@@ -524,13 +547,11 @@ def plot_fit(Trends_dir_list, Trends_list, Trends_labels, lineage_list, color_li
             ax2.set_ylim((ymin, ymax))
             ax2_twin.set_ylim((ymin, ymax))   
         
-         
-            
         ax2.axhline(xmin = 0, xmax = len(day_prop), ls = "--", linewidth = 2, color = "black")
         ax2.set_ylabel("Relative fitness $\gamma_y$", fontsize = 20)
         ax2_twin.set_ylabel("Change in proportion $\gamma_{prop}$", fontsize = 20)
-        ax2.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
-        ax2_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+        ax2.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = 1)
+        ax2_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = 1)
         pdf_2 = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lab_k_fn)
         pdf_2.savefig(fig2, bbox_inches = "tight")
         pdf_2.close()
@@ -548,14 +569,14 @@ custom_col = sns.color_palette("Set2", 100)
 s = 0
 
 Trends_dir_list = str(sys.argv[1]).split("/new/")
-Trends_list = str(sys.argv[2]).split("/")
+Trends_subdir_list = str(sys.argv[2]).split("/new/")
 Trends_labels = str(sys.argv[3]).split("/")
 
 for i in range(num_groups):
     lineage_list.append(str(sys.argv[k+i]))
     s+=1
 
-for j in range(len(Trends_list)):
+for j in range(len(Trends_subdir_list)):
     try:
         if "/" not in str(sys.argv[s+k+j]):
             color_list.append(str(sys.argv[s+k+j]))
@@ -570,7 +591,7 @@ for j in range(len(Trends_list)):
             color_list.append(sns.color_palette("rocked", rand_num)[0])
         s +=1
 
-status_list, lineage_list_Trends = plot_fit(Trends_dir_list, Trends_list, Trends_labels, lineage_list, color_list, w_save)
+status_list, lineage_list_Trends = plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, color_list, w_save)
 
 status = pd.DataFrame({"lineage":lineage_list_Trends, "spikegroups_found":status_list})
 status.to_csv(sys.argv[w_save]+"/plot_status.csv")

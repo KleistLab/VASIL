@@ -964,10 +964,12 @@ else:
                 status_var_vacc.append(status_var_vacc)
                 
                 EI_df = EI_df_0.add(EI_df_vacc) ### dataframes are already aligned
-                EI_df["Days"] = days_incidence
-
-                Susc_df = pd.DataFrame({"Days":days_incidence}.update({EI_df.columns[i]:(total_population - EI_df[EI_df.columns[i]].to_numpy()) for i in range(len(EI_df.columns)) if EI_df.columns[i]!="Days"})) ### dataframes are already aligned
                 
+                EI_df["Days"] = days_incidence
+                Susc_dic = {"Days":days_incidence}
+                Susc_dic_0 = {EI_df.columns[i]:(total_population - EI_df[EI_df.columns[i]].to_numpy()) for i in range(len(EI_df.columns)) if EI_df.columns[i]!="Days"}
+                Susc_dic.update(Susc_dic_0)
+                Susc_df = pd.DataFrame(Susc_dic) ### dataframes are already aligned
                 EI_df.to_csv(sys.argv[w_save]+"/Immunized_SpikeGroup_%s_all_PK.csv"%SpikeGroups_list[i]) 
                 Susc_df.to_csv(sys.argv[w_save]+"/Susceptible_SpikeGroup_%s_all_PK.csv"%SpikeGroups_list[i])
                 
