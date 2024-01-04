@@ -75,7 +75,7 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
             # needs to be updated to allow individual weighting 
             S_mean_df = pd.read_csv(S_mean_file)
             S_all_mean_list.append(S_mean_df.to_numpy()[:, S_mean_df.columns != "Days"].astype(float))
-            t_dates_list.append(S_mean_df["Days"])
+            t_dates_list.append(S_mean_df["Days"].tolist())
             all_dates += list(S_mean_df["Days"])
             
             # processing of lineage frequency data            

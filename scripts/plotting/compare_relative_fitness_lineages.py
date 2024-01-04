@@ -83,7 +83,7 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
             # needs to be updated to allow individual weighting 
             S_mean_df = pd.read_csv(S_mean_file)
             S_all_mean_list.append(S_mean_df.to_numpy()[:, S_mean_df.columns != "Days"].astype(float))
-            t_dates_list.append(S_mean_df["Days"])
+            t_dates_list.append(S_mean_df["Days"].tolist())
             all_dates += list(S_mean_df["Days"])
             
             # processing of frequency data
