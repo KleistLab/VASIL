@@ -47,7 +47,7 @@ threshold = float(sys.argv[4])
 # needs to be updated to allow individual weighting 
 S_mean_df = pd.read_csv(S_mean_file)
 S_all_mean = S_mean_df.to_numpy()[:, (S_mean_df.columns != "Days")&(S_mean_df.columns != "Unnamed: 0")].astype(float)
-t_dates = S_mean_df["Days"]
+t_dates = S_mean_df["Days"].tolist()
 
 # processing of Spikegroup frequency
 try:
@@ -67,8 +67,7 @@ freqs = freqs.divide(col_sums, axis="rows")
 freqs = freqs.fillna(0)
 variant_freq.loc[:, variant_freq.columns != 'date'] = freqs
 print("Number of spikegroups: %d + 1 Wuhan-Hu-1"%len(variant_freq.columns[variant_freq.columns!="Wuhan-Hu-1"]))
-day_prop = variant_freq["date"].tolist()
-t_prop = np.arange(len(day_prop)).astype(int)
+day_prop_spikes = variant_freq["date"].tolist()
 
 
 import matplotlib
@@ -104,7 +103,7 @@ except:
 def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, already_prop = np.zeros((len(t_prop)))):
     # plotting
     PreFig(xsize = 20, ysize = 20)
-    fig = plt.figure(figsize = (9, 7))
+    fig = plt.figure(figsize = (15, 7))
     ax = fig.add_subplot(1, 1, 1)
     ### end of observation line
     ax.axvline(x = len(t_dates) - 1, ymin = -1, ymax = 1, ls = "--", linewidth = 2, color = "grey")
@@ -113,7 +112,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     
     ### Separate figure for proportions
     PreFig(xsize = 20, ysize = 20)
-    fig_prop = plt.figure(figsize = (9, 7))
+    fig_prop = plt.figure(figsize = (15, 7))
     ax_prop = fig_prop.add_subplot(1, 1, 1)
     
     status_list = []
@@ -152,7 +151,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         num_avail = 0
         # plotting
         PreFig(xsize = 20, ysize = 20)
-        fig_k = plt.figure(figsize = (9, 7))
+        fig_k = plt.figure(figsize = (15, 7))
         ax_k = fig_k.add_subplot(1, 1, 1)
         ### end of observation line
         ax_k.axvline(x = len(t_dates) - 1, ymin = -1, ymax = 1, ls = "--", linewidth = 2, color = "grey")
@@ -373,13 +372,23 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             Pseudo_Prop2 = Pseudo_Prop.copy()
             Pseudo_Prop2[Pseudo_Prop2 < 0.05] = 0
             Pseudo_Prop2 = list(Pseudo_Prop2)
+            Pseudo_Prop_aligned = np.zeros(len(t_dates))
+            already_prop_aligned = np.zeros(len(t_dates))
+            day_prop_aligned = []
+            t_prop_aligned = np.zeros(len(t_dates))
+            prop_mask_aligned = np.zeros(len(t_dates)).astype(bool)
             gamma_prop = np.zeros(len(t_dates))
             SI_mask = np.zeros(len(t_dates)).astype(bool)
-            for l in range(len(t_dates)-1):
+            for l in range(len(t_dates)):
                 #Pseudo_Prop = Pseudo_Prop/np.sum(Pseudo_Prop)
                 ## Dates are already set to always be to be successive
                 if t_dates[l] in day_prop:
                     w_l = list(day_prop).index(t_dates[l])
+                    Pseudo_Prop_aligned[l] = Pseudo_Prop[w_l]
+                    prop_mask_aligned[l] = prop_mask.tolist()[w_l]
+                    already_prop_aligned[l] = already_prop[w_l]
+                    day_prop_aligned.append(t_dates[l])
+                    t_prop_aligned[l] = w_l
                     try:
                         if Pseudo_Prop2[w_l] == 0 or Pseudo_Prop2[w_l+1] == 0:
                             gamma_prop[l] = float('nan')
@@ -393,21 +402,21 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     gamma_prop[l] = float('nan')
                     SI_mask[l] = True
             
-            if t_dates[len(t_dates)-1] in day_prop and len(day_prop)>len(t_dates):
-                w_l = list(day_prop).index(t_dates[len(t_dates)-1])
-                try:
-                    if Pseudo_Prop2[w_l] == 0 or Pseudo_Prop2[w_l+1] == 0:
-                        gamma_prop[l] = float('nan')
-                        SI_mask[l] == True
-                    else:
-                        gamma_prop[l] = (Pseudo_Prop2[w_l+1]/Pseudo_Prop2[w_l]) - 1
-                except:
-                    gamma_prop[l] = float('nan')
-                    SI_mask[l] = True
-            else:
-                gamma_prop[l] = float('nan')
-                SI_mask[l] = True
-            
+            ### Making sure to aligne proportions and incidence timelines
+            if len(day_prop_aligned) < len(day_prop):
+                miss_days = [day for day in day_prop if day not in day_prop_aligned]
+                day_prop_aligned = list(day_prop_aligned) + [day_prop[list(day_prop).index(miss_days[i])] for i in range(len(miss_days))]
+                prop_mask_aligned = list(prop_mask_aligned) + [prop_mask.tolist()[list(day_prop).index(miss_days[i])] for i in range(len(miss_days))]
+                t_prop_aligned = list(t_prop_aligned) + list(len(t_prop_aligned) + np.arange(len(miss_days)))
+                Pseudo_Prop_aligned = list(Pseudo_Prop_aligned) + [Pseudo_Prop[list(day_prop).index(miss_days[i])] for i in range(len(miss_days))]
+                already_prop_aligned = list(already_prop_aligned) + [already_prop[list(day_prop).index(miss_days[i])] for i in range(len(miss_days))]
+                
+                day_prop_aligned = list(day_prop_aligned)
+                prop_mask_aligned = np.array(prop_mask_aligned)
+                t_prop_aligned = np.array(t_prop_aligned)
+                Pseudo_Prop_aligned = np.array(Pseudo_Prop_aligned)
+                already_prop_aligned = np.array(already_prop_aligned)
+                
             # calculation of relative fitness
             gamma_SI = np.zeros((len(t_dates), ES_ranges.shape[1]))
             for i in range(ES_ranges.shape[1]):
@@ -418,27 +427,26 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             
             # get min max gamma over PK at each timepoints
             inds_dates = np.arange(0,len(t_dates),1)
-            SI_mask = np.array(SI_mask) + prop_mask[:len(inds_dates)] ### props are already aligned with indicence date
+            SI_mask = np.array(SI_mask) + prop_mask_aligned[:len(inds_dates)] 
             gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
             gamma_SI_max = ma.masked_array(gamma_SI_max, mask = SI_mask)
             gamma_SI_min = ma.masked_array(gamma_SI_min, mask = SI_mask)
-            Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop, mask = prop_mask)
-
+            Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop_aligned, mask = prop_mask_aligned)
+            
             ax.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
-            ax_twin.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
-            #ax_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
+            ax_twin.plot(t_prop_aligned, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[k], label = lab_k)
+
+            #ax_twin.scatter(t_prop_aligned, Pseudo_Prop_masked, marker = ".", color = color_list[k])
 
             ### Plot spikegroups frequencies
             if np.all(plot_prop):
-                Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop, mask=prop_mask)
-                ax_prop.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
-                #ax_prop.scatter(t_prop, 100*Pseudo_Prop_masked, marker = ".", color = color_list[k])
+                ax_prop.plot(t_prop_aligned, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[k], label = lab_k) 
+                #ax_prop.scatter(t_prop_aligned, 100*Pseudo_Prop_masked, marker = ".", color = color_list[k])
 
-            
             ax_k.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[k], alpha = 0.3, label = lab_k)
-            #ax_k_twin.plot(t_prop, Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
-            ax_k_twin.plot(t_prop, 100*Pseudo_Prop_masked, linewidth = 3, color = color_list[k], label = lab_k)
-            #ax_k_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
+            #ax_k_twin.plot(t_prop_aligned, Pseudo_Prop_masked, linewidth = 4, color = color_list[k], label = lab_k)
+            ax_k_twin.plot(t_prop_aligned, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[k], label = lab_k)
+            #ax_k_twin.scatter(t_prop_aligned, Pseudo_Prop_masked, marker = ".", color = color_list[k])
             ax_k.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
             
             ymin1, ymax1 = ax_k.get_ylim()
@@ -454,16 +462,16 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                     x_min = list(t_dates).index(str(sys.argv[5]))
                 else:
                     x_min = 0
-                if str(sys.argv[5]) in list(day_prop):
-                    x_min1 = day_prop.index(str(sys.argv[5]))
+                if str(sys.argv[5]) in list(day_prop_aligned):
+                    x_min1 = day_prop_aligned.index(str(sys.argv[5]))
                 else:
                     x_min1 = 0
-                if str(sys.argv[6]) in list(day_prop):
-                    x_max1 = day_prop.index(str(sys.argv[6]))
+                if str(sys.argv[6]) in list(day_prop_aligned):
+                    x_max1 = day_prop_aligned.index(str(sys.argv[6]))
                 else:
-                    x_max1 = len(day_prop) - 1
+                    x_max1 = len(day_prop_aligned) - 1
                 if str(sys.argv[6]) not in list(t_dates):
-                    x_max = (len(t_dates) - 1) + (x_max1 - day_prop.index(t_dates[len(t_dates) - 1]))
+                    x_max = (len(t_dates) - 1) + (x_max1 - day_prop_aligned.index(t_dates[len(t_dates) - 1]))
                 else:
                     x_max = list(t_dates).index(str(sys.argv[6])) 
             except:
@@ -474,7 +482,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 check_last = x_max1
             else:
                 t_dates_show = t_dates
-                check_last = len(day_prop) - 1
+                check_last = len(day_prop_aligned) - 1
                 
             if len(t_dates_show)>200:
                 pp = 7*4
@@ -494,19 +502,19 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             
             change = len(date_ticks)
             
-            if day_prop[check_last] not in date_ticks:
+            if day_prop_aligned[check_last] not in date_ticks:
                 try:
-                    n=list(day_prop).index(date_ticks[-1])+pp
+                    n=list(day_prop_aligned).index(date_ticks[-1])+pp
                 except:
                     n= perday[-1]+pp
-                while n<len(day_prop)-1:
-                    date_ticks.append(day_prop[n])
+                while n<len(day_prop_aligned)-1:
+                    date_ticks.append(day_prop_aligned[n])
                     perday = np.append(perday, n)
                     n += pp
                 if check_last-perday[-1]<np.ceil(pp/5):
                     perday = perday[:-1]
                     date_ticks = date_ticks[:-1]
-                date_ticks.append(day_prop[check_last])
+                date_ticks.append(day_prop_aligned[check_last])
                 perday = np.append(perday, check_last)
               
             perday_orig = []
@@ -518,7 +526,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             
             for j in range(len(np.array(date_ticks[change:]))):
                 try:
-                    perday_orig.append(list(day_prop).index(date_ticks[change+j]))
+                    perday_orig.append(list(day_prop_aligned).index(date_ticks[change+j]))
                 except:
                     perday_orig.append(perday[change+j])
             
@@ -531,7 +539,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 ax_k_twin.set_xlim((x_min1, x_max1))
             
             #ax_twin.set_ylim((-0.02, 0.02))
-            ax_k.axhline(xmin = 0, xmax = len(t_prop), ls = "--", linewidth = 2, color = "black")
+            ax_k.axhline(xmin = 0, xmax = len(t_prop_aligned), ls = "--", linewidth = 2, color = "black")
             ax_k.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
             ax_k_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
             ax_k_twin.set_ylabel("Lineage Frequency (daily %)", fontsize = 20)
@@ -551,7 +559,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             
             gamma_prop_masked = ma.masked_array(gamma_prop, mask = SI_mask)
             ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = lab_k)
-            ax2_twin.plot(inds_dates, gamma_prop_masked, color = "orange", label=lab_k)
+            ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[k], linewidth = 4,  label=lab_k)
             #ax2_twin.scatter(inds_dates, gamma_prop_masked, marker = ".", color = "orange")
 
             ax2.set_xticks(perday_orig)
@@ -574,7 +582,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
                 ax2.set_ylim((ymin, ymax))
                 ax2_twin.set_ylim((ymin, ymax))   
                 
-            ax2.axhline(xmin = 0, xmax = len(day_prop), ls = "--", linewidth = 2, color = "black")
+            ax2.axhline(xmin = 0, xmax = len(day_prop_aligned), ls = "--", linewidth = 2, color = "black")
             ax2.set_ylabel("Relative fitness $\gamma_y$", fontsize = 20)
             ax2_twin.set_ylabel("Change in proportion $\gamma_{prop}$", fontsize = 20)
             ax2.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
@@ -593,7 +601,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             status_list.append("No data")
     
     
-    ax.axhline(xmin = 0, xmax = len(day_prop), ls = "--", linewidth = 2, color = "black")
+    ax.axhline(xmin = 0, xmax = len(day_prop_aligned), ls = "--", linewidth = 2, color = "black")
     
     ymin1, ymax1 = ax.get_ylim()
     ymin2, ymax2 = ax_twin.get_ylim()
@@ -607,17 +615,17 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             x_min = list(t_dates).index(str(sys.argv[5]))
         else:
             x_min = 0
-        if str(sys.argv[5]) in list(day_prop):
-            x_min1 = day_prop.index(str(sys.argv[5]))
+        if str(sys.argv[5]) in list(day_prop_aligned):
+            x_min1 = day_prop_aligned.index(str(sys.argv[5]))
         else:
             x_min1 = 0
-        if str(sys.argv[6]) in list(day_prop):
-            x_max1 = day_prop.index(str(sys.argv[6]))
+        if str(sys.argv[6]) in list(day_prop_aligned):
+            x_max1 = day_prop_aligned.index(str(sys.argv[6]))
         else:
-            x_max1 = len(day_prop) - 1
+            x_max1 = len(day_prop_aligned) - 1
             
         if str(sys.argv[6]) not in list(t_dates):
-            x_max = (len(t_dates) - 1) + (x_max1 - day_prop.index(t_dates[len(t_dates) - 1]))
+            x_max = (len(t_dates) - 1) + (x_max1 - day_prop_aligned.index(t_dates[len(t_dates) - 1]))
         else:
             x_max = list(t_dates).index(str(sys.argv[6]))
     except:
@@ -628,7 +636,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         check_last = x_max1
     else:
         t_dates_show = t_dates
-        check_last = len(day_prop) - 1
+        check_last = len(day_prop_aligned) - 1
 
     if len(t_dates_show)>200:
         pp = 7*4
@@ -648,21 +656,21 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     
     change = len(date_ticks)
     
-    if day_prop[check_last] not in date_ticks:
+    if day_prop_aligned[check_last] not in date_ticks:
         try:
-            n=list(day_prop).index(date_ticks[-1])+pp
+            n=list(day_prop_aligned).index(date_ticks[-1])+pp
         except:
             n= perday[-1]+pp
             
-        while n<len(day_prop)-1:
-            date_ticks.append(day_prop[n])
+        while n<len(day_prop_aligned)-1:
+            date_ticks.append(day_prop_aligned[n])
             perday = np.append(perday, n)
             n += pp
             
         if check_last-perday[-1]<np.ceil(pp/5):
             perday = perday[:-1]
             date_ticks = date_ticks[:-1]
-        date_ticks.append(day_prop[check_last])
+        date_ticks.append(day_prop_aligned[check_last])
         perday = np.append(perday, check_last)
     
     perday_orig = []
@@ -674,7 +682,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
    
     for j in range(len(np.array(date_ticks[change:]))):
         try:
-            perday_orig.append(list(day_prop).index(date_ticks[change+j]))
+            perday_orig.append(list(day_prop_aligned).index(date_ticks[change+j]))
         except:
             perday_orig.append(perday[change+j])
     
@@ -699,49 +707,49 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     
     ### work on spikes group props fig
     try:
-        if str(sys.argv[5]) in list(day_prop):
-            x_min1 = day_prop.index(str(sys.argv[5]))
+        if str(sys.argv[5]) in list(day_prop_aligned):
+            x_min1 = day_prop_aligned.index(str(sys.argv[5]))
         else:
             x_min1 = 0
-        if str(sys.argv[6]) in list(day_prop):
-            x_max1 = day_prop.index(str(sys.argv[6]))
+        if str(sys.argv[6]) in list(day_prop_aligned):
+            x_max1 = day_prop_aligned.index(str(sys.argv[6]))
         else:
-            x_max1 = len(day_prop) - 1
+            x_max1 = len(day_prop_aligned) - 1
     except:
         x_min1 = None
     
     if (x_min1 is not None):
-        t_show = np.array(day_prop)[x_min1:x_max1+1]
+        t_show = np.array(day_prop_aligned)[x_min1:x_max1+1]
         check_last = x_max1
     else:
-        t_show = day_prop
-        check_last = len(day_prop) - 1
+        t_show = day_prop_aligned
+        check_last = len(day_prop_aligned) - 1
     
     perday = np.arange(0,len(t_show), pp)
     date_ticks = np.array(t_show)[perday].tolist()
     
-    if day_prop[check_last] not in date_ticks:
+    if day_prop_aligned[check_last] not in date_ticks:
         try:
-            n=list(day_prop).index(date_ticks[-1])+pp
+            n=list(day_prop_aligned).index(date_ticks[-1])+pp
         except:
             n=perday[-1] + pp
             
-        while n<len(day_prop)-1:
-            date_ticks.append(day_prop[n])
+        while n<len(day_prop_aligned)-1:
+            date_ticks.append(day_prop_aligned[n])
             perday = np.append(perday, n)
             n += pp
         if check_last-perday[-1]<np.ceil(pp/5):
             perday = perday[:-1]
             date_ticks = date_ticks[:-1]
         
-        date_ticks.append(day_prop[check_last])
+        date_ticks.append(day_prop_aligned[check_last])
         perday = np.append(perday, check_last)
        
     
     perday_orig = []
     for i in range(len(np.array(date_ticks))):
         try:
-            perday_orig.append(list(day_prop).index(date_ticks[i]))
+            perday_orig.append(list(day_prop_aligned).index(date_ticks[i]))
         except:
             perday_orig.append(perday[i])
             
@@ -752,8 +760,8 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
     if (x_min1 is not None):
         ax_prop.set_xlim((x_min1, x_max1))
     
-    already_prop = ma.masked_array(already_prop, mask=prop_mask)
-    return status_list, already_prop, ax_prop, perday_orig, fig_prop
+    already_prop_save = ma.masked_array(already_prop_aligned, mask=prop_mask_aligned)
+    return status_list, already_prop_save, ax_prop, perday_orig, fig_prop, t_prop_aligned
 
 num_groups = int(sys.argv[7])
 w_save = 8
@@ -779,9 +787,10 @@ for i in range(num_groups):
             color_list.append(sns.color_palette("rocked", rand_num)[0])
         s +=1
 
-status_list, already_prop, ax_prop, perday_orig, fig_prop = plot_fit(ES_lin_dir, lineage_list, color_list, w_save, already_prop = np.zeros((len(t_prop))))
+
+status_list, already_prop, ax_prop, perday_orig, fig_prop, t_prop_aligned = plot_fit(ES_lin_dir, lineage_list, color_list, w_save, already_prop = np.zeros((len(t_prop))))
 ### Group Plot proportion of all other spikegroups
-ax_prop.plot(t_prop, (100 - 100*already_prop), linewidth = 3, color = "grey", label = "Other")
+ax_prop.plot(t_prop_aligned, (100 - 100*already_prop), linewidth = 4, color = "grey", label = "Other")
 #ax_prop.scatter(t_prop, (100 - 100*already_prop), marker = ".", color = "grey")
 ymin, ymax = ax_prop.get_ylim()
 ax_prop.set_ylim(((0, 1.0*ymax)))

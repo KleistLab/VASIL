@@ -575,20 +575,39 @@ for i in range(num_groups):
     lineage_list.append(str(sys.argv[k+i]))
     s+=1
 
-for j in range(len(Trends_subdir_list)):
-    try:
-        if "/" not in str(sys.argv[s+k+j]):
-            color_list.append(str(sys.argv[s+k+j]))
-        else:
-            split_col = str(sys.argv[s+k+j]).split("/")
-            color_list.append(tuple([float(split_col[c]) for c in range(len(split_col))])) ### anything else is error)
-    except:
-        rand_num = np.random.choice(1, 100)
-        if s<len(custom_col):
-            color_list.append(custom_col[s])
-        else:
-            color_list.append(sns.color_palette("rocked", rand_num)[0])
-        s +=1
+
+if "/new/" in str(sys.argv[s+k]):
+    cols = str(sys.argv[s+k]).split("/new/")
+    for c in cols:
+        try:
+            if "/" not in c:
+                color_list.append(c)
+            else:
+                split_col = str(c).split("/")
+                color_list.append(tuple([float(split_col[c]) for c in range(len(split_col))])) ### anything else is error
+        except:
+            rand_num = np.random.choice(1, 100)
+            if s<len(custom_col):
+                color_list.append(custom_col[s])
+            else:
+                color_list.append(sns.color_palette("rocked", rand_num)[0])
+            s +=1
+else:
+    for j in range(len(Trends_subdir_list)):
+        try:
+            if "/" not in str(sys.argv[s+k+j]):
+                color_list.append(str(sys.argv[s+k+j]))
+            else:
+                split_col = str(sys.argv[s+k+j]).split("/")
+                color_list.append(tuple([float(split_col[c]) for c in range(len(split_col))])) ### anything else is error
+        except:
+            rand_num = np.random.choice(1, 100)
+            if s<len(custom_col):
+                color_list.append(custom_col[s])
+            else:
+                color_list.append(sns.color_palette("rocked", rand_num)[0])
+            s +=1
+
 
 status_list, lineage_list_Trends = plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, color_list, w_save)
 
