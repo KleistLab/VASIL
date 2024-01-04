@@ -149,7 +149,7 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
             day_prop = day_prop_list[c_ind]
             t_prop = t_prop_all[list(all_prop_dates).index(day_prop[0]):list(all_prop_dates).index(day_prop[-1])+1]
             prop_mask = prop_mask_list[c_ind]
-            t_dates = t_dates_list[c_ind].tolist()
+            t_dates = t_dates_list[c_ind]
             inds_dates = inds_dates_all[list(all_dates).index(t_dates[0]):list(all_dates).index(t_dates[-1])+1]
             S_all_mean = S_all_mean_list[c_ind]
             lineage_freq = lineage_freqs_list[c_ind].copy()

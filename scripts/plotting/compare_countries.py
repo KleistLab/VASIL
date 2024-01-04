@@ -140,7 +140,7 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
             day_prop = day_prop_list[c_ind]
             t_prop = t_prop_all[list(all_prop_dates).index(day_prop[0]):list(all_prop_dates).index(day_prop[-1])+1]
             prop_mask = prop_mask_list[c_ind]
-            t_dates = t_dates_list[c_ind].tolist()
+            t_dates = t_dates_list[c_ind]
             inds_dates = inds_dates_all[list(all_dates).index(t_dates[0]):list(all_dates).index(t_dates[-1])+1]
             S_all_mean = S_all_mean_list[c_ind]
             variant_freq = lineage_freqs_list[c_ind].copy()
@@ -426,7 +426,7 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
                 
                 if c_ind == 0:
                     ### only plot the fitness of the main country investigated
-                    ax2.set_title(lineage_list[k].replace("/", " + ")+"*$^{%s}$"%countries_labels[0][:3].upper(), fontsize = 2)
+                    ax2.set_title(lineage_list[k].replace("/", " + ")+"%s"%countries_labels[0][:3].upper(), fontsize = 32)
                     ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4, label = "%s"%countries_labels[c_ind])
                     ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = "%s"%countries_labels[c_ind])
                 else:
