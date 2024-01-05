@@ -366,7 +366,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             
             # get min max gamma over PK at each timepoints
             inds_dates = np.arange(0,len(t_dates),1)
-            SI_mask = np.array(SI_mask) + prop_mask[:len(inds_dates)] ### props are already aligned with indicence date
+            SI_mask = np.array(SI_mask) + prop_mask_aligned[:len(inds_dates)] ### props are already aligned with indicence date
             gamma_SI_min, gamma_SI_max = np.min(gamma_SI, axis = 1), np.max(gamma_SI, axis = 1)
             gamma_SI_max = ma.masked_array(gamma_SI_max, mask = SI_mask)
             gamma_SI_min = ma.masked_array(gamma_SI_min, mask = SI_mask)
@@ -607,7 +607,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             status_list.append(lab_status)
         
         else:
-            print("No lineages in group %s have E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k])
+            print("No lineage in group %s has E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k])
             status_list.append("No data")
     
     

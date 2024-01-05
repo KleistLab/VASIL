@@ -542,6 +542,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             ax_k.axhline(xmin = 0, xmax = len(t_prop_aligned), ls = "--", linewidth = 2, color = "black")
             ax_k.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
             ax_k_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
+            ax_k.set_ylabel("Relative fitness $\gamma_y$", fontsize = 20)
             ax_k_twin.set_ylabel("Lineage Frequency (daily %)", fontsize = 20)
             pdf_k = PdfPages(sys.argv[w_save]+"/relative_fitness_%s_vs_prop.pdf"%(lab_k_fn))
             pdf_k.savefig(fig_k, bbox_inches = "tight")
@@ -597,7 +598,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             status_list.append(lab_status)
         
         else:
-            print("No lineages in group %s have E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k])
+            print("No lineage in group %s has E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k])
             status_list.append("No data")
     
     

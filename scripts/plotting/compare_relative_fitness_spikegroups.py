@@ -425,7 +425,7 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
                 status_list.append(lab_status)
             
             else:
-                print("No lineages in group %s have E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k], ES_df_dir)
+                print("No lineage in group %s has E[Susceptible] available, if needed, first compute it in main config"%lineage_list[k], ES_df_dir)
                 status_list.append("%s : No data"%Trends_labels[c_ind])
             
             lineage_list_Trends.append("%s"%(lineage_list[k]))

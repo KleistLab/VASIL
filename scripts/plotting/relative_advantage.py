@@ -29,7 +29,7 @@ S_mean_file = sys.argv[5]
 # needs to be updated to allow individual weighting 
 S_mean_df = pd.read_csv(S_mean_file)
 S_all_mean = S_mean_df.to_numpy()[:, (S_mean_df.columns != "Days")&(S_mean_df.columns != "Unnamed: 0")].astype(float)
-t_dates = S_mean_df["Days"]
+t_dates = S_mean_df["Days"].tolist()
 
 # processing of frequency data
 try:
@@ -102,30 +102,30 @@ def plot_fit(ES_df, lineage, w_save = 6):
             if w_l + 1 < len(Pseudo_Prop):
                 if Pseudo_Prop[w_l] == 0 or Pseudo_Prop[w_l+1] == 0:
                     gamma_prop[l] = float('nan')
-                    SI_mask[l] = True
+                    #SI_mask[l] = True
                 else:
                     gamma_prop[l] = (Pseudo_Prop[w_l+1]/Pseudo_Prop[w_l]) - 1
             else:
                 gamma_prop[l] = float("nan")
-                SI_mask = True
+                SI_mask[l] = True
         else:
             gamma_prop[l] = float('nan')
             SI_mask[l] = True
-
+    
     # plotting
     PreFig(xsize = 20, ysize = 20)
     fig = plt.figure(figsize = (15, 7))
     ax = fig.add_subplot(1, 1, 1)
     ax_twin = ax.twinx()
     
-    SI_mask = np.array(SI_mask) + + prop_mask[:len(t_dates)]
+    SI_mask = np.array(SI_mask) + prop_mask[:len(t_dates)]
     gamma_SI_min = ma.masked_array(gamma_SI_min, mask = SI_mask)
     gamma_SI_max = ma.masked_array(gamma_SI_max, mask = SI_mask)
     gamma_prop = ma.masked_array(gamma_prop, mask = SI_mask)
     ax.fill_between(t_dates, gamma_SI_min, gamma_SI_max, color = "green", alpha = 0.3, label = "$\gamma_{%s}$"%lineage)
     #more smoothing
     #gamma_prop = moving_average(gamma_prop, window = 14)
-    ax_twin.plot(t_dates, gamma_prop, color = "orange", label="$\gamma_prop$ %s"%lineage)
+    ax_twin.plot(t_dates, gamma_prop, color = "orange", linewidth = 4, label="$\gamma_prop$ %s"%lineage)
     
     #ax.axhline(xmin = 0, xmax = t_dates[-1], ls = "--", linewidth = 2, color = "black")
     ax.axhline(xmin = 0, xmax = len(t_dates), ls = "--", linewidth = 2, color = "black")
