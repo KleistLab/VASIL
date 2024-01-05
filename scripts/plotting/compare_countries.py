@@ -279,7 +279,8 @@ def plot_fit(countries_dir_list, countries_list, countries_labels, lineage_list,
                     for x in list(Pseudogroup_dic.keys()):
                         if var in list(Pseudogroup_dic.keys()):
                             if Pseudogroup_dic[x] == Pseudogroup_dic[var]:
-                                relevant_groups.append(x)   
+                                if x not in relevant_groups:
+                                    relevant_groups.append(x)   
                 splited_var = relevant_groups
             else:
                 """### The group we compare is always the same as the list of lineages that are relevant to lineage_list[k] for the first country"""
