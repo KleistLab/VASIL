@@ -696,9 +696,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     except:
                         Lin_list_i_spk_reduced = Lin_list_i_spk
                         w_global = []
-                    
-                    pdb.set_trace()
-                    
+                                        
                     a = 1
                     for ab in Ab_classes:  
                         if ab!= "NTD":
@@ -723,7 +721,6 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                             if len(Lin_list_i_spk_reduced)>0:
                                 where_spk_s = np.array([list(Cross_i["variant_list"]).index(Lin_list_i_spk_reduced[k]) for k in range(len(Lin_list_i_spk_reduced))]) 
                                 for s in range(len(g)):
-                                    pdb.set_trace()
                                     Cross_Lin, Missed, Greater_one = cross_reactivity((Lin_list_i_spk_reduced, g_var[s]), 
                                                                                       Escape_Fraction, 
                                                                                       [ab],
@@ -734,8 +731,8 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                
                                     #Only the information for the specific lineage studied is required for immunological landscape calculation
                                     #the FRxy_ab matrix is kept only for compatibility with other codes
-                                    locs = np.array([list(Cross_i["variant_list"]).index(g[s][k]) for k in range(len(g[s]))])
-                                
+                                    locs = np.array([list(Cross_i["variant_list"]).index(g_var[s][k]) for k in range(len(g[s]))])
+                                    
                                     for k in range(len(Lin_list_i_spk_reduced)):
                                         sub_FR[where_spk_s[k], locs] = Cross_Lin[ab][k, :]
                                         sub_FR[locs, where_spk_s[k]] = Cross_Lin[ab][k, :]
@@ -751,13 +748,13 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                 
                                         sub_FR[where_spk_s[k], where_spk_s[k+1:]] = Cross_Lin[ab][k, :]
                                         sub_FR[where_spk_s[k+1:], where_spk_s[k]] = sub_FR[where_spk_s[k], where_spk_s[k+1:]]
-                                
+                            
                             if not spk_adjust:
-                                FRxy_ab[np.array(w_lin_i), :] = sub_FR
+                                FRxy_ab[np.array(w_lin_i), :] = sub_FR[np.array(w_lin_i), :]
                                 if len(w_lin_i)==1:
-                                    FRxy_ab[:, np.array(w_lin_i)] = sub_FR
+                                    FRxy_ab[:, np.array(w_lin_i)] = sub_FR[:, np.array(w_lin_i)]
                                 else:
-                                    FRxy_ab[:, np.array(w_lin_i)] = sub_FR.T
+                                    FRxy_ab[:, np.array(w_lin_i)] = sub_FR[:, np.array(w_lin_i)].T
                             else:
                                 for w_spk in range(len(Lin_list_i_spk)):
                                     w_spk_cross = list(Cross_i["variant_list"]).index(Lin_list_i_spk[w_spk])
@@ -770,7 +767,6 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                     FRxy_ab[where_spk_cross, :] = cross_spk
                                     FRxy_ab[:, where_spk_cross] = cross_spk.T
                                    
-
                             Cross_i[ab] = FRxy_ab
                         a +=1 
                     

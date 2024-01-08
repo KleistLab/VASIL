@@ -617,7 +617,7 @@ file = open("Spikegroups_membership.pck", "rb")
 Pseudogroup_dic = pickle.load(file)
 file.close()
 if Lin_name not in ("ALL", "ALL_vs_Vacc_ver1", "ALL_vs_Vacc_ver2"):
-    if not run_group or str(sys.argv[3][:31]) == "results/Cross_react_dic_groups_" or str(sys.argv[3][:22]) == "vaccination/Cross_Vacc":
+    if not run_group or str(sys.argv[3][:31]) == "results/Cross_react_dic_groups_" or str(sys.argv[3][:22]) == "vaccination/Cross_Vacc" or str(sys.argv[3][:20]) == "outbreak/Cross_files":
         num_antigen = int(sys.argv[14])
         k=15
         antigen_list = []
@@ -663,22 +663,24 @@ if Lin_name not in ("ALL", "ALL_vs_Vacc_ver1", "ALL_vs_Vacc_ver2"):
                 Grouped = True
                 
             elif str(sys.argv[3][:20]) == "outbreak/Cross_files": ## hard-coded for vaccination pseudo variants
-                lineages = str(Lin_name)[9:].split("/")
+                lineages_0 = str(Lin_name)[9:].split("/")
+                lineages = []
                 status_var = []
             
-                for i in range(len(lineages)):
-                    var = "outbreak_%s"%var
+                for i in range(len(lineages_0)):
+                    var = "outbreak_%s"%lineages_0[i]
                     try:
-                        var = lineages[i]
                         file1 = open(sys.argv[3]+"/Cross_%s.pck"%var, "rb")
                         Cross_react_dic = pickle.load(file1)
                         variants_in_cross = Cross_react_dic["variant_list"]
                         Cross_react_dic.pop("variant_list")
+                        lineages.append(var)
                         file1.close()
                         print("Get Immunological landscape for outbreak %s (%d out of %d)" %(var, i+1, len(lineages)))
-                        status_var.append(ei_util(var, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save, var_name = var, save_suscept = False))
+                        status_var.append(ei_util(var, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save, var_name = var, save_suscept = True))
                     except:
-                        print("%s MISSING in mutation data outbreakinfo_RBD_NTD_mutations.csv (E[Immunized] not computed)")
+                        print("%s MISSING in mutation data outbreakinfo_RBD_NTD_mutations.csv (E[Immunized] not computed)"%var)
+                        
                 Grouped = True
             else:
                 status_var = ei_util(Lin_name, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save) 
