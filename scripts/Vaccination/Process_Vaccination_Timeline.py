@@ -31,7 +31,14 @@ if date_start in df_Vaccines["date"].tolist():
 
 if date_end in df_Vaccines["date"].to_list():
     df_Vaccines.drop(index = df_Vaccines.index[list(df_Vaccines["date"]).index(date_end)+1:], inplace = True)
-    
+
+
+df_Vaccines.drop(columns = "impfungen_boost1", inplace = True)
+df_Vaccines.drop(columns = "impfungen_boost2", inplace = True)
+df_Vaccines.drop(columns = "impfungen_boost3", inplace = True)
+df_Vaccines.drop(columns = "impfungen_boost4", inplace = True)
+
+
 dates_vacc = df_Vaccines["date"].to_list()
 ### Extract relevant vaccine columns
 Columns = df_Vaccines.columns
@@ -40,14 +47,14 @@ Timeline = {}
 Timeline["date"] = dates_vacc
 col_kept = []
 for col in Columns:
-    if ("boost3" in col) or ("boost4" in col):
+    if ("boost" in col):
     #if ("gi" in col) or ("boost" in col):
-        if ("kumulativ" not in col) & ("impfungen" in col):
-            for v_n in ("biontech", "astra", "novavax", "valneva", "moderna", "johnson"):
+        if ("kumulativ" not in col) & ("impfungen" in col) :
+            for v_n in ("biontech", "moderna"): #"astra", "novavax", "valneva", "johnson"
                 if v_n in col:
+                    print("kept", col)
                     col_kept.append(col)
                     col_new = col
-                    
                     if switch_vacc not in ("none", "None"):
                         vacc_wt = np.zeros(len(dates_vacc))
                         vacc_wt[:dates_vacc.index(switch_vacc)] = np.array(df_Vaccines[col])[:dates_vacc.index(switch_vacc)]
@@ -65,9 +72,7 @@ for col in Columns:
                             Timeline["BA.5*_as_"+col_new] = np.array(df_Vaccines[col])
                         else:
                             Timeline["Wuhan-Hu-1*_as_"+col_new] = np.array(df_Vaccines[col])
-                        
-            
-            
+                                  
 print("Vaccines condidered:", col_kept)
 df_Timeline = pd.DataFrame(Timeline)
 df_Timeline.to_csv(save_to+"/Vaccination_Timeline.csv")

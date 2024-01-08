@@ -245,8 +245,11 @@ if len(sys.argv) > 5 :
             pos0 = re.findall(r'\d+', mut)
             if len(pos0) == 1:
                 pos = str(pos0[0])
-                aa_x[pos] = mut
-                pos_list.append(pos)
+                if pos not in list(aa_x.keys()):
+                    aa_x[pos] = [mut]
+                    pos_list.append(pos)
+                else:
+                    aa_x[pos].append(mut)
                 
         mut_x_sites_dic[x] = pos_list
         AA_change_dic[x] = aa_x

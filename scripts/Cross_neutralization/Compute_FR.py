@@ -166,7 +166,7 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
                 if AA_change_dic is not None:    
                     for k in range(len(variants_g2)):
                         if (mut_sites[j] in mut_sites_per_variant[variants_g1[i]]) and (mut_sites[j] in mut_sites_per_variant[variants_g2[k]]): ### if the position exists in both variants
-                            aa_bool_diff[i, k, j] = AA_change_dic[variants_g1[i]][mut_sites[j]] != AA_change_dic[variants_g2[k]][mut_sites[j]] ### positions will be considered when aa_changes are different
+                            aa_bool_diff[i, k, j] = len(list(set(AA_change_dic[variants_g1[i]][mut_sites[j]]).intersection(set(AA_change_dic[variants_g2[k]][mut_sites[j]])))) == 0 ### positions will be considered when aa_changes intersection is EMPTY, i.e, all aa changes are different
                 
             if i<len(variants_g2):
                 mut_bool_g2[i, j] = mut_sites[j] in list(np.array(mut_sites_per_variant[variants_g2[i]]).astype(str))
@@ -300,7 +300,7 @@ except:
     Lin_name = sys.argv[4]
 
 if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
-    if Lin_name != "Groups":
+    if (Lin_name != "Groups"):
         try:
             mut_file = open(sys.argv[5], "r")
             mut_lin0 = mut_file.readlines()
@@ -317,8 +317,11 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                         pos0 = re.findall(r'\d+', mut)
                         if len(pos0) == 1:
                             pos = str(pos0[0])
-                            mut_Lin.append(pos)   
-                            aa_lin[pos] = mut
+                            if pos not in list(aa_lin.keys()):
+                                mut_Lin.append(pos)   
+                                aa_lin[pos] = [mut]
+                            else:
+                                aa_lin[pos].append(mut)
 
             """Update mutation profile dictionary and AA dictionary """
             mut_x_sites_dic_updated = mut_x_sites_dic.copy()
@@ -394,19 +397,31 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                 if i > j:
                     var_2 = Cross_react_dic["variant_list"][j]
                     
-                    sites_1 = set([*AA_change_dic_updated[var_1].values()])
-                    sites_2 = set([*AA_change_dic_updated[var_2].values()])
-                    sites = list(sites_1.symmetric_difference(sites_2))                    
+                    mut_1 = list(AA_change_dic_updated[var_1].keys())
+                    mut_2 = list(AA_change_dic_updated[var_2].keys())
+                    
+                    pos_diff = list(set(mut_x_sites_dic_updated[var_1]).symmetric_difference(set(mut_x_sites_dic_updated[var_2])))
+                    sites = []
+                    for m1 in mut_1:
+                        for m2 in mut_2:
+                            if str(m1) == str(m2):
+                                check = list(set(AA_change_dic_updated[var_1][m1]).intersection(set(AA_change_dic_updated[var_2][m2])))
+                                if len(check)==0: # no intersection 
+                                    sites.append(m1)  
+                            else:
+                                if (m1 not in sites) and (m1 in pos_diff):
+                                    sites.append(m1)
+                                if (m2 not in sites) and (m2 in pos_diff):
+                                    sites.append(m2)
+                    
                     FR_sites = 1
                     pos_done = []
                     for s in sites:
-                        pos0 = re.findall(r'\d+', s)
-                        if len(pos0) == 1:
-                            s = int(pos0[0])
-                            if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                if s not in pos_done:
-                                    FR_sites *= 10
-                                    pos_done.append(s)
+                        s = int(s)
+                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                            if s not in pos_done:
+                                FR_sites *= 10
+                                pos_done.append(s)
                         
                     FR_NTD[i, j] = FR_sites
                     FR_NTD[j, i] = FR_sites
@@ -422,11 +437,46 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
         file.close()
         
         k = 5
-        
-        if (n_groups == 1) and str(sys.argv[k][-4:] == ".csv"): ### Hard coded for vaccination pseudo variants
+        if (n_groups == 1) and str(sys.argv[k][-24:] == "Vaccination_Timeline.csv") and (str(sys.argv[k])[:9] != "outbreak/"): ### Hard coded for vaccination pseudo variants
             vacc_infos = pd.read_csv(sys.argv[k])
             Lin_list = vacc_infos.columns[(vacc_infos.columns != "date")&(vacc_infos.columns != "Unnamed: 0")].tolist()
             mut_sim = ["avail"]*len(Lin_list)
+        
+        elif (n_groups == 1) and str(sys.argv[k][-24:] != "Vaccination_Timeline.csv") and (str(sys.argv[k])[:9] == "outbreak/"): ### Hard coded for oubreak.infos data
+            # load special mutation data
+            variant_mut_data = pd.read_csv(sys.argv[6])
+            Lin_list_0 = str(sys.argv[k])[9:].split("/")
+            
+            Lin_list = []
+            var_outbreak = list(np.array(variant_mut_data["lineage"].values).astype(str))
+            mut_outbreak = np.array(variant_mut_data["RBD_NTD_mutations"].values).astype(str)
+            
+            mut_dic_outbreak = {}
+            aa_dic_outbreak = {}
+            for lin in Lin_list_0:
+                if lin in var_outbreak:
+                    w_i = var_outbreak.index(lin)
+                    mut_x = mut_outbreak[w_i]
+                    split_mut = mut_x.split("/")
+                    aa_x = {}
+                    pos_list = []
+                    for mut in split_mut:
+                        pos0 = re.findall(r'\d+', mut)
+                        if len(pos0) == 1:
+                            pos = str(pos0[0])
+                            if pos not in list(aa_x.keys()):
+                                aa_x[pos] = [mut]
+                                pos_list.append(pos)
+                            else:
+                                aa_x[pos].append(mut)
+                    
+                    var_name = "outbreak_%s"%lin
+                    mut_dic_outbreak[var_name] = pos_list
+                    aa_dic_outbreak[var_name] = aa_x
+                    Lin_list.append(var_name)
+            
+            mut_sim = ["outbreak_placeholder"]*len(Lin_list)
+                
         else:
             Lin_list = []
             while k<(n_groups+5):
@@ -448,6 +498,13 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
         for j in range(len(Lin_list)):
             Lin_list_grouped[Lin_list[j]] = [Lin_list[j]]
             if Lin_list[j] not in list(Pseudogroup_dic.keys()) and mut_sim[j] != "avail":
+                
+                if (str(sys.argv[k])[:9] == "outbreak/"): ### Hard coded for oubreak.infos data
+                    mut_x_sites_dic_updated.update(mut_dic_outbreak)
+                    AA_change_dic_updated.update(aa_dic_outbreak)
+                    Grouped.append(False)
+                    Lin_exists.append(Lin_list[j])
+                    Lin_exists_names.append(Lin_list[j])
                 try:
                     mut_file = open(mut_sim[j], "r")
                     mut_lin0 = mut_file.readlines()
@@ -462,8 +519,11 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                 pos0 = re.findall(r'\d+', mut)
                                 if len(pos0) == 1:
                                     pos = str(pos0[0])
-                                    mut_Lin.append(pos)   
-                                    aa_lin[pos] = mut    
+                                    if pos not in list(aa_lin.keys()):
+                                        mut_Lin.append(pos)   
+                                        aa_lin[pos] = [mut]
+                                    else:
+                                        aa_lin[pos].append(mut)   
 
                     """Update mutation profile dictionary"""
                     mut_x_sites_dic_updated[Lin_list[j]] = mut_Lin
@@ -487,9 +547,12 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                 AA_change_dic_updated[var] = AA_change_dic[Pseudogroup_dic[var]]
                             else:
                                 mut_x_sites_dic_updated[var] = mutation_data[var]
-                                AA_change_dic_updated = aa_data[var]
+                                AA_change_dic_updated[var] = aa_data[var]
                             
-                            mut_sub.append("/".join(AA_change_dic_updated[var]))
+                            mut_var = ""
+                            for pos in list(AA_change_dic_updated[var].keys):
+                                mut_var += "/".join(AA_change_dic_updated[var][pos])+"/"
+                            mut_sub.append(mut_var)
                         
                         inds_spk = []
                         variants_spk = []
@@ -509,6 +572,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                         single_lin += len(variants_spk)
                     except:
                         pass
+                    
             elif ("*_as_" in Lin_list[j]): ### hard-coded in vaccines pseudo names
                 lin_clean = Lin_list[j].split("*_as_")[0]
                 mut_x_sites_dic_updated[lin_clean] = mut_x_sites_dic[Pseudogroup_dic[lin_clean]]
@@ -552,13 +616,15 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
         
         status_sim = []
         for i in range(len(Lin_list)):
-             
             Cross_i = {}
             Cross_i["variant_list"] = list(variant_x_names_cross)
+            
+            Lin_list_i = Lin_list[i]
             
             if Grouped[i]:
                 Lin_list_i = Lin_list_grouped[Lin_list[i]]
                 Cross_i["Group"] = Lin_list_i
+                
             
             try:
                 file_test = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb")
@@ -579,7 +645,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                         inds_spk = np.array(Lin_list_grouped["inds"])
                         spk_adjust = True
                     else:
-                        Lin_list_i_spk = Lin_list_i
+                        Lin_list_i_spk = Lin_list_grouped[Lin_list[i]]
                         spk_adjust = False
                         inds_spk = np.arange(len(Lin_list_i_spk)).astype(int)
                     
@@ -606,8 +672,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                 w_lin_i += [len(variant_x_names_cross) + j for j in range(add_lin, add_lin+np.sum(where_var))]
                                 Cross_i["variant_list"] += list(np.array(Lin_list_i)[where_var])
                                 add_lin += np.sum(where_var)
-                    
-                    
+                                        
                     try:
                         file_c = open("results/Cross_react_dic_spikegroups_ALL.pck", "rb") 
                         Cross_global = pickle.load(file_c)
@@ -631,7 +696,9 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     except:
                         Lin_list_i_spk_reduced = Lin_list_i_spk
                         w_global = []
-                        
+                    
+                    pdb.set_trace()
+                    
                     a = 1
                     for ab in Ab_classes:  
                         if ab!= "NTD":
@@ -651,10 +718,12 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                             if len(w_global)>0:
                                 for ex in range(len(w_cross)):
                                     sub_FR[w_cross[ex], w_cross] = Cross_global[ab][w_global[ex], w_global]
+                            
                                     
                             if len(Lin_list_i_spk_reduced)>0:
                                 where_spk_s = np.array([list(Cross_i["variant_list"]).index(Lin_list_i_spk_reduced[k]) for k in range(len(Lin_list_i_spk_reduced))]) 
                                 for s in range(len(g)):
+                                    pdb.set_trace()
                                     Cross_Lin, Missed, Greater_one = cross_reactivity((Lin_list_i_spk_reduced, g_var[s]), 
                                                                                       Escape_Fraction, 
                                                                                       [ab],
@@ -663,12 +732,13 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                                                                       joblib=True)
                                 
                                
-                                #Only the information for the specific lineage studied is required for immunological landscape calculation
-                                #the FRxy_ab matrix is kept only for compatibility with other codes
+                                    #Only the information for the specific lineage studied is required for immunological landscape calculation
+                                    #the FRxy_ab matrix is kept only for compatibility with other codes
                                     locs = np.array([list(Cross_i["variant_list"]).index(g[s][k]) for k in range(len(g[s]))])
                                 
                                     for k in range(len(Lin_list_i_spk_reduced)):
                                         sub_FR[where_spk_s[k], locs] = Cross_Lin[ab][k, :]
+                                        sub_FR[locs, where_spk_s[k]] = Cross_Lin[ab][k, :]
                             
                                 if len(Lin_list_i_spk_reduced)>1:
                                     for k in range(len(Lin_list_i_spk_reduced)):
@@ -714,20 +784,31 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                             if i1 > j1:
                                 var_2 = Cross_i["variant_list"][j1]
                     
-                                sites_1 = set([*AA_change_dic_updated[var_1].values()])
-                                sites_2 = set([*AA_change_dic_updated[var_2].values()])
-                    
-                                sites = list(sites_1.symmetric_difference(sites_2))
+                                mut_1 = list(AA_change_dic_updated[var_1].keys())
+                                mut_2 = list(AA_change_dic_updated[var_2].keys())
+                                
+                                pos_diff = list(set(mut_x_sites_dic_updated[var_1]).symmetric_difference(set(mut_x_sites_dic_updated[var_2])))
+                                sites = []
+                                for m1 in mut_1:
+                                    for m2 in mut_2:
+                                        if str(m1) == str(m2):
+                                            check = list(set(AA_change_dic_updated[var_1][m1]).intersection(set(AA_change_dic_updated[var_2][m2])))
+                                            if len(check)==0: # no intersection 
+                                                sites.append(m1)  
+                                        else:
+                                            if (m1 not in sites) and (m1 in pos_diff):
+                                                sites.append(m1)
+                                            if (m2 not in sites) and (m2 in pos_diff):
+                                                sites.append(m2)
+                                
                                 FR_sites = 1
                                 pos_done = []
                                 for s in sites:
-                                    pos0 = re.findall(r'\d+', s)
-                                    if len(pos0) == 1:
-                                        s = int(pos0[0])
-                                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                            if s not in pos_done:
-                                                FR_sites *= 10
-                                                pos_done.append(s)
+                                    s = int(s)
+                                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                                        if s not in pos_done:
+                                            FR_sites *= 10
+                                            pos_done.append(s)
 
                                 FR_NTD[i1, j1] = FR_sites
                                 FR_NTD[j1, i1] = FR_sites
@@ -786,20 +867,35 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                     FRxy_ab[w_lin, u1] = Cross_Lin[ab][0, 0]
                                     FRxy_ab[u1, w_lin] = FRxy_ab[w_lin, u1]
                                 else:
-                                    sites_1 = set([*AA_change_dic_updated[Lin_list[i]].values()])
-                                    sites_2 = set([*AA_change_dic_updated[v_u1].values()])
+                                    var_1 = Lin_list[i]
+                                    var_2 = v_u1
+                
+                                    mut_1 = list(AA_change_dic_updated[var_1].keys())
+                                    mut_2 = list(AA_change_dic_updated[var_2].keys())
                                     
-                                    sites = list(sites_1.symmetric_difference(sites_2))                                    
+                                    pos_diff = list(set(mut_x_sites_dic_updated[var_1]).symmetric_difference(set(mut_x_sites_dic_updated[var_2])))
+                                    sites = []
+                                    for m1 in mut_1:
+                                        for m2 in mut_2:
+                                            if str(m1) == str(m2):
+                                                check = list(set(AA_change_dic_updated[var_1][m1]).intersection(set(AA_change_dic_updated[var_2][m2])))
+                                                if len(check)==0: # no intersection 
+                                                    sites.append(m1)  
+                                            else:
+                                                if (m1 not in sites) and (m1 in pos_diff):
+                                                    sites.append(m1)
+                                                if (m2 not in sites) and (m2 in pos_diff):
+                                                    sites.append(m2)
+                                    
                                     FR_sites = 1
                                     pos_done = []
                                     for s in sites:
-                                        pos0 = re.findall(r'\d+', s)
-                                        if len(pos0) == 1:
-                                            s = int(pos0[0])
-                                            if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                                if s not in pos_done:
-                                                    FR_sites *= 10
-                                                    pos_done.append(s)
+                                        s = int(s)
+                                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                                            if s not in pos_done:
+                                                FR_sites *= 10
+                                                pos_done.append(s)
+                                    
                                                     
                                     FRxy_ab[w_lin, u1] = FR_sites
                                     FRxy_ab[u1, w_lin] = FR_sites
@@ -933,20 +1029,32 @@ elif Lin_name == "ALL":
             if i > j:
                 var_2 = Cross_react_dic["variant_list"][j]
     
-                sites_1 = set([*AA_change_dic[var_1].values()])
-                sites_2 = set([*AA_change_dic[var_2].values()])
+                mut_1 = list(AA_change_dic[var_1].keys())
+                mut_2 = list(AA_change_dic[var_2].keys())
                 
-                sites = list(sites_1.symmetric_difference(sites_2))
+                pos_diff = list(set(mut_x_sites_dic[var_1]).symmetric_difference(set(mut_x_sites_dic[var_2])))
+                sites = []
+                for m1 in mut_1:
+                    for m2 in mut_2:
+                        if str(m1) == str(m2):
+                            check = list(set(AA_change_dic[var_1][m1]).intersection(set(AA_change_dic[var_2][m2])))
+                            if len(check)==0: # no intersection 
+                                sites.append(m1)  
+                        else:
+                            if (m1 not in sites) and (m1 in pos_diff):
+                                sites.append(m1)
+                            if (m2 not in sites) and (m2 in pos_diff):
+                                sites.append(m2)
+                
                 FR_sites = 1
                 pos_done = []
                 for s in sites:
-                    pos0 = re.findall(r'\d+', s)
-                    if len(pos0) == 1:
-                        s = int(pos0[0])
-                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                            if s not in pos_done:
-                                FR_sites *= 10
-                                pos_done.append(s)
+                    s = int(s)
+                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                        if s not in pos_done:
+                            FR_sites *= 10
+                            pos_done.append(s)
+
                             
                 FR_NTD[i, j] = FR_sites
                 FR_NTD[j, i] = FR_sites
@@ -984,10 +1092,29 @@ elif Lin_name == "missing":
             sub_miss[lin] = np.ones(len(variant_global)).astype(bool)
             num_rerun.append(len(variant_global))
         else:
-            check_mut = list(set(mut_x_global[lin]).symmetric_difference(set(mut_x_sites_dic[lin])))
-            check_aa = list(set([*AA_global[lin].values()]).symmetric_difference(set([*AA_change_dic[lin].values()])))
+            var_1 = lin
+            var_2 = lin
             
-            if (len(check_mut) != 0) and (len(check_aa) != 0):
+            mut_1 = list(AA_global[var_1].keys())
+            mut_2 = list(AA_change_dic_updated[var_2].keys())
+            
+            pos_diff = list(set(mut_x_global[var_1]).symmetric_difference(set(mut_x_sites_dic[var_2])))
+            sites = []
+            for m1 in mut_1:
+                for m2 in mut_2:
+                    if str(m1) == str(m2):
+                        check = list(set(AA_global[var_1][m1]).intersection(set(AA_change_dic[var_2][m2])))
+                        if len(check)==0: # no intersection 
+                            sites.append(m1)  
+                    else:
+                        if (m1 not in sites) and (m1 in pos_diff):
+                            sites.append(m1)
+                        if (m2 not in sites) and (m2 in pos_diff):
+                            sites.append(m2)
+                            
+            check_aa = sites
+            
+            if (len(check_aa) != 0):
                 # mutation profile is different from general file, thus must be recomputed
                 sub_miss[lin] = np.ones(len(variant_global)).astype(bool)
             else:
@@ -1008,20 +1135,32 @@ elif Lin_name == "missing":
                 if i > j:
                     var_2 = Cross_react_dic["variant_list"][j]
         
-                    sites_1 = set([*AA_change_dic[var_1].values()]) 
-                    sites_2 = set([*AA_change_dic[var_2].values()])
+                    mut_1 = list(AA_change_dic[var_1].keys())
+                    mut_2 = list(AA_change_dic[var_2].keys())
                     
-                    sites = list(sites_1.symmetric_difference(sites_2))
+                    pos_diff = list(set(mut_x_sites_dic[var_1]).symmetric_difference(set(mut_x_sites_dic[var_2])))
+                    sites = []
+                    for m1 in mut_1:
+                        for m2 in mut_2:
+                            if str(m1) == str(m2):
+                                check = list(set(AA_change_dic[var_1][m1]).intersection(set(AA_change_dic[var_2][m2])))
+                                if len(check)==0: # no intersection 
+                                    sites.append(m1)  
+                            else:
+                                if (m1 not in sites) and (m1 in pos_diff):
+                                    sites.append(m1)
+                                if (m2 not in sites) and (m2 in pos_diff):
+                                    sites.append(m2)
+                    
                     FR_sites = 1
                     pos_done = []
                     for s in sites:
-                        pos0 = re.findall(r'\d+', s)
-                        if len(pos0) == 1:
-                            s = int(pos0[0])
-                            if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                if s in pos_done:
-                                    FR_sites *= 10
-                                    pos_done.append(s)
+                        s = int(s)
+                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                            if s not in pos_done:
+                                FR_sites *= 10
+                                pos_done.append(s)
+
                                 
                     FR_NTD[i, j] = FR_sites
                     FR_NTD[j, i] = FR_sites
@@ -1123,7 +1262,7 @@ elif Lin_name == "missing":
                     if lin in variant_global:
                         id_lin_global = list(variant_global).index(lin)
                         not_recomputed = [i for i in range(len(Lin_miss)) if (Lin_miss[i] in variant_global) and not (sub_miss[lin][list(variant_global).index(Lin_miss[i])])]
-                        present_indx = np.array([not_recomputed])
+                        present_indx = np.array(not_recomputed)
                         Lin_miss_not_recomputed = list(np.array(Lin_miss)[present_indx])
                         for ind2 in range(len(Lin_miss_not_recomputed)):
                             loc2 = list(Cross_react_dic["variant_list"]).index(Lin_miss_not_recomputed[ind2])
@@ -1140,20 +1279,32 @@ elif Lin_name == "missing":
                         if i > j:
                             var_2 = Cross_react_dic["variant_list"][j]
                 
-                            sites_1 = set([*AA_change_dic[var_1].values()]) 
-                            sites_2 = set([*AA_change_dic[var_2].values()])
+                            mut_1 = list(AA_change_dic[var_1].keys())
+                            mut_2 = list(AA_change_dic[var_2].keys())
                             
-                            sites = list(sites_1.symmetric_difference(sites_2))
+                            pos_diff = list(set(mut_x_sites_dic[var_1]).symmetric_difference(set(mut_x_sites_dic[var_2])))
+                            sites = []
+                            for m1 in mut_1:
+                                for m2 in mut_2:
+                                    if str(m1) == str(m2):
+                                        check = list(set(AA_change_dic[var_1][m1]).intersection(set(AA_change_dic[var_2][m2])))
+                                        if len(check)==0: # no intersection 
+                                            sites.append(m1)  
+                                    else:
+                                        if (m1 not in sites) and (m1 in pos_diff):
+                                            sites.append(m1)
+                                        if (m2 not in sites) and (m2 in pos_diff):
+                                            sites.append(m2)
+                            
                             FR_sites = 1
                             pos_done = []
                             for s in sites:
-                                pos0 = re.findall(r'\d+', s)
-                                if len(pos0) == 1:
-                                    s = int(pos0[0])
-                                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                        if s in pos_done:
-                                            FR_sites *= 10
-                                            pos_done.append(s)
+                                s = int(s)
+                                if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                                    if s not in pos_done:
+                                        FR_sites *= 10
+                                        pos_done.append(s)
+
                                         
                             FR_NTD[i, j] = FR_sites
                             FR_NTD[j, i] = FR_sites

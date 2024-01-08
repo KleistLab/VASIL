@@ -115,7 +115,7 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
             
         
         # plotting
-        PreFig(xsize = 20, ysize = 20)
+        PreFig(xsize = 40, ysize = 40)
         fig = plt.figure(figsize = (15, 7))
         ax = fig.add_subplot(1, 1, 1)
         ### end of observation line
@@ -133,7 +133,7 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
         ax_twin = ax.twinx()
         
         ### Separate figure for relative fitness vs change in proportion
-        PreFig(xsize = 20, ysize = 20)
+        PreFig(xsize = 40, ysize = 40)
         fig2 = plt.figure(figsize = (15, 7))
         ax2 = fig2.add_subplot(1, 1, 1)
         # different axis for proportions
@@ -366,7 +366,9 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
                 Pseudo_Prop2[Pseudo_Prop2 < 0.05] = 0
                 Pseudo_Prop2 = list(Pseudo_Prop2)
                 Pseudo_Prop_aligned = np.zeros(len(t_dates))
-                prop_mask_aligned = np.zeros(len(t_dates))
+                day_prop_aligned = []
+                t_prop_aligned = np.zeros(len(t_dates))
+                prop_mask_aligned = np.zeros(len(t_dates)).astype(bool)
                 gamma_prop = np.zeros(len(t_dates))
                 SI_mask = np.zeros(len(t_dates)).astype(bool)
                 for l in range(len(t_dates)):
@@ -376,6 +378,8 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
                         w_l = list(day_prop).index(t_dates[l])
                         Pseudo_Prop_aligned[l] = Pseudo_Prop[w_l]
                         prop_mask_aligned[l] = prop_mask.tolist()[w_l]
+                        day_prop_aligned.append(t_dates[l])
+                        t_prop_aligned[l] = w_l
                         try:
                             if Pseudo_Prop2[w_l] == 0 or Pseudo_Prop2[w_l+1] == 0:
                                 gamma_prop[l] = float('nan')
@@ -388,6 +392,19 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
                     else:
                         gamma_prop[l] = float('nan')
                         SI_mask[l] = True
+                
+                ### Making sure to aligne proportions and incidence timelines
+                if len(day_prop_aligned) < len(day_prop):
+                    miss_days = [day for day in day_prop if day not in day_prop_aligned]
+                    day_prop_aligned = list(day_prop_aligned) + [day_prop[list(day_prop).index(miss_days[i])] for i in range(len(miss_days))]
+                    prop_mask_aligned = list(prop_mask_aligned) + [prop_mask.tolist()[list(day_prop).index(miss_days[i])] for i in range(len(miss_days))]
+                    t_prop_aligned = list(t_prop_aligned) + list(len(t_prop_aligned) + np.arange(len(miss_days)))
+                    Pseudo_Prop_aligned = list(Pseudo_Prop_aligned) + [Pseudo_Prop[list(day_prop).index(miss_days[i])] for i in range(len(miss_days))]
+                    
+                    day_prop_aligned = list(day_prop_aligned)
+                    prop_mask_aligned = np.array(prop_mask_aligned)
+                    t_prop_aligned = np.array(t_prop_aligned)
+                    Pseudo_Prop_aligned = np.array(Pseudo_Prop_aligned)
                 
                 # calculation of relative fitness
                 gamma_SI = np.zeros((len(t_dates), ES_ranges.shape[1]))
@@ -402,26 +419,32 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
                 gamma_SI_max = ma.masked_array(gamma_SI_max, mask = SI_mask)
                 gamma_SI_min = ma.masked_array(gamma_SI_min, mask = SI_mask)
                 Pseudo_Prop_masked = ma.masked_array(Pseudo_Prop_aligned, mask = prop_mask_aligned)
-    
+                
                 ax_twin.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lab_k + " -- %s"%Trends_labels[c_ind])
                 
                 if ("ImL_ALL_vs_Vacc_ver2" not in Trends_subdir_list[c_ind]) and ("ImL_ALL_vs_Vacc_ver1" not in Trends_subdir_list[c_ind]):
-                    ax.plot(inds_dates, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[c_ind], label = lab_k + " -- %s"%Trends_labels[c_ind])
+                    ax.plot(inds_dates, 100*Pseudo_Prop_masked[:len(inds_dates)], linewidth = 4, color = color_list[c_ind], label = lab_k + " -- %s"%Trends_labels[c_ind])
                 else:
-                    ax.plot(inds_dates, 100*Pseudo_Prop_masked, linewidth = 4, color = color_list[c_ind],  alpha = 0., label = lab_k + " -- %s"%Trends_labels[c_ind])
+                    ax.plot(inds_dates, 100*Pseudo_Prop_masked[:len(inds_dates)], linewidth = 4, color = color_list[c_ind],  alpha = 0., label = lab_k + " -- %s"%Trends_labels[c_ind])
                     
                 #ax_twin.scatter(t_prop, Pseudo_Prop_masked, marker = ".", color = color_list[k])
     
                 ### Separate figure for relative fitness vs change in proportion
                 gamma_prop_masked = ma.masked_array(gamma_prop, mask = SI_mask)
-                ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lab_k + " -- %s"%Trends_labels[c_ind])
                 
+                if c_ind == 0:
+                    ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lab_k + " -- %s"%Trends_labels[c_ind])
+                else:
+                    #ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, edgecolor = color_list[c_ind], linewidth = 5, alpha = 1, label = lab_k + " -- %s"%Trends_labels[c_ind])
+                    ax2.plot(inds_dates, gamma_SI_min, color = color_list[c_ind], linewidth = 5, alpha = 0.3, label = lab_k + " -- %s"%Trends_labels[c_ind])
+                    ax2.plot(inds_dates, gamma_SI_max, color = color_list[c_ind], linewidth = 5, alpha = 0.3)
+                    
                 if ("ImL_ALL_vs_Vacc_ver2" not in Trends_subdir_list[c_ind]) and ("ImL_ALL_vs_Vacc_ver1" not in Trends_subdir_list[c_ind]):
                     ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  label=lab_k + " -- %s"%Trends_labels[c_ind])
                 else:
                     ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  alpha = 0., label=lab_k + " -- %s"%Trends_labels[c_ind])
                 #ax2_twin.scatter(inds_dates, gamma_prop_masked, marker = ".", color = "orange")
-                            
+
                 status_list.append(lab_status)
             
             else:
@@ -520,10 +543,10 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
         ax_twin.patch.set_visible(False) ### make sure that the axis plots do not get hiden in the background
         ax.patch.set_visible(False) ### make sure that the axis plots ddo not get hiden in the background
         
-        ax_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
-        ax.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = np.ceil(len(lineage_list)/4).astype(int))
-        ax_twin.set_ylabel("Relative fitness", fontsize = 20)
-        ax.set_ylabel("Spikegroup Frequency (daily %)", fontsize = 20)
+        ax_twin.legend(loc = (1.2, 0.), fontsize = 50, ncols = np.ceil(len(lineage_list)/4).astype(int))
+        ax.legend(loc = (1.2, 0.) ,fontsize = 50, ncols = np.ceil(len(lineage_list)/4).astype(int))
+        ax_twin.set_ylabel("Relative fitness", fontsize = 50)
+        ax.set_ylabel("Spikegroup Frequency (daily %)", fontsize = 50)
         pdf = PdfPages(sys.argv[w_save]+"/relative_fitness_prop_%s.pdf"%lab_k_fn)
         pdf.savefig(fig, bbox_inches = "tight")
         pdf.close()
@@ -552,16 +575,84 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
             ax2_twin.set_ylim((ymin, ymax))   
         
         ax2.axhline(xmin = 0, xmax = len(day_prop), ls = "--", linewidth = 2, color = "black")
-        ax2.set_ylabel("Relative fitness $\gamma_y$", fontsize = 20)
-        ax2_twin.set_ylabel("Change in proportion $\gamma_{prop}$", fontsize = 20)
-        ax2.legend(loc = (1.2, 0.) ,fontsize = 20, ncols = 1)
-        ax2_twin.legend(loc = (1.2, 0.), fontsize = 20, ncols = 1)
+        ax2.set_ylabel("Relative fitness $\gamma_y$", fontsize = 50)
+        ax2_twin.set_ylabel("Change in proportion $\gamma_{prop}$", fontsize = 50)
+        ax2.legend(loc = (1.2, 0.) ,fontsize = 50, ncols = 1)
+        ax2_twin.legend(loc = (1.2, 0.), fontsize = 50, ncols = 1)
         pdf_2 = PdfPages(sys.argv[w_save]+"/relative_fitness_%s.pdf"%lab_k_fn)
         pdf_2.savefig(fig2, bbox_inches = "tight")
         pdf_2.close()
         fig2.savefig(sys.argv[w_save]+"/relative_fitness_%s.svg"%lab_k_fn, bbox_inches = "tight")
         plt.close()
         
+        gamma_prop_ranges = inds_dates[~(np.isnan(gamma_prop_masked)|SI_mask)]
+        if len(gamma_prop_ranges)>=2:
+            x0, xf = gamma_prop_ranges[0], gamma_prop_ranges[-1]
+            if x_min is not None:
+                x0 = max(x_min, x0-62)
+                xf = min(x_max, xf+62, inds_dates[-1])
+            else:
+                x0 = max(inds_dates[0], x0-62)
+                xf = min(inds_dates[-1], xf+62)
+            
+            if (x0 < xf):
+                inds_b0 = inds_dates[x0:xf+1]
+            else:
+                inds_b0 = inds_dates[gamma_prop_ranges[0]:min(gamma_prop_ranges[-1]+62, inds_dates[-1])+1]
+            
+            x0, xf = inds_b0[0], inds_b0[-1]
+            if len(gamma_prop_ranges)>200:
+                pp = 7*4
+            else:
+                pp = min(len(inds_b0), 14)
+            
+            inds_b = inds_b0[::pp]
+            ticks_b = list(np.array(t_dates)[inds_b])
+            
+            if x0 not in inds_b:
+                inds_b = np.append(x0, inds_b)
+                ticks_b = [t_dates[x0]] + ticks_b
+            if xf not in inds_b:
+                inds_b = np.append(inds_b, xf)
+                ticks_b = ticks_b + [t_dates[xf]]
+                
+
+            fig2b = fig2
+            
+            ax2.set_xlim((x0, xf))
+            ax2_twin.set_xlim((x0, xf))
+            
+            ax2.set_xticks(inds_b)
+            ax2.set_xticklabels(ticks_b,
+                rotation = 45, horizontalalignment = "right")
+            
+            ymin1, ymax1 = np.min(gamma_SI_min[x0:xf+1]), np.max(gamma_SI_max[x0:xf+1])
+            ymin2, ymax2 = np.min(gamma_SI_min[x0:xf+1]), np.max(gamma_SI_max[x0:xf+1])
+            ymin, ymax = min(ymin1, ymin2), max(ymax1, ymax2)
+            
+            #loc0 = min(np.abs(ymin1)/(np.abs(ymin1)+np.abs(ymax1)), np.abs(ymax1)/(np.abs(ymin1)+np.abs(ymax1)))
+            #mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, loc0)
+            mpl_axes_aligner.align.yaxes(ax2, 0, ax2_twin, 0, 0.5)
+            
+            """
+            if (ymin1/ymin2 >0.5) or (ymax1/ymax2>0.5) or (ymin2/ymin1 >0.5) or (ymax2/ymax1>0.5):
+                ax2.set_ylim((ymin, ymax))
+                ax2_twin.set_ylim((ymin, ymax))   
+            """
+            ax2.set_ylim((-0.31, 0.31))
+            ax2_twin.set_ylim((-0.31, 0.31)) 
+            yticks = [-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3]
+            ax2.set_yticks(yticks)
+            ax2.set_yticklabels(["%.1f"%yticks[y] for y in range(len(yticks))])
+            ax2_twin.set_yticks([])
+            ax2_twin.set_yticklabels([])
+            
+            pdf_2b = PdfPages(sys.argv[w_save]+"/relative_fitness_%s_cropped.pdf"%lab_k_fn)
+            pdf_2b.savefig(fig2b, bbox_inches = "tight", pad_inches = 0.5)
+            pdf_2b.close()
+            fig2b.savefig(sys.argv[w_save]+"/relative_fitness_%s_cropped.svg"%lab_k_fn, bbox_inches = "tight", pad_inches = 0.5)
+            plt.close()
+            
     return status_list, lineage_list_Trends
 
 num_groups = int(sys.argv[7])

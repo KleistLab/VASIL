@@ -57,15 +57,22 @@ for i in range(len(variant_x_name_orig)):
     split_mut = mut_x.split("/")
     aa_x = {}
     pos_list = []
+    check = 0
     for mut in split_mut:
         pos0 = re.findall(r'\d+', mut)
         if len(pos0) == 1:
             pos = str(pos0[0])
-            aa_x[pos] = mut
-            pos_list.append(pos)
-            
+            if pos not in list(aa_x.keys()):
+                aa_x[pos] = [mut]
+                pos_list.append(pos)
+            else:
+                aa_x[pos].append(mut)
+                check += 1
+        
     mut_x_sites_dic[x] = pos_list
     AA_change_dic[x] = aa_x
+    
+    
 
 NormProp = np.sum(frequency_lineage, axis = 0)
 prop_rounded = np.round(frequency_lineage,decimals = 10)

@@ -196,7 +196,7 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
                 if AA_change_dic is not None:    
                     for k in range(len(variants_g2)):
                         if (mut_sites[j] in mut_sites_per_variant[variants_g1[i]]) and (mut_sites[j] in mut_sites_per_variant[variants_g2[k]]): ### if the position exists in both variants
-                            aa_bool_diff[i, k, j] = AA_change_dic[variants_g1[i]][mut_sites[j]] != AA_change_dic[variants_g2[k]][mut_sites[j]] ### positions will be considered when aa_changes are different
+                            aa_bool_diff[i, k, j] = len(list(set(AA_change_dic[variants_g1[i]][mut_sites[j]]).intersection(set(AA_change_dic[variants_g2[k]][mut_sites[j]])))) == 0 ### positions will be considered when aa_changes intersection is EMPTY, i.e, all aa changes are different
                 
             if i<len(variants_g2):
                 mut_bool_g2[i, j] = mut_sites[j] in list(np.array(mut_sites_per_variant[variants_g2[i]]).astype(str))
@@ -286,8 +286,11 @@ for spklin in lineages_sim:
                     pos0 = re.findall(r'\d+', mut)
                     if len(pos0) == 1:
                         pos = str(pos0[0])
-                        mut_maj.append(pos)   
-                        aa_lin[pos] = mut
+                        if pos not in list(aa_lin.keys()):
+                            mut_Lin.append(pos)   
+                            aa_lin[pos] = [mut]
+                        else:
+                            aa_lin[pos].append(mut)   
             
             """Update mutation profile dictionary"""        
             mut_x_sites_dic_updated[spklin] = mut_maj
@@ -347,20 +350,32 @@ if len(Top_Pseudo)!=0:
             if i > j:
                 var_2 = Cross_react_dic["variant_list"][j]
     
-                sites_1 = set([*AA_change_dic_updated[var_1].values()])
-                sites_2 = set([*AA_change_dic_updated[var_2].values()])
+                mut_1 = list(AA_change_dic_updated[var_1].keys())
+                mut_2 = list(AA_change_dic_updated[var_2].keys())
                 
-                sites = list(sites_1.symmetric_difference(sites_2))                    
+                pos_diff = list(set(mut_x_sites_dic_updated[var_1]).symmetric_difference(set(mut_x_sites_dic_updated[var_2])))
+                sites = []
+                for m1 in mut_1:
+                    for m2 in mut_2:
+                        if str(m1) == str(m2):
+                            check = list(set(AA_change_dic_updated[var_1][m1]).intersection(set(AA_change_dic_updated[var_2][m2])))
+                            if len(check)==0: # no intersection 
+                                sites.append(m1)  
+                        else:
+                            if (m1 not in sites) and (m1 in pos_diff):
+                                sites.append(m1)
+                            if (m2 not in sites) and (m2 in pos_diff):
+                                sites.append(m2)
+                
                 FR_sites = 1
                 pos_done = []
                 for s in sites:
-                    pos0 = re.findall(r'\d+', s)
-                    if len(pos0) == 1:
-                        s = int(pos0[0])
-                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                            if s in pos_done:
-                                FR_sites *= 10
-                                pos_done.append(s)
+                    s = int(s)
+                    if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                        if s not in pos_done:
+                            FR_sites *= 10
+                            pos_done.append(s)
+
                             
                 FR_NTD[i, j] = FR_sites
                 FR_NTD[j, i] = FR_sites
