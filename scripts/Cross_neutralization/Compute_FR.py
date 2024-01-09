@@ -207,7 +207,7 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
             
         #FRxy[ab] = ma.array(FRxy_ab, mask = Missing_Cond.astype(bool), fill_value = np.nan)
         FRxy_ab[Missing_Cond.astype(bool)] = 1
-        FRxy[ab] = FRxy_ab
+        FRxy[ab] = FRxy_ab.copy()
         
     Missed = np.unique(np.array(Missed))
     Greater_one = np.unique(np.array(Greater_one))           
@@ -282,7 +282,7 @@ if delta_file[:4] not in ("None", "none", False):
                 FR_NTD[i, j] = FR_sites
                 FR_NTD[j, i] = FR_sites
     
-    Cross_with_delta_validation["NTD"] = FR_NTD
+    Cross_with_delta_validation["NTD"] = FR_NTD.copy()
     Cross_with_delta_validation["variant_list"] = variant_x_names_show
     
     try:
@@ -384,7 +384,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     
                     FRxy_ab[w_lin, g[s]] = Cross_Lin[ab][0, :]
                     FRxy_ab[g[s], w_lin] = Cross_Lin[ab][0, :]
-                Cross_react_dic[ab] = FRxy_ab
+                Cross_react_dic[ab] = FRxy_ab.copy()
             a +=1
         
         """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
@@ -425,7 +425,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                         
                     FR_NTD[i, j] = FR_sites
                     FR_NTD[j, i] = FR_sites
-        Cross_react_dic["NTD"] = FR_NTD
+        Cross_react_dic["NTD"] = FR_NTD.copy()
         Cross_react_dic["Mutations"] = {"positions":mut_x_sites_dic_updated, "AA_changes":AA_change_dic_updated}
         file0 = open(sys.argv[7], "wb") 
         pickle.dump(Cross_react_dic, file0)
@@ -767,7 +767,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                     FRxy_ab[where_spk_cross, :] = cross_spk
                                     FRxy_ab[:, where_spk_cross] = cross_spk.T
                                    
-                            Cross_i[ab] = FRxy_ab
+                            Cross_i[ab] = FRxy_ab.copy()
                         a +=1 
                     
                     """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""
@@ -808,7 +808,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
 
                                 FR_NTD[i1, j1] = FR_sites
                                 FR_NTD[j1, i1] = FR_sites
-                    Cross_i["NTD"] = FR_NTD
+                    Cross_i["NTD"] = FR_NTD.copy()
                 else:
                     ### open global cross_reactivity file which must be present
                     a = 1  
@@ -895,7 +895,8 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                                     
                                     FRxy_ab[w_lin, u1] = FR_sites
                                     FRxy_ab[u1, w_lin] = FR_sites
-                        Cross_i[ab] = FRxy_ab
+                        
+                        Cross_i[ab] = FRxy_ab.copy()
                         a +=1 
                 
                 status_sim.append("Done")
@@ -1055,7 +1056,7 @@ elif Lin_name == "ALL":
                 FR_NTD[i, j] = FR_sites
                 FR_NTD[j, i] = FR_sites
         
-    Cross_react_dic["NTD"] = FR_NTD
+    Cross_react_dic["NTD"] = FR_NTD.copy()
     Cross_react_dic["Mutations"] = {"positions":mut_x_sites_dic, "AA_changes":AA_change_dic}
     file0 = open(sys.argv[7], "wb") 
     pickle.dump(Cross_react_dic, file0)
@@ -1161,7 +1162,7 @@ elif Lin_name == "missing":
                     FR_NTD[i, j] = FR_sites
                     FR_NTD[j, i] = FR_sites
             
-        Cross_react_dic["NTD"] = FR_NTD
+        Cross_react_dic["NTD"] = FR_NTD.copy()
         
     else:     
         av_rerun = np.mean(num_rerun)
@@ -1305,7 +1306,7 @@ elif Lin_name == "missing":
                             FR_NTD[i, j] = FR_sites
                             FR_NTD[j, i] = FR_sites
                     
-                Cross_react_dic[ab] = FR_NTD
+                Cross_react_dic[ab] = FR_NTD.copy()
             
 
             if w_global is not None:

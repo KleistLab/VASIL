@@ -677,7 +677,7 @@ if Lin_name not in ("ALL", "ALL_vs_Vacc_ver1", "ALL_vs_Vacc_ver2"):
                         lineages.append(var)
                         file1.close()
                         print("Get Immunological landscape for outbreak %s (%d out of %d)" %(var, i+1, len(lineages)))
-                        status_var.append(ei_util(var, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save, var_name = var, save_suscept = True))
+                        status_var.append(ei_util(var, variants_in_cross, antigen_list, Cross_react_dic, save_pneut=save_pneut, w_save = w_save, var_name = lineages_0[i], save_suscept = True))
                     except:
                         print("%s MISSING in mutation data outbreakinfo_RBD_NTD_mutations.csv (E[Immunized] not computed)"%var)
                         

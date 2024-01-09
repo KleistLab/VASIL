@@ -644,8 +644,8 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
             yticks = [-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3]
             ax2.set_yticks(yticks)
             ax2.set_yticklabels(["%.1f"%yticks[y] for y in range(len(yticks))])
-            ax2_twin.set_yticks([])
-            ax2_twin.set_yticklabels([])
+            #ax2_twin.set_yticks([])
+            #ax2_twin.set_yticklabels([])
             
             pdf_2b = PdfPages(sys.argv[w_save]+"/relative_fitness_%s_cropped.pdf"%lab_k_fn)
             pdf_2b.savefig(fig2b, bbox_inches = "tight", pad_inches = 0.5)

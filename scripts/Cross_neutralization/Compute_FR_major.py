@@ -237,7 +237,7 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
             
         #FRxy[ab] = ma.array(FRxy_ab, mask = Missing_Cond.astype(bool), fill_value = np.nan)
         FRxy_ab[Missing_Cond.astype(bool)] = 1
-        FRxy[ab] = FRxy_ab
+        FRxy[ab] = FRxy_ab.copy()
         
     Missed = np.unique(np.array(Missed))
     Greater_one = np.unique(np.array(Greater_one))           
@@ -333,7 +333,7 @@ if len(Top_Pseudo)!=0:
                                                                   joblib=True)
             
             FRxy_ab = Cross_Lin[ab]
-            Cross_react_dic[ab] = FRxy_ab
+            Cross_react_dic[ab] = FRxy_ab.copy()
             Cross_react_dic_wght[ab] = FRxy_ab*((mean_IC50_per_group["IC50"].values[mean_IC50_per_group["group"] == ab])[0])
         a +=1
     
@@ -380,8 +380,8 @@ if len(Top_Pseudo)!=0:
                 FR_NTD[i, j] = FR_sites
                 FR_NTD[j, i] = FR_sites
         
-    Cross_react_dic["NTD"] = FR_NTD
-    Cross_react_dic_wght["NTD"] = FR_NTD
+    Cross_react_dic["NTD"] = FR_NTD.copy()
+    Cross_react_dic_wght["NTD"] = FR_NTD.copy()
     
     file0 = open(sys.argv[k], "wb") 
     pickle.dump(Cross_react_dic, file0)
