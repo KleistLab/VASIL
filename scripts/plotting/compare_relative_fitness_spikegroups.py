@@ -436,8 +436,8 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
                     ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, color = color_list[c_ind], alpha = 0.3, label = lab_k + " -- %s"%Trends_labels[c_ind])
                 else:
                     #ax2.fill_between(inds_dates, gamma_SI_min, gamma_SI_max, edgecolor = color_list[c_ind], linewidth = 5, alpha = 1, label = lab_k + " -- %s"%Trends_labels[c_ind])
-                    ax2.plot(inds_dates, gamma_SI_min, color = color_list[c_ind], linewidth = 5, alpha = 0.3, label = lab_k + " -- %s"%Trends_labels[c_ind])
-                    ax2.plot(inds_dates, gamma_SI_max, color = color_list[c_ind], linewidth = 5, alpha = 0.3)
+                    ax2.plot(inds_dates, gamma_SI_min, color = color_list[c_ind], linewidth = 5, alpha = 0.4, label = lab_k + " -- %s"%Trends_labels[c_ind])
+                    ax2.plot(inds_dates, gamma_SI_max, color = color_list[c_ind], linewidth = 5, alpha = 0.4)
                     
                 if ("ImL_ALL_vs_Vacc_ver2" not in Trends_subdir_list[c_ind]) and ("ImL_ALL_vs_Vacc_ver1" not in Trends_subdir_list[c_ind]):
                     ax2_twin.plot(inds_dates, gamma_prop_masked, color = color_list[c_ind], linewidth = 4,  label=lab_k + " -- %s"%Trends_labels[c_ind])
@@ -622,9 +622,9 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
             ax2.set_xlim((x0, xf))
             ax2_twin.set_xlim((x0, xf))
             
-            ax2.set_xticks(inds_b)
-            ax2.set_xticklabels(ticks_b,
-                rotation = 45, horizontalalignment = "right")
+            #ax2.set_xticks(inds_b)
+            #ax2.set_xticklabels(ticks_b,
+            #    rotation = 45, horizontalalignment = "right")
             
             ymin1, ymax1 = np.min(gamma_SI_min[x0:xf+1]), np.max(gamma_SI_max[x0:xf+1])
             ymin2, ymax2 = np.min(gamma_SI_min[x0:xf+1]), np.max(gamma_SI_max[x0:xf+1])
@@ -644,8 +644,8 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
             yticks = [-0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3]
             ax2.set_yticks(yticks)
             ax2.set_yticklabels(["%.1f"%yticks[y] for y in range(len(yticks))])
-            #ax2_twin.set_yticks([])
-            #ax2_twin.set_yticklabels([])
+            ax2_twin.set_yticks([])
+            ax2_twin.set_yticklabels([])
             
             pdf_2b = PdfPages(sys.argv[w_save]+"/relative_fitness_%s_cropped.pdf"%lab_k_fn)
             pdf_2b.savefig(fig2b, bbox_inches = "tight", pad_inches = 0.5)

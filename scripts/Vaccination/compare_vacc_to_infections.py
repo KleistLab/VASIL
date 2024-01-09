@@ -139,12 +139,20 @@ def Display_Envelops(t, t_dates, Y, Z, is_log, labels, figsize = (7, 7), xysize 
             if color is None:
                 ax.fill_between(t, Y[i, :], Z[i, :], label = labels[i], alpha = alpha)
             else:
-                ax.fill_between(t, Y[i, :], Z[i, :], label = labels[i], color = color[i], alpha = alpha)
+                if i == 0:
+                    ax.plot(t, Y[i, :], label = labels[i], color = color[i], linewidth = 5, alpha = 0.4)
+                    ax.plot(t, Z[i, :], color = color[i], linewidth = 5, alpha = 0.4)
+                else:
+                    ax.fill_between(t, Y[i, :], Z[i, :], label = labels[i], color = color[i], alpha = alpha)
 
     else:
         col = list(sns.color_palette(palette, 2*(Y.shape[0]-1))[::2]) + ["#1f77b4"]
         for i in range(Y.shape[0]):
-            ax.fill_between(t, Y[i, :], Z[i, :], label = labels[i], color = col[i], alpha = alpha)
+            if i == 0:
+                ax.plot(t, Y[i, :], label = labels[i], color = col[i], linewidth = 5, alpha = 0.4)
+                ax.plot(t, Z[i, :], color = col[i], linewidth = 5, alpha = 0.4)
+            else:
+                ax.fill_between(t, Y[i, :], Z[i, :], label = labels[i], color = col[i], alpha = alpha)
         
     
     if is_log:
@@ -153,8 +161,8 @@ def Display_Envelops(t, t_dates, Y, Z, is_log, labels, figsize = (7, 7), xysize 
         plt.ylabel("%s"%yval, fontsize = labsize)  
     
     plt.xlabel(xval, fontsize = labsize)
-    plt.legend(loc = (1.2, 0), fontsize = labsize, ncols = np.ceil(len(labels)/15).astype(int))
-    
+    #plt.legend(loc = (1.2, 0), fontsize = labsize, ncols = np.ceil(len(labels)/15).astype(int))
+    plt.legend(loc = (0.25, -1), fontsize = labsize, ncols = 2)
     if len(t)>200:
         pp = 7*4
     else:
@@ -453,14 +461,17 @@ fig = plt.figure(figsize = (15, 7))
 ax = fig.add_subplot(1, 1, 1) 
 filename = sys.argv[-1]+"/Vacc_counts_ver1.pdf"
 
+
 Vacc_Counts_ver1 = np.array(Vacc_Counts)
 fig, ax = Display(t[d_min:d_max], t_dates[d_min:d_max], np.cumsum(Vacc_Counts_ver1, axis = 1)[:, d_min:d_max], is_log = False, labels = lin_cleaned_labs_sorted, color = ["black", "grey"], figsize = None, save_to = filename, xval = "dates", yval = "Counts (CumSum)", 
                         linewidth = 8, linestyle = ["-", "--"], ax = ax, fig = fig, alpha = 1, mode = None, yfmt = 6)
 
 cdic = {"dates":t_dates}
 cdic.update({lin_cleaned_labs_sorted[i]:np.cumsum(Vacc_Counts_ver1[i, :]) for i in range(len(lin_cleaned_labs))})
+
 c_df = pd.DataFrame(cdic)
 c_df.to_csv(sys.argv[-1]+"/Vacc_counts_ver1.csv")
+
 
 # plotting
 PreFig(xsize = 40, ysize = 40)
