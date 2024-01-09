@@ -505,75 +505,76 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     Grouped.append(False)
                     Lin_exists.append(Lin_list[j])
                     Lin_exists_names.append(Lin_list[j])
-                try:
-                    mut_file = open(mut_sim[j], "r")
-                    mut_lin0 = mut_file.readlines()
-                    mut_file.close()
-                    mut_Lin = []
-                    aa_lin = {}
-                    for mut in mut_lin0:
-                        if "\n" in mut:
-                            mut = mut.replace("\n","")
-                        if mut[:3] not in ("DEL", "del"):
-                            if len(re.findall(r'\d+', mut))>0:
-                                pos0 = re.findall(r'\d+', mut)
-                                if len(pos0) == 1:
-                                    pos = str(pos0[0])
-                                    if pos not in list(aa_lin.keys()):
-                                        mut_Lin.append(pos)   
-                                        aa_lin[pos] = [mut]
-                                    else:
-                                        aa_lin[pos].append(mut)   
-
-                    """Update mutation profile dictionary"""
-                    mut_x_sites_dic_updated[Lin_list[j]] = mut_Lin
-                    AA_change_dic_updated[Lin_list[j]] = aa_lin
-                    Grouped.append(False)
-                    Lin_exists.append(Lin_list[j])
-                    Lin_exists_names.append(Lin_list[j])
-                except:
+                else:
                     try:
-                        data_file = open(mut_sim[j], "rb")
-                        mutation_loaded = pickle.load(data_file)
-                        data_file.close()
-                        mutation_data = mutation_loaded["positions"]
-                        variants = mutation_loaded["Group"]
-                        aa_data = mutation_loaded["AA_changes"]
-                        mut_sub = []
-                        for i in range(len(variants)):
-                            var = variants[i]
-                            if var in list(Pseudogroup_dic.keys()):
-                                mut_x_sites_dic_updated[var] = mut_x_sites_dic[Pseudogroup_dic[var]]
-                                AA_change_dic_updated[var] = AA_change_dic[Pseudogroup_dic[var]]
-                            else:
-                                mut_x_sites_dic_updated[var] = mutation_data[var]
-                                AA_change_dic_updated[var] = aa_data[var]
-                            
-                            mut_var = ""
-                            for pos in list(AA_change_dic_updated[var].keys):
-                                mut_var += "/".join(AA_change_dic_updated[var][pos])+"/"
-                            mut_sub.append(mut_var)
-                        
-                        inds_spk = []
-                        variants_spk = []
-                        
-                        mut_sub = np.array(mut_sub)
-                        for mut in np.unique(mut_sub):
-                            var_0 = np.array(variants)[mut_sub == mut][0]
-                            variants_spk.append(var_0)
-                            inds_spk +=[list(variants).index(var_0)]*np.sum(mut_sub == mut)
-
-                        Lin_list_grouped[Lin_list[j]] = variants
-                        Lin_list_grouped[Lin_list[j]+"_spk"] = variants_spk
-                        Lin_list_grouped["inds"] = inds_spk
-                        Grouped.append(True)
+                        mut_file = open(mut_sim[j], "r")
+                        mut_lin0 = mut_file.readlines()
+                        mut_file.close()
+                        mut_Lin = []
+                        aa_lin = {}
+                        for mut in mut_lin0:
+                            if "\n" in mut:
+                                mut = mut.replace("\n","")
+                            if mut[:3] not in ("DEL", "del"):
+                                if len(re.findall(r'\d+', mut))>0:
+                                    pos0 = re.findall(r'\d+', mut)
+                                    if len(pos0) == 1:
+                                        pos = str(pos0[0])
+                                        if pos not in list(aa_lin.keys()):
+                                            mut_Lin.append(pos)   
+                                            aa_lin[pos] = [mut]
+                                        else:
+                                            aa_lin[pos].append(mut)   
+    
+                        """Update mutation profile dictionary"""
+                        mut_x_sites_dic_updated[Lin_list[j]] = mut_Lin
+                        AA_change_dic_updated[Lin_list[j]] = aa_lin
+                        Grouped.append(False)
                         Lin_exists.append(Lin_list[j])
-                        Lin_exists_names.append(Lin_list[j])                       
-                        single_lin += len(variants_spk)
+                        Lin_exists_names.append(Lin_list[j])
                     except:
-                        pass
+                        try:
+                            data_file = open(mut_sim[j], "rb")
+                            mutation_loaded = pickle.load(data_file)
+                            data_file.close()
+                            mutation_data = mutation_loaded["positions"]
+                            variants = mutation_loaded["Group"]
+                            aa_data = mutation_loaded["AA_changes"]
+                            mut_sub = []
+                            for i in range(len(variants)):
+                                var = variants[i]
+                                if var in list(Pseudogroup_dic.keys()):
+                                    mut_x_sites_dic_updated[var] = mut_x_sites_dic[Pseudogroup_dic[var]]
+                                    AA_change_dic_updated[var] = AA_change_dic[Pseudogroup_dic[var]]
+                                else:
+                                    mut_x_sites_dic_updated[var] = mutation_data[var]
+                                    AA_change_dic_updated[var] = aa_data[var]
+                                
+                                mut_var = ""
+                                for pos in list(AA_change_dic_updated[var].keys):
+                                    mut_var += "/".join(AA_change_dic_updated[var][pos])+"/"
+                                mut_sub.append(mut_var)
+                            
+                            inds_spk = []
+                            variants_spk = []
+                            
+                            mut_sub = np.array(mut_sub)
+                            for mut in np.unique(mut_sub):
+                                var_0 = np.array(variants)[mut_sub == mut][0]
+                                variants_spk.append(var_0)
+                                inds_spk +=[list(variants).index(var_0)]*np.sum(mut_sub == mut)
+    
+                            Lin_list_grouped[Lin_list[j]] = variants
+                            Lin_list_grouped[Lin_list[j]+"_spk"] = variants_spk
+                            Lin_list_grouped["inds"] = inds_spk
+                            Grouped.append(True)
+                            Lin_exists.append(Lin_list[j])
+                            Lin_exists_names.append(Lin_list[j])                       
+                            single_lin += len(variants_spk)
+                        except:
+                            pass
                     
-            elif ("*_as_" in Lin_list[j]): ### hard-coded in vaccines pseudo names
+            elif ("*_as_" in Lin_list[j]): ### hard-coded in vaccines pseudo names 
                 lin_clean = Lin_list[j].split("*_as_")[0]
                 mut_x_sites_dic_updated[lin_clean] = mut_x_sites_dic[Pseudogroup_dic[lin_clean]]
                 AA_change_dic_updated[lin_clean] = AA_change_dic_updated[Pseudogroup_dic[lin_clean]]
