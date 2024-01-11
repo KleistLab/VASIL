@@ -63,7 +63,7 @@ if date_start in unique_days_prop:
     unique_days_prop = unique_days_prop[where_day:]
     
 print("Timeline of lineage proportions: %s -- %s"%(unique_days_prop[0], unique_days_prop[-1]))
-unique_lineage_timeframe = np.unique(lineages_all)
+unique_lineage_timeframe = np.unique(lineages_all[np.array([i for i in range(len(days_prop)) if days_prop[i] in unique_days_prop])])
 print("Number of lineages: ", len(unique_lineage_timeframe))
 
 try:

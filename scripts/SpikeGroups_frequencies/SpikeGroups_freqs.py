@@ -8,7 +8,6 @@ import re
 import sys
 import pdb
 from datetime import datetime, timedelta
-#import pdb
 
 """ Loads lineage frequency data aready matched with timeline of infection """
 frequency_lineage_df = pd.read_csv(sys.argv[1])
@@ -95,10 +94,14 @@ N_days = len(date_list)
 Lineages_list = list(unique_lineage)
 variant_proportion_orig = np.zeros((len(Lineages_list), N_days))
 mask_missing = np.zeros((len(Lineages_list), N_days)).astype(bool)
-#missing_var_prop = {}
+missing_var = []
 for x in range(len(Lineages_list)):
     variant = Lineages_list[x]
-    x_lin = list(unique_lineage).index(variant)
+    x_lin = Lineages_list.index(variant)
+    
+    if variant not in list(variant_x_name_orig) and np.any(proportion_lineage[x_lin, :]!=0.):
+        missing_var.append(variant)
+        
     for k in range(len(date_list)):
         date = date_list[k]
         if date in list(days_prop):
@@ -106,7 +109,12 @@ for x in range(len(Lineages_list)):
             variant_proportion_orig[x, k] = proportion_lineage[x_lin, ik]
         else:
             mask_missing[x, k] = True
-        
+
+if len(missing_var) != 0:
+    DiffVar = list(set(variant_x_name_orig).symmetric_difference(set(Lineages_list)))
+    miss_freq = [DiffVar[i] for i in range(len(DiffVar)) if DiffVar[i] not in missing_var]
+    print("Mutation_profile missing/ignored for variants", missing_var, "\n Frequency data missing for variants", miss_freq)
+
 NormProp = np.sum(variant_proportion_orig, axis = 0)
 prop_rounded = np.round(variant_proportion_orig, decimals = 10)
 proportion_lineage = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
