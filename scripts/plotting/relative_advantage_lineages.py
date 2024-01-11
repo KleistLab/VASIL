@@ -66,7 +66,7 @@ col_sums = freqs.sum(axis = 1).values
 freqs = freqs.divide(col_sums, axis="rows")
 freqs = freqs.fillna(0)
 variant_freq.loc[:, variant_freq.columns != 'date'] = freqs
-print("Number of spikegroups: %d + 1 Wuhan-Hu-1"%len(variant_freq.columns[variant_freq.columns!="Wuhan-Hu-1"]))
+print("Number of spikegroups: %d + 1 Wuhan-Hu-1"%len(variant_freq.columns[(variant_freq.columns!="Wuhan-Hu-1")&(variant_freq.columns!="date")]))
 day_prop_spikes = variant_freq["date"].tolist()
 
 

@@ -1094,13 +1094,13 @@ elif Lin_name == "missing":
             var_2 = lin
             
             mut_1 = list(AA_global[var_1].keys())
-            mut_2 = list(AA_change_dic_updated[var_2].keys())
+            mut_2 = list(AA_change_dic[var_2].keys())
             
             pos_diff = list(set(mut_x_global[var_1]).symmetric_difference(set(mut_x_sites_dic[var_2])))
             sites = []
             for m1 in mut_1:
                 for m2 in mut_2:
-                    if str(m1) == str(m2):
+                    if str(m1) == str(m2):   
                         check = list(set(AA_global[var_1][m1]).intersection(set(AA_change_dic[var_2][m2])))
                         if len(check)==0: # no intersection 
                             sites.append(m1)  
@@ -1111,7 +1111,6 @@ elif Lin_name == "missing":
                             sites.append(m2)
                             
             check_aa = sites
-            
             if (len(check_aa) != 0):
                 # mutation profile is different from general file, thus must be recomputed
                 sub_miss[lin] = np.ones(len(variant_global)).astype(bool)
@@ -1169,7 +1168,7 @@ elif Lin_name == "missing":
         av_rerun = np.mean(num_rerun)
         if len(Lin_miss)>10 and av_rerun > 50:
             print("WARNING: Cross reactivity computation might take really long on local computers, better using HPC (see scripts/run_cross_missing.sh for hints on using a slurm cluster)")
-            
+        
         if len(loc_in_cross)!=0:
             w_in_cross = np.arange(0, len(variant_x_names_cross)).astype(int)[np.array(loc_in_cross)]
             variants_in_global = np.array(variant_x_names_cross)[w_in_cross]
