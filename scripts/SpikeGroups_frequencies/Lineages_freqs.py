@@ -32,10 +32,16 @@ except:
     sys.exit("date column not found in covsonar data")
 
 lineages_all_0 = covsonar_data["lineage"].values.astype(str)
+
+aa_seq = covsonar_data["aa_profile"].values
+invalid_aa_index = [i for i in range(len(aa_seq)) if str(aa_seq[i]) == "nan"]
+kept_aa_index = np.ones(len(aa_seq)).astype(bool)
+if len(invalid_aa_index) > 0:
+    kept_aa_index[np.array(invalid_aa_index)] = False
+
 """Simulation timeframe"""
 date_start = sys.argv[2]
-
-inds_keep = np.array(days_prop0)!="nan"
+inds_keep = (days_prop0!="nan")&(kept_aa_index)
 days_prop = np.array(days_prop0)[inds_keep]
 lineages_all = np.array(lineages_all_0)[inds_keep]
 
@@ -65,7 +71,6 @@ if date_start in unique_days_prop:
 print("Timeline of lineage proportions: %s -- %s"%(unique_days_prop[0], unique_days_prop[-1]))
 unique_lineage_timeframe = np.unique(lineages_all[np.array([i for i in range(len(days_prop)) if days_prop[i] in unique_days_prop])])
 print("Number of lineages: ", len(unique_lineage_timeframe))
-
 try:
     seq_thres = int(sys.argv[4])
 except:
