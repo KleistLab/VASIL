@@ -142,6 +142,7 @@ for (i in 1:number_lineages){
     mutationprofiles_l[i] <- list(D_mutationprofile)
     lineages_l = c(lineages_l, D_lineagename)
     number_genomes_per_lineage <- c(number_genomes_per_lineage, D_N)
+    if (D_lineagename == "XN"){print(D_lineagename);print(D_mutationprofile)}
   }
   else{
     lineages_without_mutations <- c(lineages_without_mutations, D_lineagename) 
