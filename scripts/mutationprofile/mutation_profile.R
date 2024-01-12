@@ -114,10 +114,16 @@ between_dates <- subset(u_dates, (id_dates >= match(date_start, u_dates))&(id_da
 D <- D[D$date %in% between_dates, ]
 sprintf("Timeframe of extracted mutation profiles %s to %s", unique(D$date)[1], unique(D$date)[length(unique(D$date))])
 
+### Set empty lineage names to "nan":
+xi <- which(D$lineage == "")
+D$lineage[xi] <- "nan"
+
 ### filter mutations 
 lineages <- sort(unique(D$lineage))
 number_lineages <- length(lineages)
 #print(D$date)
+
+
 
 mutationprofiles_l <- list()
 lineages_l <- c()
@@ -129,7 +135,8 @@ for (i in 1:number_lineages){
   D_N <- nrow(Dlin)
   aaprofile <- Dlin$aa_profile
   aaprofile[which(aaprofile=="")]<-NA
-  if ((length(which(!is.na(aaprofile))) > 0)&(D_lineagename != "")){
+  #if ((length(which(!is.na(aaprofile))) > 0)&(D_lineagename != "")){
+  if (length(which(!is.na(aaprofile))) > 0){
     aaprofile_l <- list()
     for (j in 1:D_N){
       aaprofile_l[j] <- strsplit(aaprofile[j]," ")
