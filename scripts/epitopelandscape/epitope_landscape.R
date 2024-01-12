@@ -43,7 +43,7 @@ escape_data <- escape_data[-which(escape_data$condition_type == "serum"),]
 ## merge escape_data.csv with antibody classes from escape_data_site.csv which is in antibody_classes.csv
 escape_data <- merge(escape_data, antibodymapping, by = "condition" )
 
-## escape_fraction = mut_escape and set max value to 1:
+## escape_fraction = mut_escape and set max value to 0.99:
 x <- which(escape_data[col_escape_fraction]>=0.99)
 if (length(x) > 0){ escape_data[x,col_escape_fraction] <- 0.99}
 rm(x)
