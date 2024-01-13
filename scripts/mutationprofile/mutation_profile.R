@@ -149,6 +149,10 @@ for (i in 1:number_lineages){
   }
   #number_genomes_per_lineage <- c(number_genomes_per_lineage, D_N)
 }
+
+### Save the output dataframe (lineage_l, mutation_profiles_l) to validate extracted mutation profiles
+
+###
 number_lineages <- number_lineages-length(lineages_without_mutations)
 number_genomes_per_lineage <- cbind(lineages_l, number_genomes_per_lineage)
 write.csv(number_genomes_per_lineage, file=paste0(outputdir,"/",stringr::str_replace(outputfile_mutationprofile, ".csv","number_of_genomes_per_lineage.csv")), quote = FALSE, row.names = FALSE)
@@ -164,7 +168,7 @@ for (i in 1:number_lineages){
   if (length(grep(":",m1) > 0)) {m1 <- m1[-grep(":",m1)] } #remove any deletions etc. keep only mutations
   m1 <- sort(m1)
   if (length(mutation_lists) == 0){
-    mutation_lists <- cbind(lineages_l[i], paste(m1, collapse = "/"))
+    mutation_lists <- cbind(lineages_l[i], paste(m1, collapse = "/"))v
   }else{
     mutation_lists <- rbind(mutation_lists, 
                             cbind(lineages_l[i], paste(m1, collapse = "/")))
