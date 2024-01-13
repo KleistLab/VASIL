@@ -142,7 +142,7 @@ for (i in 1:number_lineages){
     mutationprofiles_l[i] <- list(D_mutationprofile)
     lineages_l = c(lineages_l, D_lineagename)
     number_genomes_per_lineage <- c(number_genomes_per_lineage, D_N)
-    if (D_lineagename == "XN"){print(D_lineagename);print(D_mutationprofile)}
+    if (D_lineagename == "XN"){print(D_lineagename);print(length(D_mutationprofile));print(D_mutationprofile)}
   }
   else{
     lineages_without_mutations <- c(lineages_without_mutations, D_lineagename) 
@@ -168,7 +168,7 @@ for (i in 1:number_lineages){
   if (length(grep(":",m1) > 0)) {m1 <- m1[-grep(":",m1)] } #remove any deletions etc. keep only mutations
   m1 <- sort(m1)
   if (length(mutation_lists) == 0){
-    mutation_lists <- cbind(lineages_l[i], paste(m1, collapse = "/"))v
+    mutation_lists <- cbind(lineages_l[i], paste(m1, collapse = "/"))
   }else{
     mutation_lists <- rbind(mutation_lists, 
                             cbind(lineages_l[i], paste(m1, collapse = "/")))
