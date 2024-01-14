@@ -1107,6 +1107,7 @@ elif Lin_name == "missing":
             if (len(check_aa) != 0):
                 # mutation profile is different from general file, thus must be recomputed
                 sub_miss[lin] = np.ones(len(variant_global)).astype(bool)
+                Lin_miss.append(lin)
             else:
                 loc_in_cross.append(list(variant_x_names_cross).index(var_2))
                 loc_not_miss.append(list(variant_global).index(var_1))
