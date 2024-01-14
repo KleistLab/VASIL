@@ -526,8 +526,10 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
             if Lin_list[j] not in list(Pseudogroup_dic.keys()) and mut_sim[j] != "avail":
                 
                 if (str(sys.argv[k])[:9] == "outbreak/"): ### Hard coded for oubreak.infos data
-                    mut_x_sites_dic_updated.update(mut_dic_outbreak)
-                    AA_change_dic_updated.update(aa_dic_outbreak)
+                    if j == 0: ## do this only once
+                        mut_x_sites_dic_updated.update(mut_dic_outbreak)
+                        AA_change_dic_updated.update(aa_dic_outbreak)
+                        
                     Grouped.append(False)
                     Lin_exists.append(Lin_list[j])
                     Lin_exists_names.append(Lin_list[j])
@@ -600,19 +602,23 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                         except:
                             pass
                     
-            elif ("*_as_" in Lin_list[j]): ### hard-coded in vaccines pseudo names 
+            elif ("*_as_" in Lin_list[j]) and mut_sim[j] == "avail": ### hard-coded in vaccines pseudo names 
                 lin_clean = Lin_list[j].split("*_as_")[0]
                 mut_x_sites_dic_updated[lin_clean] = mut_x_sites_dic[Pseudogroup_dic[lin_clean]]
                 AA_change_dic_updated[lin_clean] = AA_change_dic_updated[Pseudogroup_dic[lin_clean]]
                 Grouped.append(False)
                 Lin_exists.append(lin_clean)
                 Lin_exists_names.append(Lin_list[j])
-            else:
+                
+            elif Lin_list[j] in list(Pseudogroup_dic.keys()):
                 mut_x_sites_dic_updated[Lin_list[j]] = mut_x_sites_dic[Pseudogroup_dic[Lin_list[j]]]
                 AA_change_dic_updated[Lin_list[j]] = AA_change_dic_updated[Pseudogroup_dic[Lin_list[j]]]
                 Grouped.append(False)
                 Lin_exists.append(Lin_list[j])
                 Lin_exists_names.append(Lin_list[j])
+                
+            else:
+                sys.exit("Cannot understand mutation profile informations")
         
         ### Update to available data
         Lin_list = Lin_exists
@@ -762,7 +768,10 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                     
                                     for k in range(len(Lin_list_i_spk_reduced)):
                                         sub_FR[where_spk_s[k], locs] = Cross_Lin[ab][k, :]
-                                        sub_FR[locs, where_spk_s[k]] = Cross_Lin[ab][k, :]
+                                        if len(locs)>1:
+                                            sub_FR[locs, where_spk_s[k]] = Cross_Lin[ab][k, :].T
+                                        else:
+                                            sub_FR[locs, where_spk_s[k]] = Cross_Lin[ab][k, :]
                             
                                 if len(Lin_list_i_spk_reduced)>1:
                                     for k in range(len(Lin_list_i_spk_reduced)):
@@ -774,7 +783,10 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                                                                   joblib=True)
                                 
                                         sub_FR[where_spk_s[k], where_spk_s[k+1:]] = Cross_Lin[ab][k, :]
-                                        sub_FR[where_spk_s[k+1:], where_spk_s[k]] = sub_FR[where_spk_s[k], where_spk_s[k+1:]]
+                                        if len(where_spk_s[k+1:])>1:
+                                            sub_FR[where_spk_s[k+1:], where_spk_s[k]] = sub_FR[where_spk_s[k], where_spk_s[k+1:]].T
+                                        else:
+                                            sub_FR[where_spk_s[k+1:], where_spk_s[k]] = sub_FR[where_spk_s[k], where_spk_s[k+1:]]
                             
                             if not spk_adjust:
                                 FRxy_ab[np.array(w_lin_i), :] = sub_FR[np.array(w_lin_i), :]
@@ -792,8 +804,11 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                     
                                     where_spk_cross = np.array([list(Cross_i["variant_list"]).index(Lins[k]) for k in range(len(Lins))]) 
                                     FRxy_ab[where_spk_cross, :] = cross_spk
-                                    FRxy_ab[:, where_spk_cross] = cross_spk.T
-                                   
+                                    if len(where_spk_cross)>1:
+                                        FRxy_ab[:, where_spk_cross] = cross_spk.T
+                                    else:
+                                        FRxy_ab[:, where_spk_cross] = cross_spk
+                                        
                             Cross_i[ab] = FRxy_ab.copy()
                         a +=1 
                     
@@ -1234,7 +1249,11 @@ elif Lin_name == "missing":
                             
                             locs_recompute = np.array([list(Cross_react_dic["variant_list"]).index(g_var_recompute[i]) for i in range(len(g_var_recompute))])
                             Cross_react_dic[ab][lin_indx, locs_recompute] = Cross_Lin[ab]
-                            Cross_react_dic[ab][locs_recompute, lin_indx] = Cross_Lin[ab]
+                            
+                            if len(locs_recompute)>1:
+                                Cross_react_dic[ab][locs_recompute, lin_indx] = Cross_Lin[ab].T
+                            else:
+                                Cross_react_dic[ab][locs_recompute, lin_indx] = Cross_Lin[ab]
                             
                             if lin_profile in mut_profiles_global:
                                 id_lin_global = list(mut_profiles_global).index(lin_profile)
@@ -1251,18 +1270,24 @@ elif Lin_name == "missing":
                     sub_miss_reduced += [i for i in range(len(Lin_miss)) if (lin_profile_list[i] not in mut_profiles_global)]
                     recomp_lin_miss = np.array(sub_miss_reduced)
                     Lin_miss_recompute = list(np.array(Lin_miss)[recomp_lin_miss])
-                    Cross_Lin, Missed, Greater_one = cross_reactivity(([lin], Lin_miss_recompute), 
-                                                              Escape_Fraction, 
-                                                              [ab],
-                                                              mut_x_sites_dic,
-                                                              AA_change_dic = AA_change_dic,
-                                                              joblib = True,
-                                                              cluster = cluster,
-                                                              n_jobs = n_jobs)
                     
-                    miss_locs = np.array([list(Cross_react_dic["variant_list"]).index(Lin_miss_recompute[i]) for i in range(len(Lin_miss_recompute))])
-                    Cross_react_dic[ab][lin_indx, miss_locs] = Cross_Lin[ab]
-                    Cross_react_dic[ab][miss_locs, lin_indx] = Cross_Lin[ab]
+                    if len(Lin_miss_recompute)>0:
+                        Cross_Lin, Missed, Greater_one = cross_reactivity(([lin], Lin_miss_recompute), 
+                                                                  Escape_Fraction, 
+                                                                  [ab],
+                                                                  mut_x_sites_dic,
+                                                                  AA_change_dic = AA_change_dic,
+                                                                  joblib = True,
+                                                                  cluster = cluster,
+                                                                  n_jobs = n_jobs)
+                        
+                        miss_locs = np.array([list(Cross_react_dic["variant_list"]).index(Lin_miss_recompute[i]) for i in range(len(Lin_miss_recompute))])
+                        Cross_react_dic[ab][lin_indx, miss_locs] = Cross_Lin[ab]
+                        
+                        if len(miss_locs)>1:
+                            Cross_react_dic[ab][miss_locs, lin_indx] = Cross_Lin[ab].T
+                        else:
+                            Cross_react_dic[ab][miss_locs, lin_indx] = Cross_Lin[ab]
                     
                     if lin_profile in mut_profiles_global:
                         id_lin_global = list(mut_profiles_global).index(lin_profile)        
