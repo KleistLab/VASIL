@@ -1290,8 +1290,9 @@ elif Lin_name == "missing":
                 ### Include not missing and not recomputed
                 for lin in Cross_react_dic["variant_list"]:
                     id_lin = list(Cross_react_dic["variant_list"]).index(lin)
-                    if lin in variant_global:
-                        id_lin_global = list(variant_global).index(lin)
+                    lin_profile = mut_profiles[id_lin]
+                    if lin_profile in mut_profiles_global:
+                        id_lin_global = list(variant_global).index(lin_profile)
                         not_miss_recomputed = w_global[~sub_miss[lin][np.array(loc_not_miss)]]
                         Cross_react_dic[ab][:, :len(variants_in_global)][id_lin, :] = Cross_global[ab][id_lin_global, not_miss_recomputed]
                         Cross_react_dic[ab][:len(variants_in_global), :][:, id_lin] = Cross_global[ab][not_miss_recomputed, id_lin_global]
