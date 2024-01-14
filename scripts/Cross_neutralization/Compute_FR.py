@@ -1123,11 +1123,12 @@ elif Lin_name == "missing":
                 # mutation profile is different from general file, thus must be recomputed
                 sub_miss[lin] = np.ones(len(variant_global)).astype(bool)
                 for ig in range(len(variant_global)):
-                    sites_x = get_pos(variant_global[ig], lin, AA_global, AA_change_dic, mut_x_global, mut_x_sites_dic)
-                    sites_g = get_pos(variant_global[ig], var_1, AA_global, AA_global, mut_x_global, mut_x_global)
-                    "check if the symmetric difference in Cross_global is the same as the symmetric difference that we need to consider"
-                    if "/".join(sorted(sites_x)) == "/".join(sorted(sites_g)): 
-                        sub_miss[lin][ig] = False
+                    if variant_global[ig] in variant_x_names_cross:
+                        sites_x = get_pos(variant_global[ig], lin, AA_change_dic, AA_change_dic, mut_x_sites_dic, mut_x_sites_dic)
+                        sites_g = get_pos(variant_global[ig], var_1, AA_global, AA_global, mut_x_global, mut_x_global)
+                        "check if the symmetric difference in Cross_global is the same as the symmetric difference that we need to consider"
+                        if "/".join(sorted(sites_x)) == "/".join(sorted(sites_g)): 
+                            sub_miss[lin][ig] = False
                 
                 Lin_miss.append(lin)
             else:
@@ -1257,11 +1258,12 @@ elif Lin_name == "missing":
                             
                             if lin_profile in mut_profiles_global:
                                 id_lin_global = list(mut_profiles_global).index(lin_profile)
-                                g_not_recomputed = [g_var[s] for s in range(len(g_var)) if g_var[s] not in list(g_var_recompute)]
+                                g_not_recomputed = [g_var[s] for s in range(len(g_var)) if g_var[s] not in list(g_var_recompute)]                                    
                                 if len(g_not_recomputed) != 0:
                                     locs_not_recompt = np.array([list(Cross_react_dic["variant_list"]).index(g_not_recomputed[i]) for i in range(len(g_not_recomputed))])
-                                    Cross_react_dic[ab][lin_indx, locs_not_recompt] = Cross_global[ab][id_lin_global, ~sub_miss[lin]]
-                                    Cross_react_dic[ab][locs_not_recompt, lin_indx] = Cross_global[ab][~sub_miss[lin], id_lin_global]
+                                    keep = np.array([variant_global.index(g_not_recomputed[i]) for i in range(len(g_not_recomputed))])
+                                    Cross_react_dic[ab][lin_indx, locs_not_recompt] = Cross_global[ab][id_lin_global, keep]
+                                    Cross_react_dic[ab][locs_not_recompt, lin_indx] = Cross_global[ab][keep, id_lin_global]
                             
                             n_0 += len(g_var_recompute)
                             
