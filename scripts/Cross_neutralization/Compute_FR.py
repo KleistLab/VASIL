@@ -1194,6 +1194,16 @@ elif Lin_name == "missing":
         else:
             w_global = None
         
+        # get mut profiles of missing lineages
+        lin_profile_list = []
+        for pr in range(len(Lin_miss)):
+            if len(list(AA_change_dic[lin].keys())) > 0:
+                var_1_profiles = np.concatenate(tuple([AA_change_dic[lin][m1] for m1 in list(AA_change_dic[lin].keys())]))
+                lin_profile = "/".join(sorted(var_1_profiles))
+            else:
+                lin_profile = ""
+            lin_profile_list.append(lin_profile)
+            
         for ab in Ab_global:
             Cross_react_dic[ab] = np.ones((len(Cross_react_dic["variant_list"]), len(Cross_react_dic["variant_list"])))
             if (ab != "NTD") and (ab in Ab_classes):
@@ -1201,12 +1211,8 @@ elif Lin_name == "missing":
                     lin = Lin_miss[indx_lin]
                     lin_indx = list(Cross_react_dic["variant_list"]).index(lin)
                     
-                    if len(list(AA_change_dic[lin].keys())) > 0:
-                        var_1_profiles = np.concatenate(tuple([AA_change_dic[lin][m1] for m1 in list(AA_change_dic[lin].keys())]))
-                        lin_profile = "/".join(sorted(var_1_profiles))
-                    else:
-                        lin_profile = ""
-                        
+                    lin_profile = lin_profile_list[lin_indx]
+                
                     n_0 = 0
                     for s in range(len(g)):
                         
@@ -1242,7 +1248,8 @@ elif Lin_name == "missing":
                             n_0 += len(g_var_recompute)
                             
                     print("Assess %d missing vs. %d missing with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss)))
-                    sub_miss_reduced = [i for i in range(len(Lin_miss)) if (Lin_miss[i] in variant_global) and (sub_miss[lin][list(variant_global).index(Lin_miss[i])])] + [i for i in range(len(Lin_miss)) if Lin_miss[i] not in variant_global]
+                    sub_miss_reduced = [i for i in range(len(Lin_miss)) if (lin_profile_list[i] in mut_profiles_global) and (sub_miss[lin][list(mut_profiles_global).index(lin_profile_list[i])])]
+                    sub_miss_reduced += [i for i in range(len(Lin_miss)) if (lin_profile_list[i] not in mut_profiles_global)]
                     recomp_lin_miss = np.array(sub_miss_reduced)
                     Lin_miss_recompute = list(np.array(Lin_miss)[recomp_lin_miss])
                     Cross_Lin, Missed, Greater_one = cross_reactivity(([lin], Lin_miss_recompute), 
@@ -1260,7 +1267,7 @@ elif Lin_name == "missing":
                     
                     if lin_profile in mut_profiles_global:
                         id_lin_global = list(mut_profiles_global).index(lin_profile)        
-                        not_recomputed = [i for i in range(len(Lin_miss)) if (Lin_miss[i] in variant_global) and not (sub_miss[lin][list(variant_global).index(Lin_miss[i])])]
+                        not_recomputed = [i for i in range(len(Lin_miss)) if (lin_profile_list[i] in mut_profiles_global) and not (sub_miss[lin][list(mut_profiles_global).index(lin_profile_list[i])])]
                         present_indx = np.array(not_recomputed)
                         Lin_miss_not_recomputed = list(np.array(Lin_miss)[present_indx])
                         for ind2 in range(len(Lin_miss_not_recomputed)):
