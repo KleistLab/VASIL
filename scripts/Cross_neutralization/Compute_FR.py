@@ -1073,6 +1073,7 @@ elif Lin_name == "missing":
     
     mut_x_global = Cross_global["Mutations"]["positions"]
     AA_global = Cross_global["Mutations"]["AA_changes"]
+    mut_profiles_global = Cross_global["Mutations"]["mut_profiles"]
     
     Cross_global.pop("Mutations")
     
@@ -1086,27 +1087,33 @@ elif Lin_name == "missing":
     sub_miss = {}
     num_rerun = []
     for lin in variant_x_names_cross:
-        if lin not in variant_global:
+        if len(list(AA_change_dic[lin].keys())) > 0:
+            var_1_profiles = np.concatenate(tuple([AA_change_dic[lin][m1] for m1 in list(AA_change_dic[lin].keys())]))
+            lin_profile = "/".join(sorted(var_1_profiles))
+        else:
+            lin_profile = ""
+
+        if lin_profile not in mut_profiles_global:
             Lin_miss.append(lin)
             sub_miss[lin] = np.ones(len(variant_global)).astype(bool)
             num_rerun.append(len(variant_global))
         else:
-            var_1 = lin
+            indx = list(mut_profiles_global).index(lin_profile)
+            var_1 = variant_global[indx]
             var_2 = lin
             
-            sites = get_pos(var_1, var_2, AA_global, AA_change_dic, mut_x_global, mut_x_sites_dic)
+            check_aa = get_pos(var_1, var_2, AA_global, AA_change_dic, mut_x_global, mut_x_sites_dic)
   
-            check_aa = sites
             if (len(check_aa) != 0):
                 # mutation profile is different from general file, thus must be recomputed
                 sub_miss[lin] = np.ones(len(variant_global)).astype(bool)
             else:
-                loc_in_cross.append(list(variant_x_names_cross).index(lin))
-                loc_not_miss.append(list(variant_global).index(lin))
+                loc_in_cross.append(list(variant_x_names_cross).index(var_2))
+                loc_not_miss.append(list(variant_global).index(var_1))
                 sub_miss[lin] = np.zeros(len(variant_global)).astype(bool)
                 
             num_rerun.append(np.sum(sub_miss[lin]))
-    
+
     if len(Lin_miss) == 0:
         Cross_react_dic = Cross_global.copy()
         Cross_react_dic["variant_list"] = variant_global
@@ -1178,7 +1185,7 @@ elif Lin_name == "missing":
             w_global = np.arange(0, len(variant_global)).astype(int)[np.array(loc_not_miss)] ## location of variant_x_names cross in global file
         else:
             w_global = None
-            
+        
         for ab in Ab_global:
             Cross_react_dic[ab] = np.ones((len(Cross_react_dic["variant_list"]), len(Cross_react_dic["variant_list"])))
             if (ab != "NTD") and (ab in Ab_classes):
