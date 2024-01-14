@@ -427,8 +427,8 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
         n = len(Cross_react_dic["variant_list"])
         FR_NTD = np.ones((n, n))
         mut_profiles = []
-        for i in range(n):
-            var_1 = Cross_react_dic["variant_list"][i]
+        for i1 in range(n):
+            var_1 = Cross_react_dic["variant_list"][i1]
             if len(list(AA_change_dic_updated[var_1].keys())) > 0:
                 var_1_profiles = np.concatenate(tuple([AA_change_dic_updated[var_1][m1] for m1 in list(AA_change_dic_updated[var_1].keys())]))
                 mut_profiles.append("/".join(sorted(var_1_profiles)))
@@ -449,8 +449,8 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                 FR_sites *= 10
                                 pos_done.append(s)
                         
-                    FR_NTD[i, j] = FR_sites
-                    FR_NTD[j, i] = FR_sites
+                    FR_NTD[i1, j] = FR_sites
+                    FR_NTD[j, i1] = FR_sites
         Cross_react_dic["NTD"] = FR_NTD.copy()
         Cross_react_dic["Mutations"] = {"mut_profiles":mut_profiles, "positions":mut_x_sites_dic_updated, "AA_changes":AA_change_dic_updated}
         file0 = open(sys.argv[7], "wb") 
@@ -902,8 +902,8 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                 n = len(Cross_i["variant_list"])
 
                 mut_profiles = []
-                for i in range(n):
-                    var_1 = Cross_i["variant_list"][i]
+                for i1 in range(n):
+                    var_1 = Cross_i["variant_list"][i1]
                     if len(list(AA_change_dic_updated[var_1].keys())) > 0:
                         var_1_profiles = np.concatenate(tuple([AA_change_dic_updated[var_1][m1] for m1 in list(AA_change_dic_updated[var_1].keys())]))
                         mut_profiles.append("/".join(sorted(var_1_profiles)))
