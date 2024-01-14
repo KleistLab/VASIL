@@ -1210,12 +1210,7 @@ elif Lin_name == "missing":
                     n_0 = 0
                     for s in range(len(g)):
                         
-                        if len(loc_in_cross) != 0:
-                            sub_lin = sub_miss[lin][loc_in_cross]
-                        else:
-                            sub_lin = sub_miss[lin]
-                            
-                        recomp_lin = np.array([k for k in range(len(g[s])) if sub_lin[g[s][k]]])
+                        recomp_lin = np.array([k for k in range(len(g[s])) if sub_miss[lin][list(variant_global).index(g_var[s][k])]])
 
                         g_var_recompute = np.array(g_var[s])[recomp_lin]
                         
