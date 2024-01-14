@@ -1302,9 +1302,10 @@ elif Lin_name == "missing":
                         not_recomputed = [i for i in range(len(Lin_miss)) if (lin_profile_list[i] in mut_profiles_global) and not (sub_miss[lin][list(mut_profiles_global).index(lin_profile_list[i])])]
                         present_indx = np.array(not_recomputed)
                         Lin_miss_not_recomputed = list(np.array(Lin_miss)[present_indx])
+                        profile_not_recomputed = list(np.arry(lin_profile_list)[present_indx])
                         for ind2 in range(len(Lin_miss_not_recomputed)):
                             loc2 = list(Cross_react_dic["variant_list"]).index(Lin_miss_not_recomputed[ind2])
-                            ind2_global = list(variant_global).index(Lin_miss_not_recomputed[ind2])
+                            ind2_global = list(mut_profiles_global).index(profile_not_recomputed[ind2])
                             Cross_react_dic[ab][lin_indx, loc2] = Cross_global[ab][id_lin_global, ind2_global]
                             Cross_react_dic[ab][loc2, lin_indx] = Cross_global[ab][ind2_global, id_lin_global]
                 
