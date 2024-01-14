@@ -1102,11 +1102,18 @@ elif Lin_name == "missing":
             var_1 = variant_global[indx]
             var_2 = lin
             
-            check_aa = get_pos(var_1, var_2, AA_global, AA_change_dic, mut_x_global, mut_x_sites_dic)
+            sites = get_pos(var_1, var_2, AA_global, AA_change_dic, mut_x_global, mut_x_sites_dic)
   
-            if (len(check_aa) != 0):
+            if (len(sites) != 0):
                 # mutation profile is different from general file, thus must be recomputed
                 sub_miss[lin] = np.ones(len(variant_global)).astype(bool)
+                for ig in range(len(variant_global)):
+                    sites_x = get_pos(variant_global[ig], lin, AA_global, AA_change_dic, mut_x_global, mut_x_sites_dic)
+                    sites_g = get_pos(variant_global[ig], var_1, AA_global, AA_global, mut_x_global, mut_x_global)
+                    "check if the symmetric difference in Cross_global is the same as the symmetric difference that we need to consider"
+                    if "/".join(sorted(sites_x)) == "/".join(sorted(sites_g)): 
+                        sub_miss[lin][ig] = False
+                
                 Lin_miss.append(lin)
             else:
                 loc_in_cross.append(list(variant_x_names_cross).index(var_2))
@@ -1193,9 +1200,23 @@ elif Lin_name == "missing":
                 for indx_lin in range(len(Lin_miss)):
                     lin = Lin_miss[indx_lin]
                     lin_indx = list(Cross_react_dic["variant_list"]).index(lin)
+                    
+                    if len(list(AA_change_dic[lin].keys())) > 0:
+                        var_1_profiles = np.concatenate(tuple([AA_change_dic[lin][m1] for m1 in list(AA_change_dic[lin].keys())]))
+                        lin_profile = "/".join(sorted(var_1_profiles))
+                    else:
+                        lin_profile = ""
+                        
                     n_0 = 0
                     for s in range(len(g)):
-                        recomp_lin = np.array([k for k in range(len(g[s])) if sub_miss[lin][g[s][k]]])
+                        
+                        if len(loc_in_cross) != 0:
+                            sub_lin = sub_miss[lin][loc_in_cross]
+                        else:
+                            sub_lin = sub_miss[lin]
+                            
+                        recomp_lin = np.array([k for k in range(len(g[s])) if sub_lin[g[s][k]]])
+
                         g_var_recompute = np.array(g_var[s])[recomp_lin]
                         
                         if len(g_var_recompute) != 0:
@@ -1214,14 +1235,15 @@ elif Lin_name == "missing":
                             Cross_react_dic[ab][lin_indx, locs_recompute] = Cross_Lin[ab]
                             Cross_react_dic[ab][locs_recompute, lin_indx] = Cross_Lin[ab]
                             
-                            if lin in variant_global:
-                                id_lin_global = list(variant_global).index(lin)
+                            if lin_profile in mut_profiles_global:
+                                id_lin_global = list(mut_profiles_global).index(lin_profile)
                                 g_not_recomputed = g_var[s][~recomp_lin]
                                 if len(g_not_recomputed) != 0:
                                     locs_not_recompt = np.array([list(Cross_react_dic["variant_list"]).index(g_not_recomputed[i]) for i in range(len(g_not_recomputed))])
-                                    keep = np.array([g[s][~recomp_lin][i] for i in range(len(g_not_recomputed))])
+                                    keep = np.array([list(variant_global).index(g_not_recomputed[i]) for i in range(len(g_not_recomputed))])
                                     Cross_react_dic[ab][lin_indx, locs_not_recompt] = Cross_global[ab][id_lin_global, keep]
                                     Cross_react_dic[ab][locs_not_recompt, lin_indx] = Cross_global[ab][keep, id_lin_global]
+                            
                             n_0 += len(g_var_recompute)
                             
                     print("Assess %d missing vs. %d missing with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss)))
@@ -1241,8 +1263,8 @@ elif Lin_name == "missing":
                     Cross_react_dic[ab][lin_indx, miss_locs] = Cross_Lin[ab]
                     Cross_react_dic[ab][miss_locs, lin_indx] = Cross_Lin[ab]
                     
-                    if lin in variant_global:
-                        id_lin_global = list(variant_global).index(lin)
+                    if lin_profile in mut_profiles_global:
+                        id_lin_global = list(mut_profiles_global).index(lin_profile)        
                         not_recomputed = [i for i in range(len(Lin_miss)) if (Lin_miss[i] in variant_global) and not (sub_miss[lin][list(variant_global).index(Lin_miss[i])])]
                         present_indx = np.array(not_recomputed)
                         Lin_miss_not_recomputed = list(np.array(Lin_miss)[present_indx])
