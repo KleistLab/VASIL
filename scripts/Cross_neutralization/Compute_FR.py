@@ -1240,8 +1240,8 @@ elif Lin_name == "missing":
                     n_0 = 0
                     for s in range(len(g)):
                         
-                        recomp_lin = [k for k in range(len(g[s])) if sub_miss[lin][mut_x_global.index(profiles_x_names_cross[variant_x_names_cross.index(g_var[s][k])])] if profiles_x_names_cross[variant_x_names_cross.index(g_var[s][k])] in mut_x_global]
-                        recomp_lin += [k for k in range(len(g[s])) if profiles_x_names_cross[variant_x_names_cross.index(g_var[s][k])] not in variant_global]
+                        recomp_lin = [k for k in range(len(g[s])) if sub_miss[lin][mut_profiles_global.index(profiles_x_names_cross[variant_x_names_cross.index(g_var[s][k])])] if profiles_x_names_cross[variant_x_names_cross.index(g_var[s][k])] in mut_profiles_global]
+                        recomp_lin += [k for k in range(len(g[s])) if profiles_x_names_cross[variant_x_names_cross.index(g_var[s][k])] not in mut_profiles_global]
 
                         g_var_recompute = np.array(g_var[s])[np.array(recomp_lin)]
                         
@@ -1266,7 +1266,7 @@ elif Lin_name == "missing":
                                 g_not_recomputed = [g_var[s] for s in range(len(g_var)) if g_var[s] not in list(g_var_recompute)]                                    
                                 if len(g_not_recomputed) != 0:
                                     locs_not_recompt = np.array([list(Cross_react_dic["variant_list"]).index(g_not_recomputed[i]) for i in range(len(g_not_recomputed))])
-                                    keep = np.array([variant_global.index(g_not_recomputed[i]) for i in range(len(g_not_recomputed)) if profiles_x_names_cross[variant_x_names_cross.index(g_not_recomputed[i])] in mut_x_global])
+                                    keep = np.array([mut_profiles_global.index(profiles_x_names_cross[variant_x_names_cross.index(g_not_recomputed[i])]) for i in range(len(g_not_recomputed)) if profiles_x_names_cross[variant_x_names_cross.index(g_not_recomputed[i])] in mut_profiles_global])
                                     if len(keep)>0:
                                         Cross_react_dic[ab][lin_indx, locs_not_recompt] = Cross_global[ab][id_lin_global, keep]
                                         Cross_react_dic[ab][locs_not_recompt, lin_indx] = Cross_global[ab][keep, id_lin_global]
