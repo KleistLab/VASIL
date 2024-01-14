@@ -73,6 +73,41 @@ except:
     mut_x_sites_dic_updated = mut_x_sites_dic.copy()
     AA_change_dic_updated = AA_change_dic.copy()
 
+"""Relevant functions"""
+def get_pos(var_1, var_2, AA_change_dic_1, AA_change_dic_2, mut_x_sites_dic_1, mut_x_sites_dic_2):
+    mut_1 = list(AA_change_dic_1[var_1].keys())
+    mut_2 = list(AA_change_dic_2[var_2].keys())
+    
+    pos_diff = list(set(mut_x_sites_dic_1[var_1]).symmetric_difference(set(mut_x_sites_dic_2[var_2]))) 
+    sites = []
+    if len(mut_1) > len(mut_2):
+        for m1 in mut_1:
+            for m2 in mut_2:
+                if str(m1) == str(m2):
+                    check = list(set(AA_change_dic_1[var_1][m1]).intersection(set(AA_change_dic_2[var_2][m2])))
+                    if len(check)==0 and (m1 not in sites): # no intersection 
+                        sites.append(m1)  
+                else:
+                    if (m2 not in sites) and (m2 in pos_diff):
+                        sites.append(m2)
+            
+            if (m1 not in sites) and (m1 in pos_diff):
+                sites.append(m1)
+    else:
+        for m2 in mut_2:
+            for m1 in mut_1:
+                if str(m1) == str(m2):
+                    check = list(set(AA_change_dic_1[var_1][m1]).intersection(set(AA_change_dic_2[var_2][m2])))
+                    if len(check)==0 and (m2 not in sites): # no intersection 
+                        sites.append(m2)  
+                else:
+                    if (m1 not in sites) and (m1 in pos_diff):
+                        sites.append(m1)
+            
+            if (m2 not in sites) and (m2 in pos_diff):
+                sites.append(m2)
+    return sites 
+
 def sub_Bind(d, tiled_esc, Where_Mut, Where_Cond):
     Inter_Cond_Mut = Where_Mut & Where_Cond[np.newaxis, d, :]
     Bind_list_d = np.prod(1 - tiled_esc[:, np.newaxis, :]*Inter_Cond_Mut, axis = (1,2))
@@ -344,28 +379,20 @@ if len(Top_Pseudo)!=0:
     """Add FR to NTD-targeting AB assuming a FR of 10 to each mutations sites included in NTD Antigenic supersite"""   
     n = len(Cross_react_dic["variant_list"])
     FR_NTD = np.ones((n, n))
+    mut_profiles = []
     for i in range(n):
         var_1 = Cross_react_dic["variant_list"][i]
+        if len(list(AA_change_dic_updated[var_1].keys())) > 0:
+            var_1_profiles = np.concatenate(tuple([AA_change_dic_updated[var_1][m1] for m1 in list(AA_change_dic_updated[var_1].keys())]))
+            mut_profiles.append("/".join(sorted(var_1_profiles)))
+        else:
+            mut_profiles.append("")
+            
         for j in range(n):
             if i > j:
                 var_2 = Cross_react_dic["variant_list"][j]
-    
-                mut_1 = list(AA_change_dic_updated[var_1].keys())
-                mut_2 = list(AA_change_dic_updated[var_2].keys())
                 
-                pos_diff = list(set(mut_x_sites_dic_updated[var_1]).symmetric_difference(set(mut_x_sites_dic_updated[var_2])))
-                sites = []
-                for m1 in mut_1:
-                    for m2 in mut_2:
-                        if str(m1) == str(m2):
-                            check = list(set(AA_change_dic_updated[var_1][m1]).intersection(set(AA_change_dic_updated[var_2][m2])))
-                            if len(check)==0: # no intersection 
-                                sites.append(m1)  
-                        else:
-                            if (m1 not in sites) and (m1 in pos_diff):
-                                sites.append(m1)
-                            if (m2 not in sites) and (m2 in pos_diff):
-                                sites.append(m2)
+                sites = get_pos(var_1, var_2, AA_change_dic_updated, AA_change_dic_updated, mut_x_sites_dic_updated, mut_x_sites_dic_updated)
                 
                 FR_sites = 1
                 pos_done = []
@@ -381,8 +408,11 @@ if len(Top_Pseudo)!=0:
                 FR_NTD[j, i] = FR_sites
         
     Cross_react_dic["NTD"] = FR_NTD.copy()
+    Cross_react_dic["Mutations"] = {"mut_profiles":mut_profiles, "positions":mut_x_sites_dic_updated, "AA_changes":AA_change_dic_updated}
+
     Cross_react_dic_wght["NTD"] = FR_NTD.copy()
-    
+    Cross_react_dic_wght["Mutations"] = {"mut_profiles":mut_profiles, "positions":mut_x_sites_dic_updated, "AA_changes":AA_change_dic_updated}
+
     file0 = open(sys.argv[k], "wb") 
     pickle.dump(Cross_react_dic, file0)
     file0.close()

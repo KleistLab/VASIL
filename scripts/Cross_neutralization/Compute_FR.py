@@ -43,6 +43,41 @@ AA_change_dic["Wuhan-Hu-1"] = {}
 Escape_Fraction = pd.read_csv(sys.argv[3])
 Ab_classes = np.unique(Escape_Fraction["group"].values.astype(str))
 
+"""Relevant functions"""
+def get_pos(var_1, var_2, AA_change_dic_1, AA_change_dic_2, mut_x_sites_dic_1, mut_x_sites_dic_2):
+    mut_1 = list(AA_change_dic_1[var_1].keys())
+    mut_2 = list(AA_change_dic_2[var_2].keys())
+    
+    pos_diff = list(set(mut_x_sites_dic_1[var_1]).symmetric_difference(set(mut_x_sites_dic_2[var_2]))) 
+    sites = []
+    if len(mut_1) > len(mut_2):
+        for m1 in mut_1:
+            for m2 in mut_2:
+                if str(m1) == str(m2):
+                    check = list(set(AA_change_dic_1[var_1][m1]).intersection(set(AA_change_dic_2[var_2][m2])))
+                    if len(check)==0 and (m1 not in sites): # no intersection 
+                        sites.append(m1)  
+                else:
+                    if (m2 not in sites) and (m2 in pos_diff):
+                        sites.append(m2)
+            
+            if (m1 not in sites) and (m1 in pos_diff):
+                sites.append(m1)
+    else:
+        for m2 in mut_2:
+            for m1 in mut_1:
+                if str(m1) == str(m2):
+                    check = list(set(AA_change_dic_1[var_1][m1]).intersection(set(AA_change_dic_2[var_2][m2])))
+                    if len(check)==0 and (m2 not in sites): # no intersection 
+                        sites.append(m2)  
+                else:
+                    if (m1 not in sites) and (m1 in pos_diff):
+                        sites.append(m1)
+            
+            if (m2 not in sites) and (m2 in pos_diff):
+                sites.append(m2)
+    return sites   
+
 def sub_Bind(d, tiled_esc, Where_Mut, Where_Cond):
     Inter_Cond_Mut = Where_Mut & Where_Cond[np.newaxis, d, :]
     Bind_list_d = np.prod(1 - tiled_esc[:, np.newaxis, :]*Inter_Cond_Mut, axis = (1,2))
@@ -212,7 +247,7 @@ def cross_reactivity(variant_name, escape_per_sites, Ab_classes, mut_sites_per_v
     Missed = np.unique(np.array(Missed))
     Greater_one = np.unique(np.array(Greater_one))           
     return FRxy, Missed, Greater_one
-
+         
 
 """Compute Cross reactivity"""
 Cross_react_dic = {}
@@ -391,28 +426,19 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
         print("Cross reactivity Epitope NTD")
         n = len(Cross_react_dic["variant_list"])
         FR_NTD = np.ones((n, n))
+        mut_profiles = []
         for i in range(n):
             var_1 = Cross_react_dic["variant_list"][i]
+            if len(list(AA_change_dic_updated[var_1].keys())) > 0:
+                var_1_profiles = np.concatenate(tuple([AA_change_dic_updated[var_1][m1] for m1 in list(AA_change_dic_updated[var_1].keys())]))
+                mut_profiles.append("/".join(sorted(var_1_profiles)))
+            else:
+                mut_profiles.append("")
             for j in range(n):
                 if i > j:
                     var_2 = Cross_react_dic["variant_list"][j]
                     
-                    mut_1 = list(AA_change_dic_updated[var_1].keys())
-                    mut_2 = list(AA_change_dic_updated[var_2].keys())
-                    
-                    pos_diff = list(set(mut_x_sites_dic_updated[var_1]).symmetric_difference(set(mut_x_sites_dic_updated[var_2])))
-                    sites = []
-                    for m1 in mut_1:
-                        for m2 in mut_2:
-                            if str(m1) == str(m2):
-                                check = list(set(AA_change_dic_updated[var_1][m1]).intersection(set(AA_change_dic_updated[var_2][m2])))
-                                if len(check)==0: # no intersection 
-                                    sites.append(m1)  
-                            else:
-                                if (m1 not in sites) and (m1 in pos_diff):
-                                    sites.append(m1)
-                                if (m2 not in sites) and (m2 in pos_diff):
-                                    sites.append(m2)
+                    sites = get_pos(var_1, var_2, AA_change_dic_updated, AA_change_dic_updated, mut_x_sites_dic_updated, mut_x_sites_dic_updated)
                     
                     FR_sites = 1
                     pos_done = []
@@ -426,7 +452,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     FR_NTD[i, j] = FR_sites
                     FR_NTD[j, i] = FR_sites
         Cross_react_dic["NTD"] = FR_NTD.copy()
-        Cross_react_dic["Mutations"] = {"positions":mut_x_sites_dic_updated, "AA_changes":AA_change_dic_updated}
+        Cross_react_dic["Mutations"] = {"mut_profiles":mut_profiles, "positions":mut_x_sites_dic_updated, "AA_changes":AA_change_dic_updated}
         file0 = open(sys.argv[7], "wb") 
         pickle.dump(Cross_react_dic, file0)
         file0.close()
@@ -781,22 +807,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                             if i1 > j1:
                                 var_2 = Cross_i["variant_list"][j1]
                     
-                                mut_1 = list(AA_change_dic_updated[var_1].keys())
-                                mut_2 = list(AA_change_dic_updated[var_2].keys())
-                                
-                                pos_diff = list(set(mut_x_sites_dic_updated[var_1]).symmetric_difference(set(mut_x_sites_dic_updated[var_2])))
-                                sites = []
-                                for m1 in mut_1:
-                                    for m2 in mut_2:
-                                        if str(m1) == str(m2):
-                                            check = list(set(AA_change_dic_updated[var_1][m1]).intersection(set(AA_change_dic_updated[var_2][m2])))
-                                            if len(check)==0: # no intersection 
-                                                sites.append(m1)  
-                                        else:
-                                            if (m1 not in sites) and (m1 in pos_diff):
-                                                sites.append(m1)
-                                            if (m2 not in sites) and (m2 in pos_diff):
-                                                sites.append(m2)
+                                sites = get_pos(var_1, var_2, AA_change_dic_updated, AA_change_dic_updated, mut_x_sites_dic_updated, mut_x_sites_dic_updated)
                                 
                                 FR_sites = 1
                                 pos_done = []
@@ -810,6 +821,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                 FR_NTD[i1, j1] = FR_sites
                                 FR_NTD[j1, i1] = FR_sites
                     Cross_i["NTD"] = FR_NTD.copy()
+    
                 else:
                     ### open global cross_reactivity file which must be present
                     a = 1  
@@ -866,23 +878,8 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                 else:
                                     var_1 = Lin_list[i]
                                     var_2 = v_u1
-                
-                                    mut_1 = list(AA_change_dic_updated[var_1].keys())
-                                    mut_2 = list(AA_change_dic_updated[var_2].keys())
-                                    
-                                    pos_diff = list(set(mut_x_sites_dic_updated[var_1]).symmetric_difference(set(mut_x_sites_dic_updated[var_2])))
-                                    sites = []
-                                    for m1 in mut_1:
-                                        for m2 in mut_2:
-                                            if str(m1) == str(m2):
-                                                check = list(set(AA_change_dic_updated[var_1][m1]).intersection(set(AA_change_dic_updated[var_2][m2])))
-                                                if len(check)==0: # no intersection 
-                                                    sites.append(m1)  
-                                            else:
-                                                if (m1 not in sites) and (m1 in pos_diff):
-                                                    sites.append(m1)
-                                                if (m2 not in sites) and (m2 in pos_diff):
-                                                    sites.append(m2)
+        
+                                    sites = get_pos(var_1, var_2, AA_change_dic_updated, AA_change_dic_updated, mut_x_sites_dic_updated, mut_x_sites_dic_updated)
                                     
                                     FR_sites = 1
                                     pos_done = []
@@ -901,7 +898,19 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                         a +=1 
                 
                 status_sim.append("Done")
-                Cross_i["Mutations"] = {"positions":mut_x_sites_dic_updated, "AA_changes":AA_change_dic_updated}
+                
+                n = len(Cross_i["variant_list"])
+
+                mut_profiles = []
+                for i in range(n):
+                    var_1 = Cross_i["variant_list"][i]
+                    if len(list(AA_change_dic_updated[var_1].keys())) > 0:
+                        var_1_profiles = np.concatenate(tuple([AA_change_dic_updated[var_1][m1] for m1 in list(AA_change_dic_updated[var_1].keys())]))
+                        mut_profiles.append("/".join(sorted(var_1_profiles)))
+                    else:
+                        mut_profiles.append("")
+                    
+                Cross_i["Mutations"] = {"mut_profiles":mut_profiles, "positions":mut_x_sites_dic_updated, "AA_changes":AA_change_dic_updated}
                 file0 = open(sys.argv[len(sys.argv)-1]+"/Cross_%s.pck"%Lin_list_names[i], "wb") 
                 pickle.dump(Cross_i, file0)
                 file0.close()
@@ -1021,28 +1030,20 @@ elif Lin_name == "ALL":
     print("Cross reactivity spikegroups for Epitope NTD")
     n = len(Cross_react_dic["variant_list"])
     FR_NTD = np.ones((n, n))
+    mut_profiles = []
     for i in range(n):
+        var_1 = Cross_react_dic["variant_list"][i]
+        if len(list(AA_change_dic[var_1].keys())) > 0:
+            var_1_profiles = np.concatenate(tuple([AA_change_dic[var_1][m1] for m1 in list(AA_change_dic[var_1].keys())]))
+            mut_profiles.append("/".join(sorted(var_1_profiles)))
+        else:
+            mut_profiles.append("")
         var_1 = Cross_react_dic["variant_list"][i]
         for j in range(n):
             if i > j:
                 var_2 = Cross_react_dic["variant_list"][j]
     
-                mut_1 = list(AA_change_dic[var_1].keys())
-                mut_2 = list(AA_change_dic[var_2].keys())
-                
-                pos_diff = list(set(mut_x_sites_dic[var_1]).symmetric_difference(set(mut_x_sites_dic[var_2])))
-                sites = []
-                for m1 in mut_1:
-                    for m2 in mut_2:
-                        if str(m1) == str(m2):
-                            check = list(set(AA_change_dic[var_1][m1]).intersection(set(AA_change_dic[var_2][m2])))
-                            if len(check)==0: # no intersection 
-                                sites.append(m1)  
-                        else:
-                            if (m1 not in sites) and (m1 in pos_diff):
-                                sites.append(m1)
-                            if (m2 not in sites) and (m2 in pos_diff):
-                                sites.append(m2)
+                sites = get_pos(var_1, var_2, AA_change_dic, AA_change_dic, mut_x_sites_dic, mut_x_sites_dic)
                 
                 FR_sites = 1
                 pos_done = []
@@ -1058,7 +1059,7 @@ elif Lin_name == "ALL":
                 FR_NTD[j, i] = FR_sites
         
     Cross_react_dic["NTD"] = FR_NTD.copy()
-    Cross_react_dic["Mutations"] = {"positions":mut_x_sites_dic, "AA_changes":AA_change_dic}
+    Cross_react_dic["Mutations"] = {"mut_profiles":mut_profiles, "positions":mut_x_sites_dic, "AA_changes":AA_change_dic}
     file0 = open(sys.argv[7], "wb") 
     pickle.dump(Cross_react_dic, file0)
     file0.close()
@@ -1093,23 +1094,8 @@ elif Lin_name == "missing":
             var_1 = lin
             var_2 = lin
             
-            mut_1 = list(AA_global[var_1].keys())
-            mut_2 = list(AA_change_dic[var_2].keys())
-            
-            pos_diff = list(set(mut_x_global[var_1]).symmetric_difference(set(mut_x_sites_dic[var_2])))
-            sites = []
-            for m1 in mut_1:
-                for m2 in mut_2:
-                    if str(m1) == str(m2):   
-                        check = list(set(AA_global[var_1][m1]).intersection(set(AA_change_dic[var_2][m2])))
-                        if len(check)==0: # no intersection 
-                            sites.append(m1)  
-                    else:
-                        if (m1 not in sites) and (m1 in pos_diff):
-                            sites.append(m1)
-                        if (m2 not in sites) and (m2 in pos_diff):
-                            sites.append(m2)
-                            
+            sites = get_pos(var_1, var_2, AA_global, AA_change_dic, mut_x_global, mut_x_sites_dic)
+  
             check_aa = sites
             if (len(check_aa) != 0):
                 # mutation profile is different from general file, thus must be recomputed
@@ -1126,28 +1112,20 @@ elif Lin_name == "missing":
         Cross_react_dic["variant_list"] = variant_global
         n = len(Cross_react_dic["variant_list"])
         FR_NTD = np.ones((n, n))
+        mut_profiles = []
         for i in range(n):
             var_1 = Cross_react_dic["variant_list"][i]
+            if len(list(AA_change_dic[var_1].keys())) > 0:
+                var_1_profiles = np.concatenate(tuple([AA_change_dic[var_1][m1] for m1 in list(AA_change_dic[var_1].keys())]))
+                mut_profiles.append("/".join(sorted(var_1_profiles)))
+            else:
+                mut_profiles.append("")
+            
             for j in range(n):
                 if i > j:
                     var_2 = Cross_react_dic["variant_list"][j]
-        
-                    mut_1 = list(AA_change_dic[var_1].keys())
-                    mut_2 = list(AA_change_dic[var_2].keys())
                     
-                    pos_diff = list(set(mut_x_sites_dic[var_1]).symmetric_difference(set(mut_x_sites_dic[var_2])))
-                    sites = []
-                    for m1 in mut_1:
-                        for m2 in mut_2:
-                            if str(m1) == str(m2):
-                                check = list(set(AA_change_dic[var_1][m1]).intersection(set(AA_change_dic[var_2][m2])))
-                                if len(check)==0: # no intersection 
-                                    sites.append(m1)  
-                            else:
-                                if (m1 not in sites) and (m1 in pos_diff):
-                                    sites.append(m1)
-                                if (m2 not in sites) and (m2 in pos_diff):
-                                    sites.append(m2)
+                    sites = get_pos(var_1, var_2, AA_change_dic, AA_change_dic, mut_x_sites_dic, mut_x_sites_dic)
                     
                     FR_sites = 1
                     pos_done = []
@@ -1161,9 +1139,8 @@ elif Lin_name == "missing":
                                 
                     FR_NTD[i, j] = FR_sites
                     FR_NTD[j, i] = FR_sites
-            
+
         Cross_react_dic["NTD"] = FR_NTD.copy()
-        
     else:     
         av_rerun = np.mean(num_rerun)
         if len(Lin_miss)>10 and av_rerun > 50:
@@ -1270,28 +1247,20 @@ elif Lin_name == "missing":
             elif ab == "NTD":
                 n = len(Cross_react_dic["variant_list"])
                 FR_NTD = np.ones((n, n))
+                mut_profiles = []
                 for i in range(n):
                     var_1 = Cross_react_dic["variant_list"][i]
+                    if len(list(AA_change_dic[var_1].keys())) > 0:
+                        var_1_profiles = np.concatenate(tuple([AA_change_dic[var_1][m1] for m1 in list(AA_change_dic[var_1].keys())]))
+                        mut_profiles.append("/".join(sorted(var_1_profiles)))
+                    else:
+                        mut_profiles.append("")
+
                     for j in range(n):
                         if i > j:
                             var_2 = Cross_react_dic["variant_list"][j]
-                
-                            mut_1 = list(AA_change_dic[var_1].keys())
-                            mut_2 = list(AA_change_dic[var_2].keys())
                             
-                            pos_diff = list(set(mut_x_sites_dic[var_1]).symmetric_difference(set(mut_x_sites_dic[var_2])))
-                            sites = []
-                            for m1 in mut_1:
-                                for m2 in mut_2:
-                                    if str(m1) == str(m2):
-                                        check = list(set(AA_change_dic[var_1][m1]).intersection(set(AA_change_dic[var_2][m2])))
-                                        if len(check)==0: # no intersection 
-                                            sites.append(m1)  
-                                    else:
-                                        if (m1 not in sites) and (m1 in pos_diff):
-                                            sites.append(m1)
-                                        if (m2 not in sites) and (m2 in pos_diff):
-                                            sites.append(m2)
+                            sites = get_pos(var_1, var_2, AA_change_dic, AA_change_dic, mut_x_sites_dic, mut_x_sites_dic)
                             
                             FR_sites = 1
                             pos_done = []
@@ -1321,7 +1290,7 @@ elif Lin_name == "missing":
             
         a +=1     
         
-    Cross_react_dic["Mutations"] = {"positions":mut_x_sites_dic, "AA_changes":AA_change_dic}
+    Cross_react_dic["Mutations"] = {"mut_profiles":mut_profiles, "positions":mut_x_sites_dic, "AA_changes":AA_change_dic}
     file0 = open(sys.argv[7], "wb") 
     pickle.dump(Cross_react_dic, file0)
     file0.close()
