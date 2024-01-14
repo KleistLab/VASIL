@@ -1238,12 +1238,11 @@ elif Lin_name == "missing":
                             
                             if lin_profile in mut_profiles_global:
                                 id_lin_global = list(mut_profiles_global).index(lin_profile)
-                                g_not_recomputed = g_var[s][~recomp_lin]
+                                g_not_recomputed = [g_var[s] for s in range(len(g_var)) if g_var[s] not in list(g_var_recompute)]
                                 if len(g_not_recomputed) != 0:
                                     locs_not_recompt = np.array([list(Cross_react_dic["variant_list"]).index(g_not_recomputed[i]) for i in range(len(g_not_recomputed))])
-                                    keep = np.array([list(variant_global).index(g_not_recomputed[i]) for i in range(len(g_not_recomputed))])
-                                    Cross_react_dic[ab][lin_indx, locs_not_recompt] = Cross_global[ab][id_lin_global, keep]
-                                    Cross_react_dic[ab][locs_not_recompt, lin_indx] = Cross_global[ab][keep, id_lin_global]
+                                    Cross_react_dic[ab][lin_indx, locs_not_recompt] = Cross_global[ab][id_lin_global, ~sub_miss[lin]]
+                                    Cross_react_dic[ab][locs_not_recompt, lin_indx] = Cross_global[ab][~sub_miss[lin], id_lin_global]
                             
                             n_0 += len(g_var_recompute)
                             
