@@ -768,10 +768,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                     
                                     for k in range(len(Lin_list_i_spk_reduced)):
                                         sub_FR[where_spk_s[k], locs] = Cross_Lin[ab][k, :]
-                                        if len(locs)>1:
-                                            sub_FR[locs, where_spk_s[k]] = Cross_Lin[ab][k, :].T
-                                        else:
-                                            sub_FR[locs, where_spk_s[k]] = Cross_Lin[ab][k, :]
+                                        sub_FR[locs, where_spk_s[k]] = Cross_Lin[ab][k, :]
                             
                                 if len(Lin_list_i_spk_reduced)>1:
                                     for k in range(len(Lin_list_i_spk_reduced)):
@@ -783,10 +780,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                                                                   joblib=True)
                                 
                                         sub_FR[where_spk_s[k], where_spk_s[k+1:]] = Cross_Lin[ab][k, :]
-                                        if len(where_spk_s[k+1:])>1:
-                                            sub_FR[where_spk_s[k+1:], where_spk_s[k]] = sub_FR[where_spk_s[k], where_spk_s[k+1:]].T
-                                        else:
-                                            sub_FR[where_spk_s[k+1:], where_spk_s[k]] = sub_FR[where_spk_s[k], where_spk_s[k+1:]]
+                                        sub_FR[where_spk_s[k+1:], where_spk_s[k]] = sub_FR[where_spk_s[k], where_spk_s[k+1:]]
                             
                             if not spk_adjust:
                                 FRxy_ab[np.array(w_lin_i), :] = sub_FR[np.array(w_lin_i), :]
@@ -1181,29 +1175,30 @@ elif Lin_name == "missing":
             w_in_cross = np.arange(0, len(variant_x_names_cross)).astype(int)[np.array(loc_in_cross)]
             variants_in_global = np.array(variant_x_names_cross)[w_in_cross]
             Cross_react_dic["variant_list"] = list(variants_in_global) + Lin_miss
+            variants_to_sim = variants_in_global.copy()
         else:
             w_in_cross = np.arange(0, len(variant_x_names_cross)).astype(int)
-            variants_in_global = np.array(variant_x_names_cross)[w_in_cross]
-            Cross_react_dic["variant_list"] = list(variants_in_global)
+            variants_to_sim = np.array(variant_x_names_cross)[w_in_cross]
+            Cross_react_dic["variant_list"] = list(variants_to_sim)
             
         a = 1
         g = []
         g_var =[]
-        inds = np.arange(0, len(variants_in_global)).astype(int)
+        inds = np.arange(0, len(variants_to_sim)).astype(int)
         cut_step = 100
-        if len(variants_in_global)>cut_step:
+        if len(variants_to_sim)>cut_step:
             cut1 = 0
             cut2 = cut_step
-            while cut2<len(variants_in_global):
+            while cut2<len(variants_to_sim):
                 g.append(inds[cut1:cut2])
-                g_var.append(list(np.array(variants_in_global)[cut1:cut2]))
+                g_var.append(list(np.array(variants_to_sim)[cut1:cut2]))
                 cut1=cut2
-                cut2+=min(cut_step, len(variants_in_global)-cut2)
+                cut2+=min(cut_step, len(variants_to_sim)-cut2)
             g.append(inds[cut1:cut2])
-            g_var.append(list(np.array(variants_in_global)[cut1:cut2]))
+            g_var.append(list(np.array(variants_to_sim)[cut1:cut2]))
         else:
             g.append(inds)
-            g_var.append(variants_in_global)
+            g_var.append(variants_to_sim)
         
         if len(loc_not_miss) != 0:
             w_global = np.arange(0, len(variant_global)).astype(int)[np.array(loc_not_miss)] ## location of variant_x_names cross in global file
@@ -1232,12 +1227,13 @@ elif Lin_name == "missing":
                     n_0 = 0
                     for s in range(len(g)):
                         
-                        recomp_lin = np.array([k for k in range(len(g[s])) if sub_miss[lin][list(variant_global).index(g_var[s][k])]])
+                        recomp_lin = [k for k in range(len(g[s])) if sub_miss[lin][list(variant_global).index(g_var[s][k])] if g_var[s][k] in variant_global]
+                        recomp_lin += [k for k in range(len(g[s])) if g_var[s][k] not in variant_global]
 
-                        g_var_recompute = np.array(g_var[s])[recomp_lin]
+                        g_var_recompute = np.array(g_var[s])[np.array(recomp_lin)]
                         
                         if len(g_var_recompute) != 0:
-                            print("Assess missing | num %d out of %d vs (%d, %d (max %d)) with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss), len(g_var_recompute), min(n_0 + len(g_var_recompute), len(variants_in_global)),len(variants_in_global)))
+                            print("Assess missing | num %d out of %d vs (%d, %d (max %d)) with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss), len(g_var_recompute), min(n_0 + len(g_var_recompute), len(variants_to_sim)),len(variants_to_sim)))
                             print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_global))
                             Cross_Lin, Missed, Greater_one = cross_reactivity(([lin], g_var_recompute), 
                                                                               Escape_Fraction, 
@@ -1250,20 +1246,17 @@ elif Lin_name == "missing":
                             
                             locs_recompute = np.array([list(Cross_react_dic["variant_list"]).index(g_var_recompute[i]) for i in range(len(g_var_recompute))])
                             Cross_react_dic[ab][lin_indx, locs_recompute] = Cross_Lin[ab]
-                            
-                            if len(locs_recompute)>1:
-                                Cross_react_dic[ab][locs_recompute, lin_indx] = Cross_Lin[ab].T
-                            else:
-                                Cross_react_dic[ab][locs_recompute, lin_indx] = Cross_Lin[ab]
+                            Cross_react_dic[ab][locs_recompute, lin_indx] = Cross_Lin[ab]
                             
                             if lin_profile in mut_profiles_global:
                                 id_lin_global = list(mut_profiles_global).index(lin_profile)
                                 g_not_recomputed = [g_var[s] for s in range(len(g_var)) if g_var[s] not in list(g_var_recompute)]                                    
                                 if len(g_not_recomputed) != 0:
                                     locs_not_recompt = np.array([list(Cross_react_dic["variant_list"]).index(g_not_recomputed[i]) for i in range(len(g_not_recomputed))])
-                                    keep = np.array([variant_global.index(g_not_recomputed[i]) for i in range(len(g_not_recomputed))])
-                                    Cross_react_dic[ab][lin_indx, locs_not_recompt] = Cross_global[ab][id_lin_global, keep]
-                                    Cross_react_dic[ab][locs_not_recompt, lin_indx] = Cross_global[ab][keep, id_lin_global]
+                                    keep = np.array([variant_global.index(g_not_recomputed[i]) for i in range(len(g_not_recomputed)) if g_not_recomputed[i] in variant_global])
+                                    if len(keep)>0:
+                                        Cross_react_dic[ab][lin_indx, locs_not_recompt] = Cross_global[ab][id_lin_global, keep]
+                                        Cross_react_dic[ab][locs_not_recompt, lin_indx] = Cross_global[ab][keep, id_lin_global]
                             
                             n_0 += len(g_var_recompute)
                             
