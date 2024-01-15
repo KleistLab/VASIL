@@ -159,7 +159,6 @@ for x in range(len(unique_group)):
                 where_x.append(list(Lineages_list).index(var_x))
         
         if len(where_x)!=0:
-            spk_ind +=1
             prop_x = np.sum(variant_proportion_orig[np.array(where_x), :], axis = 0)
             if np.max(prop_x) > filt_params:
                 variant_proportion.append(prop_x)
