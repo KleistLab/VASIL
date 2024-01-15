@@ -123,6 +123,7 @@ lineages <- sort(unique(D$lineage))
 number_lineages <- length(lineages)
 #print(D$date)
 
+## check if lineages are in data time-horizon considered
 #check_lin <- c('DV.6.1', 'DV.6.2', 'DV.7', 'DV.8', 'EG.5', 'EG.5.1.1', 'EG.5.2', 'EG.6.1', 'EG.7', 'FD.1.1', 'FE.1.1.1', 'FK.1', 'FK.1.2.1', 'FL.1.3', 'FL.1.5', 'FL.13', 'FL.2.3', 'FL.3.3', 'FL.6', 'FU.2', 'FY.1.2', 'FY.3', 'FY.4.1', 'GA.3', 'GE.1', 'GF.1', 'GG.1', 'GJ.1', 'GJ.1.1', 'GK.1', 'GN.1', 'GP.2', 'GR.1', 'XBB.1.16.11', 'XBB.1.16.6', 'XBB.1.33', 'XBB.1.34.1', 'XBB.1.42', 'XBB.1.47.1', 'XBB.1.5.28', 'XBB.1.5.68', 'XBB.1.5.70', 'XBB.1.5.72', 'XBB.1.5.73', 'XBB.1.5.75', 'XBB.1.5.86', 'XBB.2.3.11', 'XBB.2.3.8')
 
 mutationprofiles_l <- list()
