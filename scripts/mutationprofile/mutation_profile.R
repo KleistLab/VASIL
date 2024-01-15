@@ -114,10 +114,16 @@ between_dates <- subset(u_dates, (id_dates >= match(date_start, u_dates))&(id_da
 D <- D[D$date %in% between_dates, ]
 sprintf("Timeframe of extracted mutation profiles %s to %s", unique(D$date)[1], unique(D$date)[length(unique(D$date))])
 
+### Set empty lineage names to "nan":
+#xi <- which(D$lineage == "")
+#D$lineage[xi] <- "nan"
+
 ### filter mutations 
 lineages <- sort(unique(D$lineage))
 number_lineages <- length(lineages)
 #print(D$date)
+
+
 
 mutationprofiles_l <- list()
 lineages_l <- c()
@@ -130,6 +136,7 @@ for (i in 1:number_lineages){
   aaprofile <- Dlin$aa_profile
   aaprofile[which(aaprofile=="")]<-NA
   if ((length(which(!is.na(aaprofile))) > 0)&(D_lineagename != "")){
+  #if (length(which(!is.na(aaprofile))) > 0){
     aaprofile_l <- list()
     for (j in 1:D_N){
       aaprofile_l[j] <- strsplit(aaprofile[j]," ")
@@ -142,17 +149,12 @@ for (i in 1:number_lineages){
     mutationprofiles_l[i] <- list(D_mutationprofile)
     lineages_l = c(lineages_l, D_lineagename)
     number_genomes_per_lineage <- c(number_genomes_per_lineage, D_N)
-    #if (D_lineagename == "XN"){print(D_lineagename);print(length(D_mutationprofile));print(D_mutationprofile)}
   }
   else{
     lineages_without_mutations <- c(lineages_without_mutations, D_lineagename) 
   }
   #number_genomes_per_lineage <- c(number_genomes_per_lineage, D_N)
 }
-
-### Save the output dataframe (lineage_l, mutation_profiles_l) to validate extracted mutation profiles
-
-###
 number_lineages <- number_lineages-length(lineages_without_mutations)
 number_genomes_per_lineage <- cbind(lineages_l, number_genomes_per_lineage)
 write.csv(number_genomes_per_lineage, file=paste0(outputdir,"/",stringr::str_replace(outputfile_mutationprofile, ".csv","number_of_genomes_per_lineage.csv")), quote = FALSE, row.names = FALSE)
@@ -162,21 +164,29 @@ rm(Dlin); rm(D_lineagename); rm(D_N);rm(aaprofile);rm(count);rm(count_df);rm(N);
 ## Grep for only spike ("S:") and RBD (RBDsites) mutations.
 mutation_lists <- c()
 for (i in 1:number_lineages){
+  name <- lineages[i]
   m1 <- mutationprofiles_l[[i]]
   m1 <- m1[grep("S:",m1)]
   m1 <- gsub("S:","",m1)
   if (length(grep(":",m1) > 0)) {m1 <- m1[-grep(":",m1)] } #remove any deletions etc. keep only mutations
   m1 <- sort(m1)
   if (length(mutation_lists) == 0){
-    mutation_lists <- cbind(lineages_l[i], paste(m1, collapse = "/"))
+    mutation_lists <- cbind(name, paste(m1, collapse = "/"))
   }else{
     mutation_lists <- rbind(mutation_lists, 
-                            cbind(lineages_l[i], paste(m1, collapse = "/")))
+                            cbind(name, paste(m1, collapse = "/")))
   }
 }
 colnames(mutation_lists) <- c("lineage", "mutated_sites_RBD")
 mutation_lists <- as.data.frame(mutation_lists)
 rm(m1)
+write.csv(mutation_lists, file=paste0(outputdir,"/","mutation_lists.csv"), quote = FALSE, row.names = FALSE)
+
+## remove empty entries in aa profile:
+ix_empty <- which(mutation_lists$mutated_sites_RBD == "")
+if (length(ix_empty) > 0){mutation_lists <- mutation_lists[-ix_empty,]}
+lineages <- mutation_lists$lineage
+number_lineages <- length(lineages)
 
 ## store as matrix:
 spikemutations_list <- c()
@@ -193,11 +203,11 @@ rm(ix);rm(spikemutations_list_site)
 
 MP <- as.data.frame(matrix(nrow = number_lineages, ncol = length(spikemutations_list)))
 colnames(MP) <- spikemutations_list
-rownames(MP) <- lineages_l
+rownames(MP) <- lineages
 for (i in 1:number_lineages){
   m1 <- strsplit(mutation_lists$mutated_sites_RBD[i],"/")[[1]]
   x <- unlist(lapply(m1, function(x) which(colnames(MP) == x)))
-  MP[lineages_l[i],x] <- 1
+  MP[lineages[i],x] <- 1
 }
 rm(m1);rm(x)
 
