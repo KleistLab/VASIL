@@ -1108,7 +1108,7 @@ elif Lin_name == "missing":
     
     for vn in range(len(variant_x_names_cross)):
         lin  = variant_x_names_cross[vn]
-        profiles_x_names_cross[vn]
+        lin_profile = profiles_x_names_cross[vn]
         if lin_profile not in mut_profiles_global:
             Lin_miss.append(lin)
             sub_miss[lin] = np.ones(len(variant_global)).astype(bool)
@@ -1119,8 +1119,9 @@ elif Lin_name == "missing":
             var_2 = lin
             
             sites = get_pos(var_1, var_2, AA_global, AA_change_dic, mut_x_global, mut_x_sites_dic)
-  
+            
             if (len(sites) != 0):
+                """This part still needs to be proof-checked: normaly this never occurs so it will be deleted in next revisions """
                 # mutation profile is different from general file, thus must be recomputed
                 sub_miss[lin] = np.ones(len(variant_global)).astype(bool)
                 for ig in range(len(variant_global)):
@@ -1145,7 +1146,7 @@ elif Lin_name == "missing":
                 sub_miss[lin] = np.zeros(len(variant_global)).astype(bool)
                 
             num_rerun.append(np.sum(sub_miss[lin]))
-
+               
     if len(Lin_miss) == 0:
         Cross_react_dic = Cross_global.copy()
         Cross_react_dic["variant_list"] = variant_global
@@ -1182,7 +1183,7 @@ elif Lin_name == "missing":
         Cross_react_dic["NTD"] = FR_NTD.copy()
     else:     
         av_rerun = np.mean(num_rerun)
-        if len(Lin_miss)>10 and av_rerun > 50:
+        if len(Lin_miss)>10 and av_rerun > 100:
             print("WARNING: Cross reactivity computation might take really long on local computers, better using HPC (see scripts/run_cross_missing.sh for hints on using a slurm cluster)")
         
         if len(loc_in_cross)!=0:
@@ -1228,6 +1229,7 @@ elif Lin_name == "missing":
             else:
                 lin_profile = ""
             lin_profile_list.append(lin_profile)
+        
             
         for ab in Ab_global:
             Cross_react_dic[ab] = np.ones((len(Cross_react_dic["variant_list"]), len(Cross_react_dic["variant_list"])))
@@ -1240,7 +1242,6 @@ elif Lin_name == "missing":
                     
                     n_0 = 0
                     for s in range(len(g)):
-                        
                         recomp_lin = [k for k in range(len(g[s])) if sub_miss[lin][mut_profiles_global.index(profiles_x_names_cross[variant_x_names_cross.index(g_var[s][k])])] if profiles_x_names_cross[variant_x_names_cross.index(g_var[s][k])] in mut_profiles_global]
                         recomp_lin += [k for k in range(len(g[s])) if profiles_x_names_cross[variant_x_names_cross.index(g_var[s][k])] not in mut_profiles_global]
 
@@ -1262,17 +1263,19 @@ elif Lin_name == "missing":
                             Cross_react_dic[ab][lin_indx, locs_recompute] = Cross_Lin[ab]
                             Cross_react_dic[ab][locs_recompute, lin_indx] = Cross_Lin[ab]
                             
+                        if len(g_var_recompute) != len(g_var[s]):
+                            """This part still needs to be proof-checked: normaly this never occurs so it will be deleted in next revisions """
                             if lin_profile in mut_profiles_global:
                                 id_lin_global = list(mut_profiles_global).index(lin_profile)
-                                g_not_recomputed = [g_var[s] for s in range(len(g_var)) if g_var[s] not in list(g_var_recompute)]                                    
+                                g_not_recomputed = [g_var[s][k] for k in range(len(g_var[s])) if g_var[s][k] not in list(g_var_recompute)]                                    
                                 if len(g_not_recomputed) != 0:
                                     locs_not_recompt = np.array([list(Cross_react_dic["variant_list"]).index(g_not_recomputed[i]) for i in range(len(g_not_recomputed))])
                                     keep = np.array([mut_profiles_global.index(profiles_x_names_cross[variant_x_names_cross.index(g_not_recomputed[i])]) for i in range(len(g_not_recomputed)) if profiles_x_names_cross[variant_x_names_cross.index(g_not_recomputed[i])] in mut_profiles_global])
                                     if len(keep)>0:
                                         Cross_react_dic[ab][lin_indx, locs_not_recompt] = Cross_global[ab][id_lin_global, keep]
                                         Cross_react_dic[ab][locs_not_recompt, lin_indx] = Cross_global[ab][keep, id_lin_global]
-                            
-                            n_0 += len(g_var_recompute)
+                        
+                        n_0 += len(g_var_recompute)
                             
                     print("Assess %d missing vs. %d missing with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss)))
                     sub_miss_reduced = [i for i in range(len(Lin_miss)) if (lin_profile_list[i] in mut_profiles_global) and (sub_miss[lin][list(mut_profiles_global).index(lin_profile_list[i])])]
@@ -1294,65 +1297,69 @@ elif Lin_name == "missing":
                         Cross_react_dic[ab][lin_indx, miss_locs] = Cross_Lin[ab]
                         Cross_react_dic[ab][miss_locs, lin_indx] = Cross_Lin[ab]
                     
-                    if lin_profile in mut_profiles_global:
-                        id_lin_global = list(mut_profiles_global).index(lin_profile)        
-                        not_recomputed = [i for i in range(len(Lin_miss)) if (lin_profile_list[i] in mut_profiles_global) and not (sub_miss[lin][list(mut_profiles_global).index(lin_profile_list[i])])]
-                        present_indx = np.array(not_recomputed)
-                        if len(present_indx)>0:
-                            Lin_miss_not_recomputed = list(np.array(Lin_miss)[present_indx])
-                            profile_not_recomputed = list(np.arry(lin_profile_list)[present_indx])
-                            for ind2 in range(len(Lin_miss_not_recomputed)):
-                                loc2 = list(Cross_react_dic["variant_list"]).index(Lin_miss_not_recomputed[ind2])
-                                ind2_global = list(mut_profiles_global).index(profile_not_recomputed[ind2])
-                                Cross_react_dic[ab][lin_indx, loc2] = Cross_global[ab][id_lin_global, ind2_global]
-                                Cross_react_dic[ab][loc2, lin_indx] = Cross_global[ab][ind2_global, id_lin_global]
-                
-            
-            n = len(Cross_react_dic["variant_list"])
-            FR_NTD = np.ones((n, n))
-            mut_profiles = []
-            for i in range(n):
-                var_1 = Cross_react_dic["variant_list"][i]
-                if len(list(AA_change_dic[var_1].keys())) > 0:
-                    var_1_profiles = np.concatenate(tuple([AA_change_dic[var_1][m1] for m1 in list(AA_change_dic[var_1].keys())]))
-                    mut_profiles.append("/".join(sorted(var_1_profiles)))
-                else:
-                    mut_profiles.append("")
+                    if len(Lin_miss_recompute)!= len(Lin_miss):
+                        if lin_profile in mut_profiles_global:
+                            """This part still needs to be proof-checked: normaly this never occurs so it will be deleted in next revisions """
+                            id_lin_global = list(mut_profiles_global).index(lin_profile)
+                            Lin_miss_not_recomputed = []
+                            not_recomputed = [i for i in range(len(Lin_miss)) if (lin_profile_list[i] in mut_profiles_global) and not (sub_miss[lin][list(mut_profiles_global).index(lin_profile_list[i])])]
+                            present_indx = np.array(not_recomputed)
+                            if len(present_indx)>0:
+                                Lin_miss_not_recomputed = list(np.array(Lin_miss)[present_indx])
+                                profile_not_recomputed = list(np.arry(lin_profile_list)[present_indx])
+                                for ind2 in range(len(Lin_miss_not_recomputed)):
+                                    loc2 = list(Cross_react_dic["variant_list"]).index(Lin_miss_not_recomputed[ind2])
+                                    ind2_global = list(mut_profiles_global).index(profile_not_recomputed[ind2])
+                                    Cross_react_dic[ab][lin_indx, loc2] = Cross_global[ab][id_lin_global, ind2_global]
+                                    Cross_react_dic[ab][loc2, lin_indx] = Cross_global[ab][ind2_global, id_lin_global]
+                a +=1
+        
+        pdb.set_trace()
+        print("Cross reactivity spikegroups for Epitope NTD")
+        n = len(Cross_react_dic["variant_list"])
+        FR_NTD = np.ones((n, n))
+        mut_profiles = []
+        for i in range(n):
+            var_1 = Cross_react_dic["variant_list"][i]
+            if len(list(AA_change_dic[var_1].keys())) > 0:
+                var_1_profiles = np.concatenate(tuple([AA_change_dic[var_1][m1] for m1 in list(AA_change_dic[var_1].keys())]))
+                mut_profiles.append("/".join(sorted(var_1_profiles)))
+            else:
+                mut_profiles.append("")
 
-                for j in range(n):
-                    if i > j:
-                        var_2 = Cross_react_dic["variant_list"][j]
-                        
-                        sites = get_pos(var_1, var_2, AA_change_dic, AA_change_dic, mut_x_sites_dic, mut_x_sites_dic)
-                        
-                        FR_sites = 1
-                        pos_done = []
-                        for s in sites:
-                            s = int(s)
-                            if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                if s not in pos_done:
-                                    FR_sites *= 10
-                                    pos_done.append(s)
-
-                                    
-                        FR_NTD[i, j] = FR_sites
-                        FR_NTD[j, i] = FR_sites
+            for j in range(n):
+                if i > j:
+                    var_2 = Cross_react_dic["variant_list"][j]
                     
-                Cross_react_dic["NTD"] = FR_NTD.copy()
-            
+                    sites = get_pos(var_1, var_2, AA_change_dic, AA_change_dic, mut_x_sites_dic, mut_x_sites_dic)
+                    
+                    FR_sites = 1
+                    pos_done = []
+                    for s in sites:
+                        s = int(s)
+                        if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                            if s not in pos_done:
+                                FR_sites *= 10
+                                pos_done.append(s)
 
-            if w_global is not None:
-                ### Include not missing and not recomputed
-                for lin in Cross_react_dic["variant_list"]:
-                    id_lin = list(Cross_react_dic["variant_list"]).index(lin)
-                    lin_profile = mut_profiles[id_lin]
-                    if lin_profile in mut_profiles_global:
-                        id_lin_global = list(variant_global).index(lin_profile)
-                        not_miss_recomputed = w_global[~sub_miss[lin][np.array(loc_not_miss)]]
-                        Cross_react_dic[ab][:, :len(variants_in_global)][id_lin, :] = Cross_global[ab][id_lin_global, not_miss_recomputed]
-                        Cross_react_dic[ab][:len(variants_in_global), :][:, id_lin] = Cross_global[ab][not_miss_recomputed, id_lin_global]
+                                
+                    FR_NTD[i, j] = FR_sites
+                    FR_NTD[j, i] = FR_sites
+                
+            Cross_react_dic["NTD"] = FR_NTD.copy()
+        
+        pdb.set_trace()
+        if w_global is not None:
+            ### Include not missing and not recomputed
+            for lin in Cross_react_dic["variant_list"]:
+                id_lin = list(Cross_react_dic["variant_list"]).index(lin)
+                lin_profile = mut_profiles[id_lin]
+                if lin_profile in mut_profiles_global:
+                    id_lin_global = list(mut_profiles_global).index(lin_profile)
+                    not_miss_recomputed = w_global[~sub_miss[lin][np.array(loc_not_miss)]]
+                    Cross_react_dic[ab][:, :len(variants_in_global)][id_lin, :] = Cross_global[ab][id_lin_global, not_miss_recomputed]
+                    Cross_react_dic[ab][:len(variants_in_global), :][:, id_lin] = Cross_global[ab][not_miss_recomputed, id_lin_global]
             
-        a +=1     
         
     Cross_react_dic["Mutations"] = {"mut_profiles":mut_profiles, "positions":mut_x_sites_dic, "AA_changes":AA_change_dic}
     file0 = open(sys.argv[7], "wb") 
@@ -1457,6 +1464,3 @@ elif Lin_name == "FR_DMS_sites":
     ### Save weighted FR DMS
     FR_df2 = pd.DataFrame(FR_wght_dic)
     FR_df2.to_csv(str(sys.argv[7])[:-4]+"_weighted.csv")
-
-    
-    
