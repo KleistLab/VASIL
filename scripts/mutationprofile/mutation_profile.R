@@ -157,7 +157,7 @@ for (i in 1:number_lineages){
   }
   #number_genomes_per_lineage <- c(number_genomes_per_lineage, D_N)
 }
-number_lineages <- number_lineages-length(lineages_without_mutations)
+#number_lineages <- number_lineages-length(lineages_without_mutations)
 number_genomes_per_lineage <- cbind(lineages_l, number_genomes_per_lineage)
 write.csv(number_genomes_per_lineage, file=paste0(outputdir,"/",stringr::str_replace(outputfile_mutationprofile, ".csv","number_of_genomes_per_lineage.csv")), quote = FALSE, row.names = FALSE)
 print(paste("Number of lineages in this dataset:",number_lineages))
@@ -187,8 +187,8 @@ write.csv(mutation_lists, file=paste0(outputdir,"/","mutation_lists.csv"), quote
 ## remove empty entries in aa profile:
 #ix_empty <- which(mutation_lists$mutated_sites_RBD == "")
 #if (length(ix_empty) > 0){mutation_lists <- mutation_lists[-ix_empty,]}
-lineages <- mutation_lists$lineage
-number_lineages <- length(lineages)
+#lineages <- mutation_lists$lineage
+#number_lineages <- length(lineages)
 
 ## store as matrix:
 spikemutations_list <- c()
