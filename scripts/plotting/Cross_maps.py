@@ -103,9 +103,7 @@ if plot_major not in ("True"):
             for j in range(len(Top_Pseudo)):
                 w_j = All_Pseudo.index(Top_Pseudo[j])
                 Cross[i,j] = Cross_Epitope_Dic_orig[ab][w_i, w_j]
-                
-        Cross_Epitope_Dic[ab] = Cross
-        
+                        
     try:
         Lin_name = sys.argv[2]
         if Lin_name not in Top_Pseudo:
@@ -236,6 +234,12 @@ else:
     file0.close()
     Top_Pseudo_var = list(Cross_show["variant_list"])
     Cross_show.pop("variant_list")
+    
+    try:
+        Cross_show.pop("Mutations")
+    except:
+        pass
+    
     choosen_Ab = list(Cross_show.keys())
     
     Top_Pseudo = []
@@ -290,7 +294,6 @@ else:
     Cross_Dic = {}
     
     for ab in choosen_Ab:
-        
         Cross = np.ones((len(Top_Pseudo),len(Top_Pseudo)))
         for i in range(len(Top_Pseudo)):
             w_i = Top_Pseudo_var.index(Top_Pseudo[i])
@@ -357,7 +360,7 @@ else:
                         cbar = True, 
                         annot = True, 
                         #annot = False,
-                        annot_kws = {"size": 25*u},
+                        annot_kws = {"size": 18*u},
                         fmt = ".2f", ## annotations decimals
                         cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
                         center = center,
@@ -371,7 +374,7 @@ else:
                         cbar = True, 
                         annot = True, 
                         #annot = False,
-                        annot_kws = {"size": 25*u},
+                        annot_kws = {"size": 18*u},
                         fmt = ".2f", ## annotations decimals
                         cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
                         center = center,
@@ -404,6 +407,12 @@ else:
         file0.close()
         Top_Pseudo_var = list(Cross_show["variant_list"])
         Cross_show.pop("variant_list")
+        
+        try:
+            Cross_show.pop("Mutations")
+        except:
+            pass
+        
         choosen_Ab = list(Cross_show.keys())
         
         Top_Pseudo = []
@@ -523,7 +532,7 @@ else:
                             cbar = True, 
                             annot = True, 
                             #annot = False,
-                            annot_kws = {"size": 25*u},
+                            annot_kws = {"size": 18*u},
                             fmt = ".2f", ## annotations decimals
                             cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
                             center = center,
@@ -537,7 +546,7 @@ else:
                             cbar = True, 
                             annot = True, 
                             #annot = False,
-                            annot_kws = {"size": 25*u},
+                            annot_kws = {"size": 18*u},
                             fmt = ".2f", ## annotations decimals
                             cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
                             center = center,

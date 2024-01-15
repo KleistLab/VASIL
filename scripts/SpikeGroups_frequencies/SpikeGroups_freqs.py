@@ -167,7 +167,7 @@ for x in range(len(unique_group)):
                 for s in range(len(where_x)):
                     Om = Lineages_list[where_x[s]]
                     Lin_dic[Om] = variant_proportion_orig[where_x[s], :]
-                    SpikeGroups_dic[Om] = splited_var[where_x[0]]
+                    SpikeGroups_dic[Om] = "Group_%d"%spk_ind
     
 variant_proportion = np.array(variant_proportion)
 NormProp = np.sum(variant_proportion, axis = 0)
