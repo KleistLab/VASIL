@@ -1121,7 +1121,7 @@ elif Lin_name == "missing":
             sites = get_pos(var_1, var_2, AA_global, AA_change_dic, mut_x_global, mut_x_sites_dic)
             
             if (len(sites) != 0):
-                """This part still needs to be proof-checked: normaly this never occurs so it will be deleted in next revisions """
+                """This part still needs to be proof-checked: normaly this never occurs since lin_profile is the same for var_1 and var_2 (should be refined and added to the case when lin_profile not in mut_profile_global)"""
                 # mutation profile is different from general file, thus must be recomputed
                 sub_miss[lin] = np.ones(len(variant_global)).astype(bool)
                 for ig in range(len(variant_global)):
@@ -1264,7 +1264,7 @@ elif Lin_name == "missing":
                             Cross_react_dic[ab][locs_recompute, lin_indx] = Cross_Lin[ab]
                             
                         if len(g_var_recompute) != len(g_var[s]):
-                            """This part still needs to be proof-checked: normaly this never occurs so it will be deleted in next revisions """
+                            """This part still needs to be proof-checked: not occuring at the moment (needs to be refined) """
                             if lin_profile in mut_profiles_global:
                                 id_lin_global = list(mut_profiles_global).index(lin_profile)
                                 g_not_recomputed = [g_var[s][k] for k in range(len(g_var[s])) if g_var[s][k] not in list(g_var_recompute)]                                    
@@ -1299,7 +1299,7 @@ elif Lin_name == "missing":
                     
                     if len(Lin_miss_recompute)!= len(Lin_miss):
                         if lin_profile in mut_profiles_global:
-                            """This part still needs to be proof-checked: normaly this never occurs so it will be deleted in next revisions """
+                            """This part still needs to be proof-checked: not occuring at the moment (needs to be refined) """
                             id_lin_global = list(mut_profiles_global).index(lin_profile)
                             Lin_miss_not_recomputed = []
                             not_recomputed = [i for i in range(len(Lin_miss)) if (lin_profile_list[i] in mut_profiles_global) and not (sub_miss[lin][list(mut_profiles_global).index(lin_profile_list[i])])]
