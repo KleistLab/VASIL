@@ -185,8 +185,8 @@ rm(m1)
 write.csv(mutation_lists, file=paste0(outputdir,"/","mutation_lists.csv"), quote = FALSE, row.names = FALSE)
 
 ## remove empty entries in aa profile:
-ix_empty <- which(mutation_lists$mutated_sites_RBD == "")
-if (length(ix_empty) > 0){mutation_lists <- mutation_lists[-ix_empty,]}
+#ix_empty <- which(mutation_lists$mutated_sites_RBD == "")
+#if (length(ix_empty) > 0){mutation_lists <- mutation_lists[-ix_empty,]}
 lineages <- mutation_lists$lineage
 number_lineages <- length(lineages)
 
