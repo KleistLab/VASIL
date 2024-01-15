@@ -1149,7 +1149,7 @@ elif Lin_name == "missing":
                
     if len(Lin_miss) == 0:
         Cross_react_dic = Cross_global.copy()
-        Cross_react_dic["variant_list"] = variant_global
+        Cross_react_dic["variant_list"] = list(np.array(variant_global)[np.array(loc_in_cross)])
         n = len(Cross_react_dic["variant_list"])
         FR_NTD = np.ones((n, n))
         mut_profiles = []

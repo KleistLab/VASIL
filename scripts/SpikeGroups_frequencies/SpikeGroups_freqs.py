@@ -112,7 +112,7 @@ for x in range(len(Lineages_list)):
 if len(missing_var) != 0:
     DiffVar = list(set(variant_x_name_orig).symmetric_difference(set(Lineages_list)))
     miss_freq = [DiffVar[i] for i in range(len(DiffVar)) if DiffVar[i] not in missing_var]
-    print("Mutation_profile missing/ignored for variants", missing_var, "\n Frequency data missing for variants", miss_freq)
+    print("Mutation_profile missing/ignored for variants (correct mutation_profile.R if they are included the data time horizon)", missing_var, "\n Frequency data missing for variants", miss_freq)
 
 NormProp = np.sum(variant_proportion_orig, axis = 0)
 prop_rounded = np.round(variant_proportion_orig, decimals = 10)
@@ -136,7 +136,7 @@ except:
     filt_params = 0
 
 Lin_dic = {}
-spk_ind = 0
+spk_ind = 1
 for x in range(len(unique_group)):
     if "/" not in unique_group[x]:
         #if unique_group[x] != "nan":

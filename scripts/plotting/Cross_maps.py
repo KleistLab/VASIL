@@ -103,7 +103,8 @@ if plot_major not in ("True"):
             for j in range(len(Top_Pseudo)):
                 w_j = All_Pseudo.index(Top_Pseudo[j])
                 Cross[i,j] = Cross_Epitope_Dic_orig[ab][w_i, w_j]
-                        
+        Cross_Epitope_Dic[ab] = Cross
+                
     try:
         Lin_name = sys.argv[2]
         if Lin_name not in Top_Pseudo:
