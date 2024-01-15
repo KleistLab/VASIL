@@ -1248,7 +1248,7 @@ elif Lin_name == "missing":
                         g_var_recompute = np.array(g_var[s])[np.array(recomp_lin)]
                         
                         if len(g_var_recompute) != 0:
-                            print("Assess missing | num %d out of %d, to recompute (%d, %d (max %d)) with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss), len(g_var_recompute), min(n_0 + len(g_var_recompute), len(variants_to_sim)),len(variants_to_sim)))
+                            print("Assess missing | num %d-th out of %d, to recompute (%d, %d (max %d)) with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss), len(g_var_recompute), min(n_0 + len(g_var_recompute), len(variants_to_sim)),len(variants_to_sim)))
                             print("Cross reactivity Epitope %s, countdown"%ab, a, "out of %d epitope clases"%len(Ab_global))
                             Cross_Lin, Missed, Greater_one = cross_reactivity(([lin], g_var_recompute), 
                                                                               Escape_Fraction, 
@@ -1277,7 +1277,7 @@ elif Lin_name == "missing":
                         
                         n_0 += len(g_var_recompute)
                             
-                    print("Assess %d missing vs. %d missing with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss)))
+                    print("Assess %d-th missing vs. %d missing with the NTD-RBD mutation positions"%(indx_lin+1, len(Lin_miss)))
                     sub_miss_reduced = [i for i in range(len(Lin_miss)) if (lin_profile_list[i] in mut_profiles_global) and (sub_miss[lin][list(mut_profiles_global).index(lin_profile_list[i])])]
                     sub_miss_reduced += [i for i in range(len(Lin_miss)) if (lin_profile_list[i] not in mut_profiles_global)]
                     recomp_lin_miss = np.array(sub_miss_reduced)
@@ -1314,7 +1314,6 @@ elif Lin_name == "missing":
                                     Cross_react_dic[ab][loc2, lin_indx] = Cross_global[ab][ind2_global, id_lin_global]
                 a +=1
         
-        pdb.set_trace()
         print("Cross reactivity spikegroups for Epitope NTD")
         n = len(Cross_react_dic["variant_list"])
         FR_NTD = np.ones((n, n))
@@ -1348,7 +1347,6 @@ elif Lin_name == "missing":
                 
             Cross_react_dic["NTD"] = FR_NTD.copy()
         
-        pdb.set_trace()
         if w_global is not None:
             ### Include not missing and not recomputed
             for lin in Cross_react_dic["variant_list"]:

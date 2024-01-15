@@ -47,28 +47,29 @@ Ab_classes = np.unique(Escape_Fraction["group"].values.astype(str))
 """Load lineage name to assess and it's mutation profile"""
 try:
     Lin_name = sys.argv[4]
-    mut_file = open(sys.argv[5], "r")
-    mut_lin0 = mut_file.readlines()
-    mut_file.close()
-
-    mut_Lin = []
-    aa_lin = {}
-    for mut in mut_lin0:
-        if "\n" in mut:
-            mut = mut.replace("\n","")
-            
-        if mut[:3] not in ("DEL", "del"):
-            if len(re.findall(r'\d+', mut))>0:
-                pos0 = re.findall(r'\d+', mut)
-                if len(pos0) == 1:
-                    pos = str(pos0[0])
-                    mut_Lin.append(pos)   
-                    aa_lin[pos] = mut
-    """Update mutation profile dictionary"""
     mut_x_sites_dic_updated = mut_x_sites_dic.copy()
-    mut_x_sites_dic_updated[Lin_name] = mut_Lin
     AA_change_dic_updated = AA_change_dic.copy()
-    AA_change_dic_updated[Lin_name] = aa_lin
+    if "outbreak" not in Lin_name:
+        mut_file = open(sys.argv[5], "r")
+        mut_lin0 = mut_file.readlines()
+        mut_file.close()
+    
+        mut_Lin = []
+        aa_lin = {}
+        for mut in mut_lin0:
+            if "\n" in mut:
+                mut = mut.replace("\n","")
+                
+            if mut[:3] not in ("DEL", "del"):
+                if len(re.findall(r'\d+', mut))>0:
+                    pos0 = re.findall(r'\d+', mut)
+                    if len(pos0) == 1:
+                        pos = str(pos0[0])
+                        mut_Lin.append(pos)   
+                        aa_lin[pos] = mut
+        """Update mutation profile dictionary"""
+        mut_x_sites_dic_updated[Lin_name] = mut_Lin
+        AA_change_dic_updated[Lin_name] = aa_lin
 except:
     mut_x_sites_dic_updated = mut_x_sites_dic.copy()
     AA_change_dic_updated = AA_change_dic.copy()
