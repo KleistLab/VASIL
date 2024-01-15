@@ -151,7 +151,9 @@ for (i in 1:number_lineages){
     number_genomes_per_lineage <- c(number_genomes_per_lineage, D_N)
   }
   else{
-    lineages_without_mutations <- c(lineages_without_mutations, D_lineagename) 
+    if (D_lineagename != ""){
+      lineages_without_mutations <- c(lineages_without_mutations, D_lineagename) 
+    }
   }
   #number_genomes_per_lineage <- c(number_genomes_per_lineage, D_N)
 }
