@@ -145,7 +145,7 @@ for x in range(len(unique_group)):
             prop_x = variant_proportion_orig[where_x, :]
             if np.max(prop_x) > filt_params:
                 variant_proportion.append(prop_x)
-                SpikeGroups_list.append("Group_%d"%spk_ind)
+                SpikeGroups_list.append("Group %d"%spk_ind)
                 SpikeGroups_dic[unique_group[x]] = unique_group[x]
                 Lin_dic[unique_group[x]] = prop_x
                 spk_ind +=1
@@ -162,12 +162,12 @@ for x in range(len(unique_group)):
             prop_x = np.sum(variant_proportion_orig[np.array(where_x), :], axis = 0)
             if np.max(prop_x) > filt_params:
                 variant_proportion.append(prop_x)
-                SpikeGroups_list.append("Group_%d"%spk_ind)
+                SpikeGroups_list.append("Group %d"%spk_ind)
                 spk_ind +=1
                 for s in range(len(where_x)):
                     Om = Lineages_list[where_x[s]]
                     Lin_dic[Om] = variant_proportion_orig[where_x[s], :]
-                    SpikeGroups_dic[Om] = "Group_%d"%spk_ind
+                    SpikeGroups_dic[Om] = "Group %d"%spk_ind
     
 variant_proportion = np.array(variant_proportion)
 NormProp = np.sum(variant_proportion, axis = 0)
