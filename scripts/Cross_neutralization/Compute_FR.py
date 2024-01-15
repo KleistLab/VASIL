@@ -1237,7 +1237,7 @@ elif Lin_name == "missing":
                     lin_indx = list(Cross_react_dic["variant_list"]).index(lin)
                     
                     lin_profile = lin_profile_list[indx_lin]
-                
+                    
                     n_0 = 0
                     for s in range(len(g)):
                         
@@ -1307,38 +1307,38 @@ elif Lin_name == "missing":
                                 Cross_react_dic[ab][lin_indx, loc2] = Cross_global[ab][id_lin_global, ind2_global]
                                 Cross_react_dic[ab][loc2, lin_indx] = Cross_global[ab][ind2_global, id_lin_global]
                 
-            elif ab == "NTD":
-                n = len(Cross_react_dic["variant_list"])
-                FR_NTD = np.ones((n, n))
-                mut_profiles = []
-                for i in range(n):
-                    var_1 = Cross_react_dic["variant_list"][i]
-                    if len(list(AA_change_dic[var_1].keys())) > 0:
-                        var_1_profiles = np.concatenate(tuple([AA_change_dic[var_1][m1] for m1 in list(AA_change_dic[var_1].keys())]))
-                        mut_profiles.append("/".join(sorted(var_1_profiles)))
-                    else:
-                        mut_profiles.append("")
+            
+            n = len(Cross_react_dic["variant_list"])
+            FR_NTD = np.ones((n, n))
+            mut_profiles = []
+            for i in range(n):
+                var_1 = Cross_react_dic["variant_list"][i]
+                if len(list(AA_change_dic[var_1].keys())) > 0:
+                    var_1_profiles = np.concatenate(tuple([AA_change_dic[var_1][m1] for m1 in list(AA_change_dic[var_1].keys())]))
+                    mut_profiles.append("/".join(sorted(var_1_profiles)))
+                else:
+                    mut_profiles.append("")
 
-                    for j in range(n):
-                        if i > j:
-                            var_2 = Cross_react_dic["variant_list"][j]
-                            
-                            sites = get_pos(var_1, var_2, AA_change_dic, AA_change_dic, mut_x_sites_dic, mut_x_sites_dic)
-                            
-                            FR_sites = 1
-                            pos_done = []
-                            for s in sites:
-                                s = int(s)
-                                if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
-                                    if s not in pos_done:
-                                        FR_sites *= 10
-                                        pos_done.append(s)
+                for j in range(n):
+                    if i > j:
+                        var_2 = Cross_react_dic["variant_list"][j]
+                        
+                        sites = get_pos(var_1, var_2, AA_change_dic, AA_change_dic, mut_x_sites_dic, mut_x_sites_dic)
+                        
+                        FR_sites = 1
+                        pos_done = []
+                        for s in sites:
+                            s = int(s)
+                            if ((14<=s)&(s<=20)) or ((140<=s)&(s<=158)) or ((245<=s)&(s<=264)):
+                                if s not in pos_done:
+                                    FR_sites *= 10
+                                    pos_done.append(s)
 
-                                        
-                            FR_NTD[i, j] = FR_sites
-                            FR_NTD[j, i] = FR_sites
+                                    
+                        FR_NTD[i, j] = FR_sites
+                        FR_NTD[j, i] = FR_sites
                     
-                Cross_react_dic[ab] = FR_NTD.copy()
+                Cross_react_dic["NTD"] = FR_NTD.copy()
             
 
             if w_global is not None:
