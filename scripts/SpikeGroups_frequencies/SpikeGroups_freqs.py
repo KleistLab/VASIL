@@ -136,6 +136,7 @@ except:
     filt_params = 0
 
 Lin_dic = {}
+spk_ind = 0
 for x in range(len(unique_group)):
     if "/" not in unique_group[x]:
         #if unique_group[x] != "nan":
@@ -144,28 +145,31 @@ for x in range(len(unique_group)):
             prop_x = variant_proportion_orig[where_x, :]
             if np.max(prop_x) > filt_params:
                 variant_proportion.append(prop_x)
-                SpikeGroups_list.append(unique_group[x])
+                SpikeGroups_list.append("Group_%d"%spk_ind)
                 SpikeGroups_dic[unique_group[x]] = unique_group[x]
                 Lin_dic[unique_group[x]] = prop_x
+                spk_ind +=1
     else:
-        splited_var = unique_group[x].split("/")
-        splited_var = list(np.array(splited_var)[np.array(splited_var)!=""])
+        splited_var = np.array(unique_group[x].split("/"))
+        "set empty lineage information as str(NaN) = nan because python treat empty entries as NaN and we transform then into strings"
+        splited_var[splited_var==""] = "nan"
         where_x = []
         for var_x in splited_var:
             if var_x in Lineages_list:
                 where_x.append(list(Lineages_list).index(var_x))
         
         if len(where_x)!=0:
+            spk_ind +=1
             prop_x = np.sum(variant_proportion_orig[np.array(where_x), :], axis = 0)
             if np.max(prop_x) > filt_params:
                 variant_proportion.append(prop_x)
-                SpikeGroups_list.append(splited_var[0])
-                
+                SpikeGroups_list.append("Group_%d"%spk_ind)
+                spk_ind +=1
                 for s in range(len(where_x)):
                     Om = Lineages_list[where_x[s]]
                     Lin_dic[Om] = variant_proportion_orig[where_x[s], :]
-                    SpikeGroups_dic[Om] = splited_var[0]
-
+                    SpikeGroups_dic[Om] = splited_var[where_x[0]]
+    
 variant_proportion = np.array(variant_proportion)
 NormProp = np.sum(variant_proportion, axis = 0)
 prop_rounded = np.round(variant_proportion,decimals = 10)
