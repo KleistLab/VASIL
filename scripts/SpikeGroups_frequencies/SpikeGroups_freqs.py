@@ -152,7 +152,7 @@ for x in range(len(unique_group)):
         splited_var = np.array(unique_group[x].split("/"))
         "set empty lineage information as str(NaN) = nan because python treat empty entries as NaN and we transform then into strings"
         splited_var[splited_var==""] = "nan"
-        where_x = []
+        where_x = []            
         gName = ""
         for var_x in splited_var:
             if var_x in Lineages_list:

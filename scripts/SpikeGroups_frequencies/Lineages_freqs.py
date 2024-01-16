@@ -34,7 +34,7 @@ except:
 lineages_all_0 = covsonar_data["lineage"].values.astype(str)
 
 aa_seq = covsonar_data["aa_profile"].values
-invalid_aa_index = [i for i in range(len(aa_seq)) if str(aa_seq[i]) == "nan" and str(lineages_all_0[i]) == "nan"]
+invalid_aa_index = [i for i in range(len(aa_seq)) if (str(aa_seq[i]) == "nan" and str(lineages_all_0[i]) == "nan")]
 kept_aa_index = np.ones(len(aa_seq)).astype(bool)
 if len(invalid_aa_index) > 0:
     kept_aa_index[np.array(invalid_aa_index)] = False
