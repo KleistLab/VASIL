@@ -125,6 +125,7 @@ number_lineages <- length(lineages)
 
 ## check if lineages are in data time-horizon considered
 #check_lin <- c('DV.6.1', 'DV.6.2', 'DV.7', 'DV.8', 'EG.5', 'EG.5.1.1', 'EG.5.2', 'EG.6.1', 'EG.7', 'FD.1.1', 'FE.1.1.1', 'FK.1', 'FK.1.2.1', 'FL.1.3', 'FL.1.5', 'FL.13', 'FL.2.3', 'FL.3.3', 'FL.6', 'FU.2', 'FY.1.2', 'FY.3', 'FY.4.1', 'GA.3', 'GE.1', 'GF.1', 'GG.1', 'GJ.1', 'GJ.1.1', 'GK.1', 'GN.1', 'GP.2', 'GR.1', 'XBB.1.16.11', 'XBB.1.16.6', 'XBB.1.33', 'XBB.1.34.1', 'XBB.1.42', 'XBB.1.47.1', 'XBB.1.5.28', 'XBB.1.5.68', 'XBB.1.5.70', 'XBB.1.5.72', 'XBB.1.5.73', 'XBB.1.5.75', 'XBB.1.5.86', 'XBB.2.3.11', 'XBB.2.3.8')
+check_lin <- c("", "")
 
 mutationprofiles_l <- list()
 lineages_l <- c()
@@ -136,8 +137,8 @@ for (i in 1:number_lineages){
   D_N <- nrow(Dlin)
   aaprofile <- Dlin$aa_profile
   aaprofile[which(aaprofile=="")]<-NA
-  if ((length(which(!is.na(aaprofile))) > 0)&(D_lineagename != "")){
-  #if (length(which(!is.na(aaprofile))) > 0){
+  #if ((length(which(!is.na(aaprofile))) > 0)&(D_lineagename != "")){ 
+  if (length(which(!is.na(aaprofile))) > 0){ ## we need to consider all non-NaN aa_profiles
     aaprofile_l <- list()
     for (j in 1:D_N){
       aaprofile_l[j] <- strsplit(aaprofile[j]," ")
@@ -150,7 +151,7 @@ for (i in 1:number_lineages){
     mutationprofiles_l[i] <- list(D_mutationprofile)
     lineages_l = c(lineages_l, D_lineagename)
     number_genomes_per_lineage <- c(number_genomes_per_lineage, D_N)
-    #if (D_lineagename %in% check_lin){print(D_lineagename); print(D_mutationprofile)}
+    if (D_lineagename %in% check_lin){print(D_lineagename); print(D_mutationprofile)}
   }
   else{
     if (D_lineagename != ""){
