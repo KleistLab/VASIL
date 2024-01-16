@@ -1149,10 +1149,9 @@ elif Lin_name == "missing":
                 
             num_rerun.append(np.sum(sub_miss[lin]))
     
-    pdb.set_trace()          
     if len(Lin_miss) == 0:
         Cross_react_dic = Cross_global.copy()
-        Cross_react_dic["variant_list"] = list(np.array(variant_global)[np.array(loc_not_miss)])
+        Cross_react_dic["variant_list"] = list(np.array(variant_x_names_cross)[np.array(loc_in_cross)])
         n = len(Cross_react_dic["variant_list"])
         FR_NTD = np.ones((n, n))
         mut_profiles = []
