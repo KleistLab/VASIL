@@ -562,7 +562,7 @@ if config["Cross_major"]:
             mutation_focus=config["mutation_focus"],
             lineage_sim=config["major_lineages"],
             num_sim=len(config["major_lineages"]),
-            mut_major=config["mut_major"],
+            mut_major=config["mut_major"][:len(config["major_lineages"])],
         output:
             cross_major="results/Cross_to_major_variants.pck",
         shell:
