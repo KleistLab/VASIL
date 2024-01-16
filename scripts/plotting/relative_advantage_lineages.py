@@ -718,6 +718,7 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
             x_max1 = len(day_prop_aligned) - 1
     except:
         x_min1 = None
+        x_max1 = None
     
     if (x_min1 is not None):
         t_show = np.array(day_prop_aligned)[x_min1:x_max1+1]
@@ -754,12 +755,15 @@ def plot_fit(ES_df_dir, lineage_list, color_list, w_save = len(sys.argv)-1, alre
         except:
             perday_orig.append(perday[i])
             
-    ax_prop.set_xticks(perday_orig)
-    ax_prop.set_xticklabels(date_ticks,
-        rotation = 45, horizontalalignment = "right")
-    
     if (x_min1 is not None):
         ax_prop.set_xlim((x_min1, x_max1))
+        ax_prop.set_xticks(np.array(perday_orig)[(np.array(perday_orig)>=x_min1)&((np.array(perday_orig)<=x_max1))])
+        ax_prop.set_xticklabels(np.array(date_ticks)[(np.array(perday_orig)>=x_min1)&((np.array(perday_orig)<=x_max1))],
+        rotation = 45, horizontalalignment = "right")
+    else:
+        ax_prop.set_xticks(perday_orig)
+        ax_prop.set_xticklabels(date_ticks,
+        rotation = 45, horizontalalignment = "right")
     
     already_prop_save = ma.masked_array(already_prop_aligned, mask=prop_mask_aligned)
     return status_list, already_prop_save, ax_prop, perday_orig, fig_prop, t_prop_aligned
