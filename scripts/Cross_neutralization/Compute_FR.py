@@ -1118,7 +1118,7 @@ elif Lin_name == "missing":
             var_2 = lin
             
             #if var_1 != var_2: 
-            #    print("diff lineages", var_1, var_2)
+            #    print("diff lineages", var_1, var_2, lin_profile)
                 
             sites = get_pos(var_1, var_2, AA_global, AA_change_dic, mut_x_global, mut_x_sites_dic)
             
