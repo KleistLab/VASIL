@@ -1105,7 +1105,6 @@ elif Lin_name == "missing":
     loc_in_cross = []
     sub_miss = {}
     num_rerun = []
-    
     for vn in range(len(variant_x_names_cross)):
         lin  = variant_x_names_cross[vn]
         lin_profile = profiles_x_names_cross[vn]
@@ -1118,6 +1117,9 @@ elif Lin_name == "missing":
             var_1 = variant_global[indx]
             var_2 = lin
             
+            #if var_1 != var_2: 
+            #    print("diff lineages", var_1, var_2)
+                
             sites = get_pos(var_1, var_2, AA_global, AA_change_dic, mut_x_global, mut_x_sites_dic)
             
             if (len(sites) != 0):
@@ -1146,10 +1148,11 @@ elif Lin_name == "missing":
                 sub_miss[lin] = np.zeros(len(variant_global)).astype(bool)
                 
             num_rerun.append(np.sum(sub_miss[lin]))
-               
+    
+    pdb.set_trace()          
     if len(Lin_miss) == 0:
         Cross_react_dic = Cross_global.copy()
-        Cross_react_dic["variant_list"] = list(np.array(variant_global)[np.array(loc_in_cross)])
+        Cross_react_dic["variant_list"] = list(np.array(variant_global)[np.array(loc_not_miss)])
         n = len(Cross_react_dic["variant_list"])
         FR_NTD = np.ones((n, n))
         mut_profiles = []
@@ -1360,7 +1363,6 @@ elif Lin_name == "missing":
                 
             Cross_react_dic["NTD"] = FR_NTD.copy()
             
-        
     Cross_react_dic["Mutations"] = {"mut_profiles":mut_profiles, "positions":mut_x_sites_dic, "AA_changes":AA_change_dic}
     file0 = open(sys.argv[7], "wb") 
     pickle.dump(Cross_react_dic, file0)
