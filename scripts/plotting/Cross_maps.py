@@ -175,7 +175,8 @@ if plot_major not in ("True"):
         
         # Specify spike group
         Pseudo_lab_cross = np.array(Pseudo_lab_cross)
-        Pseudo_lab_cross[1:] = np.array([Pseudo_lab_cross[i]+"*" for i in range(1, len(Pseudo_lab_cross))])
+        Pseudo_lab_cross_0 = Pseudo_lab_cross.copy()
+        Pseudo_lab_cross[1:] = np.array([Pseudo_lab_cross_0[i]+"*" for i in range(1, len(Pseudo_lab_cross_0))])
         
         dLab = "Cross-Resistance to %s"%ab
         if ab in list(cmap_dic.keys()):
@@ -187,7 +188,7 @@ if plot_major not in ("True"):
                         cbar = True, 
                         annot = True, 
                         #annot = False,
-                        annot_kws = {"size": 25*u},
+                        annot_kws = {"size": 22*u},
                         fmt = ".2f", ## annotations decimals
                         cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
                         center = center,
@@ -201,7 +202,7 @@ if plot_major not in ("True"):
                         cbar = True, 
                         annot = True, 
                         #annot = False,
-                        annot_kws = {"size": 25*u},
+                        annot_kws = {"size": 22*u},
                         fmt = ".2f", ## annotations decimals
                         cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
                         center = center,
@@ -361,7 +362,7 @@ else:
                         cbar = True, 
                         annot = True, 
                         #annot = False,
-                        annot_kws = {"size": 18*u},
+                        annot_kws = {"size": 22*u},
                         fmt = ".2f", ## annotations decimals
                         cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
                         center = center,
@@ -375,7 +376,7 @@ else:
                         cbar = True, 
                         annot = True, 
                         #annot = False,
-                        annot_kws = {"size": 18*u},
+                        annot_kws = {"size": 22*u},
                         fmt = ".2f", ## annotations decimals
                         cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
                         center = center,
@@ -533,7 +534,7 @@ else:
                             cbar = True, 
                             annot = True, 
                             #annot = False,
-                            annot_kws = {"size": 18*u},
+                            annot_kws = {"size": 22*u},
                             fmt = ".2f", ## annotations decimals
                             cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
                             center = center,
@@ -547,7 +548,7 @@ else:
                             cbar = True, 
                             annot = True, 
                             #annot = False,
-                            annot_kws = {"size": 18*u},
+                            annot_kws = {"size": 22*u},
                             fmt = ".2f", ## annotations decimals
                             cbar_kws = {'label': 'FR (log 10)',"shrink": 0.75, "ticks":FR_vals_sub}, 
                             center = center,
