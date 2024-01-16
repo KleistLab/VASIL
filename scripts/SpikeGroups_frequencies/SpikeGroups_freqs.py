@@ -158,7 +158,7 @@ for x in range(len(unique_group)):
             if var_x in Lineages_list:
                 where_x.append(list(Lineages_list).index(var_x))
                 if gName == "" and var_x != "nan":
-                    gName == var_x
+                    gName = var_x
                     
         
         if len(where_x)!=0:
