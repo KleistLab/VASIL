@@ -6,7 +6,10 @@
 
 ### Operating System
 
-This workflow was tested on macOS Monterey Version 12.5, macOS Ventura Version 13.3, CentOS Linux 7 (Core), as well as Ubuntu Version 20.04.5 LTS.
+This workflow was tested on macOS Monterey Version 12.5, macOS Ventura Version 13.3, CentOS Linux 7 (Core), as well as Ubuntu Version 20.04.5 LTS. 
+For these OS, the conda explicit spec-files are found HERE [https://github.com/KleistLab/VASIL/tree/main/env/spec-files](env/spec-files) and to install VASIL, run 
+
+`conda create --name VASIL --file <the spec-file of the OS>` ([https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#activating-an-environment](see conda doc))
 
 ### Prerequisites
 #### Python
