@@ -6,7 +6,7 @@
 
 ### Operating System
 
-This workflow was tested on macOS Monterey Version 12.5, macOS Ventura Version 13.3, as well as Ubuntu Version 20.04.5 LTS.
+This workflow was tested on macOS Monterey Version 12.5, macOS Ventura Version 13.3, CentOS Linux 7 (Core), as well as Ubuntu Version 20.04.5 LTS.
 
 ### Prerequisites
 #### Python
