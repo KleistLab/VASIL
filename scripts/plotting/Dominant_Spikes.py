@@ -14,6 +14,15 @@ from matplotlib.backends.backend_pdf import PdfPages
 import seaborn as sns
 import numpy.ma as ma
 
+def moving_average(X, window = 7):
+    u = np.zeros(len(X))
+    u[:window] = X[:window]
+    for i in range(window, len(X)):
+        u[i] = np.mean(X[i-window:i+1])
+    
+    return u
+
+
 lineage_freq = pd.read_csv(sys.argv[1])
 
 try:
@@ -41,17 +50,17 @@ def PreFig(xsize = 12, ysize = 12):
     matplotlib.rc('ytick', labelsize=ysize)
 
 PreFig(xsize = 20, ysize = 20)
-fig = plt.figure(figsize = (9, 7))
+fig = plt.figure(figsize = (15, 7))
 ax = fig.add_subplot(1, 1, 1)
 
 ### Sort lineage_freqs
 sorted_cols = lineage_freq.columns[np.argsort(np.sum(lineage_freq.to_numpy().astype(float),  axis = 0))[::-1]] ## sort in descending order of total proportions over the entire timeframe
 missing_data = np.all(lineage_freq.to_numpy().astype(float) == 0.0,  axis = 1)
-cols = sns.color_palette("husl", len(sorted_cols)) 
+cols = sns.color_palette("YlOrBr_r", len(sorted_cols)*50)[::50] 
 count = 0
 for spike in sorted_cols:
     if max(lineage_freq[spike]) > 0:
-        masked_lin = ma.masked_array(lineage_freq[spike], mask = missing_data)
+        masked_lin = moving_average(ma.masked_array(lineage_freq[spike], mask = missing_data), window = 14)
         ax.plot(lineage_freq.index, masked_lin, label = spike, linewidth = 3, color = cols[count])
         ax.scatter(lineage_freq.index, masked_lin, marker = ".", color = cols[count])
         count +=1
