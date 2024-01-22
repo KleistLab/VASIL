@@ -21,6 +21,7 @@ except:
 date_start = str(sys.argv[2])
 date_end = str(sys.argv[3])
 switch_vacc = str(sys.argv[4])
+vacc_considered = str(sys.argv[5])
 
 save_mut_to = str(sys.argv[-2])
 save_to = str(sys.argv[-1])
@@ -52,10 +53,10 @@ for col in Columns:
         if ("kumulativ" not in col) & ("impfungen" in col) :
             for v_n in ("biontech", "moderna"): #"astra", "novavax", "valneva", "johnson"
                 if v_n in col:
-                    print("kept", col)
-                    col_kept.append(col)
-                    col_new = col
-                    if switch_vacc not in ("none", "None"):
+                    if switch_vacc not in ("none", "None"): ### Not used (might be Deprecated), Still need to be updates later if is needed
+                        print("kept", col)
+                        col_kept.append(col)
+                        col_new = col
                         vacc_wt = np.zeros(len(dates_vacc))
                         vacc_wt[:dates_vacc.index(switch_vacc)] = np.array(df_Vaccines[col])[:dates_vacc.index(switch_vacc)]
                         Timeline["Wuhan-Hu-1*_as_"+col_new] = vacc_wt
@@ -68,11 +69,22 @@ for col in Columns:
                         vacc_var2[dates_vacc.index(switch_vacc):] = 0.5*np.array(df_Vaccines[col])[dates_vacc.index(switch_vacc):]
                         Timeline["BA.5*_as_"+col_new] = vacc_var2
                     else:
-                        if "bivalent" in col:
-                            Timeline["BA.5*_as_"+col_new] = np.array(df_Vaccines[col])
-                        else:
-                            Timeline["Wuhan-Hu-1*_as_"+col_new] = np.array(df_Vaccines[col])
-                                  
+                        if vacc_considered == "all_boosters":
+                            print("kept", col)
+                            col_kept.append(col)
+                            col_new = col
+                            if "bivalent" in col:
+                                Timeline["BA.5*_as_"+col_new] = np.array(df_Vaccines[col])
+                            else:
+                                Timeline["Wuhan-Hu-1*_as_"+col_new] = np.array(df_Vaccines[col])
+                        elif vacc_considered == "bivalent_boosters":
+                            if "bivalent" in col:
+                                print("kept", col)
+                                col_kept.append(col)
+                                col_new = col
+                                Timeline["BA.5*_as_"+col_new] = np.array(df_Vaccines[col])
+                                
+
 print("Vaccines condidered:", col_kept)
 df_Timeline = pd.DataFrame(Timeline)
 df_Timeline.to_csv(save_to+"/Vaccination_Timeline.csv")

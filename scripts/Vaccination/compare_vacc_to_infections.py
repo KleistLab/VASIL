@@ -176,8 +176,16 @@ def Display_Envelops(t, t_dates, Y, Z, is_log, labels, figsize = (7, 7), xysize 
     
     ax.set_xticks(t_ticks)
     ax.set_xticklabels(t_ticks_labels, rotation = 45, horizontalalignment = "right")
-    
     ax.set_xlim((t[0], t[-1]))
+    ax.set_ylim((48e6, 80e6))
+    if yfmt is not None:
+        y_ticks = np.arange(50e6, 85e6, 10*10**yfmt)
+        #if np.abs(np.max(Y) - y_ticks[-1]) > 10**yfmt:
+        #    y_ticks = np.append(y_ticks, (np.max(Y)//10**yfmt)*10**yfmt)
+            
+        ax.set_yticks(y_ticks)
+        ax.set_yticklabels(["%d"%(y_ticks[i]//10**yfmt) for i in range(0, len(y_ticks)-1)]+["%d x $ 10^{6}$"%(y_ticks[-1]//10**yfmt)])
+        #ax.get_yaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, p:format(int(x)//10, ",")))
     
     if save_to[-3:] == "pdf":
         ### save figure in pdf ###
@@ -246,12 +254,15 @@ def Display(t, t_dates, Y, is_log, labels, figsize = (7, 7), xysize = (15,15), l
     ax.set_xticks(t_ticks)
     ax.set_xticklabels(t_ticks_labels, rotation = 45, horizontalalignment = "right")
     ax.set_xlim((t[0], t[-1]))
+    ax.set_ylim((-0.3e6, 6e6))
     
     if yfmt is not None:
-        y_ticks = np.arange(0, np.max(Y), 10*10**yfmt)
-        if np.abs(np.max(Y) - y_ticks[-1]) > 10**yfmt:
-            y_ticks = np.append(y_ticks, (np.max(Y)//10**yfmt)*10**yfmt)
-        
+        #y_ticks = np.arange(0, np.max(Y), 10*10**yfmt)
+        y_ticks = np.arange(0, np.ceil(np.max(Y)), 1*10**yfmt)
+        #if np.abs(np.max(Y) - y_ticks[-1]) > 10**yfmt:
+            #y_ticks = np.append(y_ticks, (np.max(Y)//10**yfmt)*10**yfmt)
+        y_ticks = np.append(y_ticks, (np.ceil(np.max(Y)/10**yfmt))*10**yfmt)
+            
         ax.set_yticks(y_ticks)
         ax.set_yticklabels([0]+["%d"%(y_ticks[i]//10**yfmt) for i in range(1, len(y_ticks)-1)]+["%d x $ 10^{6}$"%(y_ticks[-1]//10**yfmt)])
         #ax.get_yaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, p:format(int(x)//10, ",")))
@@ -505,7 +516,7 @@ Y_grouped_vacc_max_2 = ma.masked_array(Y_grouped_vacc_max_2, mask = np.row_stack
 
 t = np.arange(len(t_dates))
 fig, ax = Display_Envelops(t[d_min:d_max], t_dates[d_min:d_max], Y_grouped_vacc_min_2[:, d_min:d_max], Y_grouped_vacc_max_2[:, d_min:d_max], is_log = False, labels = lin_cleaned_ver2_labs_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"] + ["run_ver ($\mathbb{E}$[Susceptible])"], palette = col1, figsize = None, save_to = filename, xval = "dates", yval = "$\mathbb{E}$[Susceptible]", 
-                        linewidth = 5, ax = ax, fig = fig,alpha = 0.3, mode = None)
+                        linewidth = 5, ax = ax, fig = fig,alpha = 0.3, mode = None, yfmt = 6)
 
 
 # plotting proportions
@@ -516,7 +527,7 @@ filename = sys.argv[-1]+"/Vacc_counts_ver2.pdf"
 Vacc_Counts_ver2 = np.array(Vacc_Counts)
 t = np.arange(len(t_dates))
 fig, ax = Display(t[d_min:d_max], t_dates[d_min:d_max], np.cumsum(Vacc_Counts_ver2, axis = 1)[:, d_min:d_max], is_log = False, labels = lin_cleaned_ver2_labs_sorted, palette = col2, figsize = None, save_to = filename, xval = "dates", yval = "Counts (CumSum)", 
-                        linewidth = 5, ax = ax, fig = fig,alpha = 0.3, mode = None)
+                        linewidth = 5, ax = ax, fig = fig,alpha = 0.3, mode = None, yfmt = 6)
 
 cdic = {"dates":t_dates}
 cdic.update({lin_cleaned_ver2_labs_sorted[i]:np.cumsum(Vacc_Counts_ver2[i, :]) for i in range(len(lin_cleaned_ver2))})
@@ -550,7 +561,7 @@ Y_grouped_vacc_max_all = ma.masked_array(Y_grouped_vacc_max_all, mask = np.row_s
 
 t = np.arange(len(t_dates))
 fig, ax = Display_Envelops(t[d_min:d_max], t_dates[d_min:d_max], Y_grouped_vacc_min_all[:, d_min:d_max], Y_grouped_vacc_max_all[:, d_min:d_max], is_log = False, labels = vacc_names_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"], palette = col1, figsize = None, save_to = filename, xval = "dates", yval = "$\mathbb{E}$[Susceptible]", 
-                          linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None)
+                          linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None, yfmt = 6)
 
 
 
@@ -596,7 +607,7 @@ if str(sys.argv[-1][-4:]) == "ver1":
 elif str(sys.argv[-1][-4:]) == "ver2":
     run_ver = "With vaccination"
 fig, ax = Display_Envelops(t[d_min:d_max], t_dates[d_min:d_max], Y_2_min[:, d_min:d_max], Y_2_max[:, d_min:d_max], is_log = False, labels = [run_ver,  "Without vaccination"], color = ["red", "green", "#1f77b4"], figsize = None, save_to = filename, xval = "dates", yval = "Mean $\mathbb{E}$[Susceptible]", 
-                          linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None)
+                          linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None, yfmt = 6)
 
 
 # plotting
@@ -623,7 +634,7 @@ Y_2b_max = ma.masked_array(Y_2b_max, mask = np.row_stack(tuple([S_mask_sum for i
 
 t = np.arange(len(t_dates))
 fig, ax = Display_Envelops(t[d_min:d_max], t_dates[d_min:d_max], Y_2b_min[:, d_min:d_max], Y_2b_max[:, d_min:d_max], is_log = False, labels = lin_cleaned_labs_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"], color = ["red","orange", "#1f77b4"], figsize = None, save_to = filename, xval = "dates", yval = "Mean $\mathbb{E}$[Susceptible]", 
-                          linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None)
+                          linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None, yfmt = 6)
 
 # plotting
 PreFig(xsize = 40, ysize = 40)
@@ -676,6 +687,6 @@ Y_2_all_max = ma.masked_array(Y_2_all_max, mask = np.row_stack(tuple([S_mask_sum
 
 t = np.arange(len(t_dates))
 fig, ax = Display_Envelops(t[d_min:d_max], t_dates[d_min:d_max], Y_2_all_min[:, d_min:d_max], Y_2_all_max[:, d_min:d_max], is_log = False, labels = vacc_names_sorted + ["ALL vs ALL (mean $\mathbb{E}$[Susceptible])"], palette = col2, figsize = None, save_to = filename, xval = "dates", yval = "Mean $\mathbb{E}$[Susceptible]", 
-                          linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None)
+                          linewidth = 3, ax = ax, fig = fig,alpha = 0.3, mode = None, yfmt = 6)
 
                               

@@ -25,6 +25,7 @@ import seaborn as sns
 import pickle
 import mpl_axes_aligner
 import re
+import os
 
 """
 Requires system arguments to compare several trends from different simulations
@@ -59,7 +60,7 @@ def PreFig(xsize = 12, ysize = 12):
     matplotlib.rc('ytick', labelsize=ysize)
 
    
-def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, color_list, w_save = len(sys.argv)-1):
+def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, color_list, resdir):   
     status_list = []
     lineage_list_Trends = []    
     for k in range(len(lineage_list)):
@@ -647,10 +648,10 @@ def plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, c
             ax2_twin.set_yticks([])
             ax2_twin.set_yticklabels([])
             
-            pdf_2b = PdfPages(sys.argv[w_save]+"/relative_fitness_%s_cropped.pdf"%lab_k_fn)
+            pdf_2b = PdfPages(resdir+"/relative_fitness_%s_cropped.pdf"%lab_k_fn)
             pdf_2b.savefig(fig2b, bbox_inches = "tight", pad_inches = 0.5)
             pdf_2b.close()
-            fig2b.savefig(sys.argv[w_save]+"/relative_fitness_%s_cropped.svg"%lab_k_fn, bbox_inches = "tight", pad_inches = 0.5)
+            fig2b.savefig(resdir+"/relative_fitness_%s_cropped.svg"%lab_k_fn, bbox_inches = "tight", pad_inches = 0.5)
             plt.close()
             
     return status_list, lineage_list_Trends
@@ -703,10 +704,13 @@ else:
                 color_list.append(sns.color_palette("rocked", rand_num)[0])
             s +=1
 
-status_list, lineage_list_Trends = plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, color_list, w_save)
+resdir = sys.argv[w_save]       
+if not os.path.exists(sys.argv[w_save]):
+    os.mkdir(sys.argv[w_save])
+status_list, lineage_list_Trends = plot_fit(Trends_dir_list, Trends_subdir_list, Trends_labels, lineage_list, color_list, resdir)
 
 status = pd.DataFrame({"lineage":lineage_list_Trends, "spikegroups_found":status_list})
-status.to_csv(sys.argv[w_save]+"/plot_status.csv")
+status.to_csv(resdir+"/plot_status.csv")
  
 
         
