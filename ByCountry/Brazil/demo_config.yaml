@@ -42,7 +42,7 @@ cross_all: FALSE # DO NOT CHANGE THIS!!!
 cross_missing: False # compute cross for missing spikegroups (error if there is no file results/Cross_react_dic_spikegroups_ALL.pck)
 all_il: True # get all immunological landscapes (requiring the cross files above)
 # 8. OPTIONAL:Compute neutralization for all spikegroups in simulation timeframe TRUE/FALSE
-p_neut_all: TRUE
+p_neut_all: False
 antigen_all: ["none"] ### if not "Wuhan-Hu-1", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if all_il is TRUE.
 # set antigen to ["ALL"] you need the p_neut for all the spikegroups of covsonar data (very long time run)
 # 9. Get Fold resistance of all mutation sites present in the DMS data
