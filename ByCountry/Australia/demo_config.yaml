@@ -1,5 +1,6 @@
 # Skip some preprocessing steps with output already provided in GitHub Country Folders
 get_pre_infos: FALSE # marked skipped
+
 # 1. Full path to covsonar data
 covsonardata: "skipped"
 freq_lin: "skipped" ## if FALSE results/Daily_Lineages_Freq.csv is required (set this TRUE only on first code run)
