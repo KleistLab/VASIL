@@ -1,0 +1,6 @@
+Building DAG of jobs...
+MissingInputException in rule get_relative_advantage in file /Users/raharinirina/Nextcloud/VASIL/VASILplots, line 98:
+Missing input files for rule get_relative_advantage:
+    output: plots/relative, plots/relative/plot_status.csv
+    affected files:
+        results/Immunological_Landscape/Susceptible_SpikeGroup_BA_2_86_all_PK.csv

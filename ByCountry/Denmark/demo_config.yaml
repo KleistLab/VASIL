@@ -1,0 +1,60 @@
+# 1. Full path to covsonar data
+covsonardata: "gisaid_Denmark_custom2.tsv"
+freq_lin: FALSE ## if FALSE results/Daily_Lineages_Freq.csv is required (set this TRUE only on first code run)
+min_seq: 100 ### minimum number of sequence per timesteps (daily freqs is interpolated)
+filter_out: 1 ### percentage (use only integers between 0 and 100) filtering spikegroups that never appeared above it in any calendar day (requires that consonar data includes calendar weeks) -- set to 0 if no filtering is desired
+freq_lin_filt: TRUE ## if TRUE results/Daily_Lineages_Freq_%filter_out%_percent.csv is provided for the lineages that correspond to the filtered spikegroups
+# prefix for mutation_data filename
+prefix: "mutationprofile"
+mutation_threshold: 0.75
+# 2a. Full path to GInPipe incidence data
+cases: "smoothed_phi_estimates_Denmark_custom2.csv"
+cases_column: "smoothed_phi" # "min_n_true" ## provide the data column name of the case ascertainment that you want to use
+# 2b. Fixed total population size for the region of interest
+total_population: 903827.9767936207
+# 3. Full path to DMS escape fraction data
+escape_data: "escape_data_original_202309.csv"
+antibody_mapping: "antibody_classes.csv"
+# 4. Full path to Clinical VE data for delta variant
+VE_delta: "Clinical_Delta_VE.xlsx"
+# 5. Simulation Time frame 
+date_start: "2022-02-01" # must be included cases timeframe and in covsonar timeframe
+date_end: "2024-01-01" # must be included at least in covsonar timeframe
+# 6.a OPTIONAL: Get immunological landscape for 1 lineage focus
+focus_il: False
+cross_focus: TRUE # if FALSE you must include file results/Cross_react_dic_spikegroups_*_pck" *=lineage_focus & results/Cross_with_delta_validation.pck (just rename previous file) or if they are present in covsonar data, it is extracted from there
+# 6.b if above is TRUE, provide name  --- please replace "." with "_" 
+lineage_focus: "outbreak/BA.2.86/JN.1/BA.2.86.1/EG.5.1/XBB.1.16/EG.5.1"
+# 6.c and NTD-RBD mutation positions file (DEL/del are ignored)
+mutation_focus: "outbreakinfo_RBD_NTD_mutations.csv"
+# 6.d OPTIONAL:Compute neutralization proba for lineage_focus for a desired antigen list
+p_neut: FALSE
+antigen: ["none"] ### if not "Wuhan-Hu-1" or "none", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if focus_il is TRUE.
+# set antigen to ["ALL"] you need the p_neut for all spikegroups of covsonar data (might take a while)
+# 7. OPTIONAL: Get Immunological landscape for all spikegroups in simulation timeframe TRUE/FALSE
+cross_all: FALSE
+# if cross_all is FALSE, you must include the precomputed files:
+# results/Cross_with_delta_validation_recomputed.pck & results/Cross_react_dic_spikegroups_ALL.pck (just rename previous file) 
+# 7.a In case one is using a premade cross_all file (for example computed for shorter timeframe), there might be some variants missing 
+cross_missing: False # compute cross for missing spikegroups (error if there is no file results/Cross_react_dic_spikegroups_ALL.pck)
+all_il: False # get all immunological landscapes (requiring the cross files above)
+# 8. OPTIONAL:Compute neutralization for all spikegroups in simulation timeframe TRUE/FALSE
+p_neut_all: TRUE
+antigen_all: ["none"] ### if not "Wuhan-Hu-1" or "none", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if all_il is TRUE.
+# set antigen to ["ALL"] you need the p_neut for all the spikegroups of covsonar data (very long time run)
+# 9. Get Fold resistance of all mutation sites present in the DMS data
+FR_DMS_sites: FALSE
+# 10. OPTIONAL:Compute cross_neutralization for major lineages
+Cross_major: FALSE
+major_lineages: ["BA.2", "BA.4", "BA.5", "BQ.1.1", "BE.1.1", "CH.1.1", "XBB.1.5", "EG.5.1", "HK.3", "JN.1"]
+# you must include the mutation profiles files of any lineages that are not available in covsonar data, use a placeholder e.g.:"avail" if it is there
+mut_major: ["avail", "avail", "avail", "avail", "avail", "avail", "avail", "avail", "HK.3_mutationsprofile_outbreak.info_6-11-23.txt", "JN.1_mutationsprofile_outbreak.info_6-11-23.txt"]
+# 11.OPTIONAL:Compute Immunological landscape for chosen variant groups for prediction comparison
+groups_il: FALSE
+compare_groups: ["Group_1", "EG.5.1"] ### can only be a list of lineages or a custom group name for which covsonar data must be given
+cross_group: TRUE ### in FALSE, we need the files results/Cross_react_dic_groups/Cross_*.pck" *=lineage & results/Cross_with_delta_validation_again.pck (just rename previous file) or if they are present in covsonar data, it is extracted from there
+# if cross_group is TRUE, the mutation profiles files of any lineages that are not available in covsonar data, use a placeholder e.g.:"avail" otherwise 
+# cross is recomputed or directly extracted from results/Cross_react_dic_spikegroups_ALL.pck if it exists
+mut_groups: ["covsonar_mock.tsv", "avail"]
+p_neut_groups: TRUE ### Compute Neut proba for each lineages in groups
+antigen_groups: ["Wuhan-Hu-1", "XBB.1.5", "Wuhan-Hu-1=0.75/EG.5.1=0.25", "Wuhan-Hu-1/EG.5.1"] ### if not "Wuhan-Hu-1", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if groups_il is TRUE.

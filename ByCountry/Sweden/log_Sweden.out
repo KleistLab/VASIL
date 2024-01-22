@@ -1,0 +1,46 @@
+[1] "Number of RBD sites: 180"
+[1] "Timeframe of extracted mutation profiles 2022-02-01 to 2023-11-24"
+[1] "Antibody classes:  A,B,C,D1,D2,E1,E2.1,E2.2,E3,F1,F2,F3"
+[1] "Number of antibodies:  1535"
+[1] "Number of antibodies per group:"
+
+   A    B    C   D1   D2   E1 E2.1 E2.2   E3   F1   F2   F3 
+ 109   51   88   40   32   61   25   41   63   92  167   67 
+Timeline of lineage proportions: 2022-02-01 -- 2023-11-24
+Python Output: Number of lineages:  1010
+Python Output: Number of genomes:  101188
+Consonar data does not have the column week_num of the calendar week
+
+[1] "Timeframe of extracted mutation profiles 2022-02-01 to 2023-11-24"
+[1] "nan"
+ [1] M:A63T           N:G204R          N:R203K          N:del:30:4      
+ [5] ORF1a:del:3675:3 ORF1b:I5967V     ORF1b:T6564I     ORF1b:del:3675:3
+ [9] S:D614G          S:G446S          S:H655Y          S:N440K         
+[13] S:N460K          S:N501Y          S:N679K          S:Q498R         
+[17] S:S477N          S:Y505H          ORF1a:G1307S     ORF1a:L3027F    
+[21] ORF1b:G1307S     ORF1b:L3027F     ORF1b:P4715L     N:P13L          
+[25] ORF1a:P3395H     ORF1a:T842I      ORF1b:P3395H     ORF1b:R5716C    
+[29] ORF1b:T842I      S:D405N          S:G339H          S:N969K         
+[33] S:Q954H          S:R408S          S:S373P          S:S375F         
+[37] S:T376A          ORF3a:T223I      S:F486P          E:T9I           
+[41] M:Q19E           N:S413R          ORF1a:T3090I     ORF1a:T3255I    
+[45] ORF1b:T3090I     ORF1b:T3255I     S:S371F          ORF6:D61L       
+[49] S:N764K          S:D796Y          S:del:24:4       S:G142D         
+[53] S:T19I           S:K417N          ORF1a:S135R      ORF1b:S135R     
+[57] S:del:143:2      ORF1a:T4175I     ORF1b:T4175I     S:T478K         
+846 Levels: E:C44Y E:T11A E:T9I E:del:1:76 M:A104L M:A104V M:A63T ... S:del:68:3
+
+[1] "UNASSIGNED"
+factor(0)
+363 Levels: E:F26L E:T11A E:T9I E:V5I E:del:1:76 M:A63T M:A85T M:D3N ... S:del:68:3
+[1] "Number of lineages in this dataset: 1010"
+[1] "Number of mutations in the spike protein for all given lineages: 406"
+[1] "Number of mutations in the NTD region of the spike for all given lineages: 57"
+[1] "Number of mutations in the RBD region of the spike for all given lineages: 96"
+[1] "Number of Spike-Pseudogroups found: 106"
+[1] "Number of individual lineages: 377"
+[1] "Number of lineages / Spike-pseudogroups found with >  100  genomes available in the dataset that are plotted as a heatmap: 58"
+
+
+Python Output: Number of Spikegroups: 239 (above 1.0 % in some calendar day) + 1 Wuhan-Hu-1
+Python Output: Number of lineages composing Spikegroups (above 1.0 % in some calendar day): 753

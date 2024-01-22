@@ -1,0 +1,40 @@
+[1] "Timeframe of extracted mutation profiles 2022-02-01 to 2023-11-24"
+[1] "Number of RBD sites: 180"
+[1] "Antibody classes:  A,B,C,D1,D2,E1,E2.1,E2.2,E3,F1,F2,F3"
+[1] "Number of antibodies:  1535"
+[1] "Number of antibodies per group:"
+
+   A    B    C   D1   D2   E1 E2.1 E2.2   E3   F1   F2   F3 
+ 109   51   88   40   32   61   25   41   63   92  167   67 
+Timeline of lineage proportions: 2022-02-01 -- 2023-11-24
+Python Output: Number of lineages:  501
+Python Output: Number of genomes:  87212
+Consonar data does not have the column week_num of the calendar week
+
+
+[1] "Timeframe of extracted mutation profiles 2022-02-01 to 2023-11-24"
+[1] "nan"
+ [1] M:A63T       N:P13L       ORF1a:P3395H ORF1a:T3255I ORF1b:I5967V
+ [6] ORF1b:P3395H ORF1b:T3255I S:D614G      S:D796Y      S:N969K     
+[11] E:T9I        ORF1b:P4715L ORF1b:R5716C S:P681H      N:G204R     
+[16] N:R203K      S:N764K      S:T19I       ORF3a:T223I  ORF1a:G1307S
+[21] ORF1b:G1307S S:H655Y      ORF1a:S135R  ORF1b:S135R  S:N679K     
+[26] S:D405N      S:K417N      S:R408S      S:S373P      S:S375F     
+[31] S:S371F      S:T376A      ORF1a:T842I  ORF1b:T842I  S:Q954H     
+[36] S:G142D      ORF1a:T3090I ORF1b:T3090I
+632 Levels: E:S55F E:T11A E:T9I E:del:1:76 M:A63T M:D3G M:D3N M:G6V ... S:del:70:3
+
+[1] "UNASSIGNED"
+[1] ORF1a:P3395H ORF1b:P3395H S:D614G      S:H655Y     
+755 Levels: E:A32D E:F23C E:F26Y E:F4S E:L27S E:L28F E:L31R E:R61L ... S:del:811:165
+
+[1] "Number of lineages in this dataset: 501"
+[1] "Number of mutations in the spike protein for all given lineages: 277"
+[1] "Number of mutations in the NTD region of the spike for all given lineages: 43"
+[1] "Number of mutations in the RBD region of the spike for all given lineages: 81"
+[1] "Number of Spike-Pseudogroups found: 57"
+[1] "Number of individual lineages: 243"
+[1] "Number of lineages / Spike-pseudogroups found with >  100  genomes available in the dataset that are plotted as a heatmap: 42"
+
+Python Output: Number of Spikegroups: 118 (above 1.0 % in some calendar day) + 1 Wuhan-Hu-1
+Python Output: Number of lineages composing Spikegroups (above 1.0 % in some calendar day): 302

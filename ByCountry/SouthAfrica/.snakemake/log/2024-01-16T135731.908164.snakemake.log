@@ -1,0 +1,6 @@
+Building DAG of jobs...
+MissingInputException in rule plot_cross_major in file /Users/raharinirina/Nextcloud/VASIL/VASILplots, line 298:
+Missing input files for rule plot_cross_major:
+    output: plots/Cross_Major, plots/Cross_Major/major_Cross_React_AB_A.pdf
+    affected files:
+        results/Cross_to_major_variants.pck

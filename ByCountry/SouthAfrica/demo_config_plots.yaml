@@ -1,0 +1,45 @@
+# 1a. Full path to GInPipe incidence data
+cases: "smoothed_phi_estimates_SouthAfrica_custom2.csv"
+cases_column: "smoothed_phi" ## provide the data column name of the case ascertainment that you want to use
+# 1b. Fixed total population size for the region of interest
+total_population: 214231.7451241481
+# 1c. Fix time range for all figures
+time_start: "2022-11-01" ### show time range
+time_stop: "2023-10-01"  ### at most one day less than simulation time horizon
+# 2.a OPTIONAL: Plot relative fitness for Focus lineage 
+fit_lineage_focus: FALSE
+# 2.b if above is TRUE Focus lineage name
+lineage_focus: "BA_2_86"
+S_linfocus: "results/Immunological_Landscape/Susceptible_SpikeGroup_BA_2_86_all_PK.csv" # if not present, it will try to find it in results/Immunological_Landscape_ALL/ if all_fit bellow is TRUE
+# 3. Weight threshold spikes-group proportions for predictions
+weight_prop: 0.01
+# 4. Color used in absolute fitness plot
+color: "red"
+# 5. OPTIONAL: Plot Fold resistance of DMS sites
+FR_DMS_sites: FALSE
+# 6. Plot Cross reactivity for first 10 spikegroups in covsonar data
+cross_spk: TRUE
+# 7. OPTIONAL: Add Cross reactivity to specific lineage
+added_cross: FALSE
+added_lineage: "BA_2_86"
+Cross_Lin_file: "results/Cross_react_dic_spikegroups_BA_2_86.pck"
+# 8. OPTIONAL: Plot relative fitness for all spikegroups in Data
+all_fit: False
+S_ALL: "results/Immunological_Landscape_ALL"
+# 9a. OPTIONAL: Plot neutralization against specific antigen for lineage focus, PK figure is plotted alongside
+p_neut: FALSE
+antigen: "XBB.1.5" ### must be one of the antigen used in main config file for the lineage focus or for all spikegroups if lineage focus is one of the spikegroups in covsonar data
+p_neut_file: "results/Immunological_Landscape/P_neut_BA_2_86.csv"
+color_pneut: "orange"
+pk_file: "results/PK_for_all_Epitopes.csv"
+# 10. OPTIONAL:Plot cross_neutralization for major lineages
+cross_major: FALSE
+cross_major_file: "results/Cross_to_major_variants.pck" # can be changed to your own file
+# 11. plot relative fitness for chosen variant groups for prediction
+plot_groups: TRUE
+S_groups: "results/Immunological_Landscape_ALL"
+compare_groups: ["BA.5.ALL", "BQ.1.ALL", "EG.5.1.ALL", "XBB.1.5.ALL", "XBB.1.16.ALL"] ### assuming that they are pre-computed and located in: S_groups/Susceptible_SpikeGroup_*_all_PK.csv *=lineage or in results/Immunological_Landscape_ALL/Susceptible_SpikeGroup_*_all_PK.csv *=lineage name, or in results/Immunological_Landscape/Susceptible_SpikeGroup_*_all_PK.csv *=lineage name), the average relative fitness is taken for the grouped variants separated by "/"
+color_groups: ["red", "orange", "green", "brown", "black", "pink", "red"]
+p_neut_groups: FALSE ### plot Neut proba separately for each variants in compare groups list against specific antigen
+antigen_groups: "XBB.1.5" ### if not "Wuhan-Hu-1", it must be present in covsonar data
+p_neut_dir: "results/Immunological_Landscape_groups" ### must be one of the antigen used in main config file for the selected groups or for all spikegroups if the lineage in group is one of the spikegroups in covsonar data

@@ -1,0 +1,61 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 8
+Rules claiming more threads will be scaled down.
+Job stats:
+job                              count
+-----------------------------  -------
+all                                  1
+get_absolute_advantage               1
+get_spike_props_overview             1
+get_susceptible_weighted_mean        1
+plot_cross_spk                       1
+total                                5
+
+Select jobs to execute...
+Failed to solve scheduling problem with ILP solver. Falling back to greedy solver. Run Snakemake with --verbose to see the full solver output for debugging the problem.
+
+[Tue Jan 16 13:45:00 2024]
+rule get_susceptible_weighted_mean:
+    input: results/SpikeGroups.pck, results/Daily_SpikeGroups_Freq.csv
+    output: results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv
+    jobid: 1
+    reason: Missing output files: results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv; Updated input files: results/Daily_SpikeGroups_Freq.csv
+    resources: tmpdir=/var/folders/fn/52prq_116p11kl8vxdls_qth0000gn/T
+
+
+[Tue Jan 16 13:45:00 2024]
+rule plot_cross_spk:
+    input: results/Cross_react_dic_spikegroups_ALL.pck
+    output: plots/Cross_spikegroups, plots/Cross_spikegroups/Cross_React_AB_A.pdf
+    jobid: 4
+    reason: Updated input files: results/Cross_react_dic_spikegroups_ALL.pck
+    resources: tmpdir=/var/folders/fn/52prq_116p11kl8vxdls_qth0000gn/T
+
+
+[Tue Jan 16 13:45:00 2024]
+rule get_spike_props_overview:
+    input: results/Daily_SpikeGroups_Freq.csv
+    output: plots/Spikes_Props, plots/Spikes_Props/SpikeGroups_Props_overview.pdf
+    jobid: 3
+    reason: Updated input files: results/Daily_SpikeGroups_Freq.csv
+    resources: tmpdir=/var/folders/fn/52prq_116p11kl8vxdls_qth0000gn/T
+
+[Tue Jan 16 13:45:01 2024]
+Error in rule get_susceptible_weighted_mean:
+    jobid: 1
+    input: results/SpikeGroups.pck, results/Daily_SpikeGroups_Freq.csv
+    output: results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv
+    shell:
+        python /Users/raharinirina/Nextcloud/VASIL/scripts/plotting/Susceptible_weighted_mean.py results/SpikeGroups.pck results/Daily_SpikeGroups_Freq.csv 0.01 903827.9767936207 results
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+[Tue Jan 16 13:45:04 2024]
+Finished job 3.
+1 of 5 steps (20%) done
+[Tue Jan 16 13:45:06 2024]
+Finished job 4.
+2 of 5 steps (40%) done
+Shutting down, this might take some time.
+Exiting because a job execution failed. Look above for error message
+Complete log: .snakemake/log/2024-01-16T134500.759048.snakemake.log

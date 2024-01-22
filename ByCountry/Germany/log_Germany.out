@@ -1,0 +1,34 @@
+[1] "Number of RBD sites: 180"
+[1] "Antibody classes:  A,B,C,D1,D2,E1,E2.1,E2.2,E3,F1,F2,F3"
+[1] "Number of antibodies:  1535"
+Timeline of lineage proportions: 2022-02-01 -- 2023-11-24
+[1] "Number of antibodies per group:"
+
+   A    B    C   D1   D2   E1 E2.1 E2.2   E3   F1   F2   F3 
+ 109   51   88   40   32   61   25   41   63   92  167   67 
+
+Timeline of lineage proportions: 2021-07-01 -- 2023-07-27
+
+### Special counting of genomes and lineages within timeframe 2021-07-01 to 2023-04-16"
+(Pdb) germany_d = unique_days_prop[:list(unique_days_prop).index("2023-04-16")+1]
+(Pdb) lin_inds = np.array([i for i in range(len(days_prop)) if days_prop[i] in germany_d])
+(Pdb) len(lin_inds) 
+599583 <- Number of genomes
+(Pdb) Lin_germany = linages_all[lin_inds]
+*** NameError: name 'linages_all' is not defined
+(Pdb) Lin_germany = lineages_all[lin_inds]
+(Pdb) len(np.unique(Lin_germany))
+1197 <- number of unique lineages within the chosen data time-horizon
+
+
+[1] "Timeframe of extracted mutation profiles 2021-07-01 to 2023-04-16"
+[1] "Number of lineages in this dataset: 1197"
+[1] "Number of mutations in the spike protein for all given lineages: 886"
+[1] "Number of mutations in the NTD region of the spike for all given lineages: 85"
+[1] "Number of mutations in the RBD region of the spike for all given lineages: 250"
+[1] "Number of Spike-Pseudogroups found: 102"
+[1] "Number of individual lineages: 461"
+[1] "Number of lineages / Spike-pseudogroups found with >  100  genomes available in the dataset that are plotted as a heatmap: 93"
+
+Python Output: Number of Spikegroups: 135 (above 1.0 % in some calendar day) + 1 Wuhan-Hu-1
+Python Output: Number of lineages composing Spikegroups (above 1.0 % in some calendar day): 680
