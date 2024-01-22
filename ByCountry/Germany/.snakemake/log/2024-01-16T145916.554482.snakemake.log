@@ -1,6 +1,0 @@
-Building DAG of jobs...
-MissingInputException in rule plot_pneut in file /Users/raharinirina/Nextcloud/VASIL/VASILplots, line 117:
-Missing input files for rule plot_pneut:
-    output: plots/P_neut_PK_lineage_focus, plots/P_neut_PK_lineage_focus/plot_status.csv
-    affected files:
-        results/Immunological_Landscape/P_neut_BA_2_86.csv
