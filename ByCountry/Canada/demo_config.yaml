@@ -59,5 +59,5 @@ cross_group: FALSE ### in FALSE, we need the files results/Cross_react_dic_group
 # if cross_group is TRUE, the mutation profiles files of any lineages that are not available in covsonar data, use a placeholder e.g.:"avail" otherwise 
 # cross is recomputed or directly extracted from results/Cross_react_dic_spikegroups_ALL.pck if it exists
 mut_groups: ["avail", "avail"]
-p_neut_groups: TRUE ### Compute Neut proba for each lineages in groups
+p_neut_groups: FALSE ### Compute Neut proba for each lineages in groups
 antigen_groups: ["Wuhan-Hu-1", "XBB.1.5", "Wuhan-Hu-1=0.75/EG.5.1=0.25", "Wuhan-Hu-1/EG.5.1"] ### if not "Wuhan-Hu-1", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if groups_il is TRUE.
