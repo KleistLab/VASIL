@@ -298,13 +298,16 @@ conda deactivate
 ```
 The result folder is created in the [`demo`](./demo) folder where you find the output files, as described above. 
 
-The plot for the cross reactivity to chosen major variants should look like this:
+Sample plot for the cross reactivity to chosen major variants:
 ![alt text](https://github.com/KleistLab/VASIL/blob/main/ByCountry/Germany/plots/Cross_Major/major_Cross_React_AB_A.svg)
 
-The plot for the estimation of change in relative fitness should look like this:
+Sample plot for the variants proportion:
+![alt text](https://github.com/KleistLab/VASIL/blob/main/ByCountry/Germany/plots/relative_groups/As_Spikegroups/Groups_proportions.svg)
+
+Sample plot for the estimation of change in relative fitness:
 ![alt text](https://github.com/KleistLab/VASIL/blob/main/ByCountry/Germany/plots/relative_groups/As_Spikegroups/relative_fitness_BA.2_cropped.svg)
 
-The plot for the estimation of change in relative fitness for compared groups should look like this:
+Sample plot for the estimation of change in relative fitness for compared groups:
 ![alt text](https://github.com/KleistLab/VASIL/blob/main/ByCountry/Germany/plots/relative_groups_Germany/As_Spikegroups/relative_fitness_groups.svg)
 
 ## Caution
