@@ -273,20 +273,20 @@ snakemake --snakefile VASILplots --configfile MS_data/ms_fig.yaml -j -d MS_data
 The figures are located as follows
 
 ```
-|-- Figure 1: c: MS_data/results/mutation_data/mutationprofile_positiongroups_RBD_NTD_groups.pdf
-              b: MS_data/results/relative_groups/Groups_proportions.pdf,svg
+|-- Figure 1: c: ByCountry/.../results/mutation_data/mutationprofile_positiongroups_RBD_NTD_groups.pdf
+              b: ByCountry/.../results/relative_groups/Groups_proportions.pdf,svg
               c: GinPipe
-|-- Figure 2: a: MS_data/plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf
-              b: MS_data/plots/Cross_major/major_Cross_React_AB_*.pdf,svg
-|-- Figure 3: a: MS_data/plots/P_neut_*/PK_Epitopes_ranges.pdf,svg
+|-- Figure 2: a: ByCountry/.../plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf
+              b: ByCountry/.../plots/Cross_major/major_Cross_React_AB_*.pdf,svg
+|-- Figure 3: a: ByCountry/.../plots/P_neut_*/PK_Epitopes_ranges.pdf,svg
               b: generated off pipeline
-              c-d: MS_data/plots/P_neut_*/P_Neut_.pdf,svg*
-|-- Figure 4: a: MS_data/plots/P_neut_groups/P_Neut_.pdf/svg*         
-              b: MS_data/plots/relative or relative_all/relative_fitness_*.pdf,svg 
-              c: MS_data/plots/relative_groups_germany/As_Spikegroups/relative_fitness_groups.pdf,svg (special file generated from scripts/plotting/relative_advantage_spikegroups_germany_special.py)         
-|-- Figure 5: a/b: run command line: python scripts/plotting/compare_countries.py "path/to/Germany/new/path/to/USA" "Germany/USA" "GER/USA" 0.01 "2022-04-09/2022-04-26" "2022-08-21/2023-04-15" 2 path/to/folder_result "BA.2.12.1" "BE.10.ALL" "red" "orange"                          
-              c: MS_data/plots/absolute/absolute_estimate.pdf,svg
-              d: MS_data/plots/absolute/derivative_trends.pdf,svg
+              c-d: ByCountry/.../plots/P_neut_*/P_Neut_.pdf,svg*
+|-- Figure 4: a: ByCountry/.../plots/P_neut_groups/P_Neut_.pdf/svg*         
+              b: ByCountry/.../plots/relative or relative_all/../relative_fitness_*.pdf,svg 
+              c: ByCountry/...//plots/relative_groups_germany/As_Spikegroups/relative_fitness_groups.pdf,svg (special file generated from scripts/plotting/relative_advantage_spikegroups_germany_special.py)         
+|-- Figure 5: a/b: run command line: TBA                      
+              c: ByCountry/.../plots/absolute/absolute_estimate.pdf,svg
+              d: ByCountry/.../plots/absolute/derivative_trends.pdf,svg
 ```
 
 ### Expected Runtime for demo
@@ -299,13 +299,10 @@ conda deactivate
 The result folder is created in the [`demo`](./demo) folder where you find the output files, as described above. 
 
 The plot for the cross reactivity to chosen major variants should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/Cross_Major/major_Cross_React_AB_A.svg)
-
-The plot for the estimation of change in absolute fitness should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/absolute/absolute_estimate.svg)
+![alt text](https://github.com/KleistLab/VASIL/blob/main/ByCountry/Germany/plots/Cross_Major/major_Cross_React_AB_A.svg)
 
 The plot for the estimation of change in relative fitness should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative_all/relative_fitness_Spike.%20BA.4.svg)
+![alt text](https://github.com/KleistLab/VASIL/blob/main/ByCountry/Germany/plots/relative_groups/As_Spikegroups/relative_fitness_BA.2_cropped.svg
 
 The plot for the estimation of change in relative fitness for compared groups should look like this:
 ![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative_groups/As_Spikegroups/relative_fitness_groups.svg)
