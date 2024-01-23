@@ -1,6 +1,6 @@
 # 1. Full path to covsonar data
 covsonardata: "covsonar_mock.tsv"
-freq_lin: TRUE ## if FALSE results/Daily_Lineages_Freq.csv is required (set this TRUE only on first code run)
+freq_lin: TRUE ## if FALSE results/Daily_Lineages_Freq_{min_seq}.csv is required (set this TRUE only on first code run)
 filter_out: 0 ### percentage (use only integers between 0 and 100) filtering spikegroups that never appeared above it in any calendar day (requires that consonar data includes calendar weeks) -- set to 0 if no filtering is desired
 min_seq: 100 ### minimum number of sequence per timesteps (daily freqs is interpolated)
 freq_lin_filt: FALSE ## if TRUE results/Daily_Lineages_Freq_%filter_out%_percent.csv is provided for the lineages that correspond to the filtered spikegroups
