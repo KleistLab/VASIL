@@ -1,9 +1,9 @@
-# Skip some preprocessing steps with output already provided in GitHub Country Folders
+# Skip some preprocessing steps with output already provided in each Country Folders
 get_pre_infos: FALSE # marked skipped
 
 # 1. Full path to covsonar data
 covsonardata: "skipped"
-freq_lin: FALSE ## if FALSE results/Daily_Lineages_Freq.csv is required (set this TRUE only on first code run)
+freq_lin: "skipped" ## if FALSE results/Daily_Lineages_Freq.csv is required (set this TRUE only on first code run)
 min_seq: 100 ### DO NOT CHANGE THIS!!! minimum number of sequence per timesteps (daily freqs is interpolated)
 filter_out: 1 ### percentage (use only integers between 0 and 100) filtering spikegroups that never appeared above it in any calendar day (requires that consonar data includes calendar weeks) -- set to 0 if no filtering is desired
 freq_lin_filt: TRUE ## if TRUE results/Daily_Lineages_Freq_%filter_out%_percent.csv is provided for the lineages that correspond to the filtered spikegroups

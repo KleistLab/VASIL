@@ -1,4 +1,4 @@
-# Skip some preprocessing steps with output already provided in GitHub Country Folders
+# Skip some preprocessing steps with output already provided in each Country Folders
 get_pre_infos: FALSE # marked skipped
 
 # 1. Full path to covsonar data
