@@ -302,10 +302,10 @@ The plot for the cross reactivity to chosen major variants should look like this
 ![alt text](https://github.com/KleistLab/VASIL/blob/main/ByCountry/Germany/plots/Cross_Major/major_Cross_React_AB_A.svg)
 
 The plot for the estimation of change in relative fitness should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/ByCountry/Germany/plots/relative_groups/As_Spikegroups/relative_fitness_BA.2_cropped.svg
+![alt text](https://github.com/KleistLab/VASIL/blob/main/ByCountry/Germany/plots/relative_groups/As_Spikegroups/relative_fitness_BA.2_cropped.svg)
 
 The plot for the estimation of change in relative fitness for compared groups should look like this:
-![alt text](https://github.com/KleistLab/VASIL/blob/main/MS_data/plots/relative_groups/As_Spikegroups/relative_fitness_groups.svg)
+![alt text](https://github.com/KleistLab/VASIL/blob/main/ByCountry/Germany/plots/relative_groups_Germany/As_Spikegroups/relative_fitness_groups.svg)
 
 ## Caution
 Caution must be taken for all re-parameterization of simulations made with `config.yaml`, snakemake does not execute the rules for which the result files are already present (unless an input file is updated by another rule), remove older files from the *results* folder when needed.
