@@ -435,7 +435,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
             else:
                 mut_profiles.append("")
             for j in range(n):
-                if i > j:
+                if i1 > j:
                     var_2 = Cross_react_dic["variant_list"][j]
                     
                     sites = get_pos(var_1, var_2, AA_change_dic_updated, AA_change_dic_updated, mut_x_sites_dic_updated, mut_x_sites_dic_updated)
