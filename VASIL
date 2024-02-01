@@ -85,7 +85,7 @@ if config["groups_il"]:
     mut_files = []
     for i in range(len(config["compare_groups"])):
         check_file = os.path.exists(config["mut_groups"][i])
-        if check_file and (config["mut_groups"][-3:] != "txt"):
+        if check_file and (config["mut_groups"][i][-3:] != "txt"):
             groups_names.append(config["compare_groups"][i]),
             mut_files.append(config["mut_groups"][i]),
         else:
@@ -98,7 +98,6 @@ if config["groups_il"]:
         rule_all_common.append(
             "results/Immunological_Landscape_groups/simulation_status_group.csv"
         ),
-
     if len(groups_names) > 0:
         for i in range(len(groups_names)):
             if not os.path.exists("results/Groups_data_%d" % i):
@@ -172,22 +171,39 @@ if get_pre_infos:
         shell:
             "Rscript {workflow.basedir}/scripts/mutationprofile/mutation_profile.R {input.covsonar} {output.dir} {params.prefix} {params.mutation_threshold} {params.date_start} {params.date_end} {input.dms_data}"
 
-rule get_spikegroups_frequencies:
-    input:
-        cases=config["cases"],
-        lins_freqs=lin_freq_file,
-        spk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
-        spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
-    params:
-        filter_out=config["filter_out"],
-        get_freq_lin=save_lin,
-    output:
-        spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
-        spikes_dic="results/SpikeGroups.pck",
-        mutations_dic="results/Mutation_Profiles.pck",
-        res="results/Daily_Lineages_Freq_%s_percent.csv" % int(config["filter_out"]),
-    shell:
-        "python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.spk_profiles} {input.spike_groups} {output.spikes_freqs} {output.spikes_dic} {output.mutations_dic} {params.filter_out} {params.get_freq_lin} {input.cases}"
+if save_lin:
+    rule get_spikegroups_frequencies:
+        input:
+            cases=config["cases"],
+            lins_freqs=lin_freq_file,
+            spk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
+            spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
+        params:
+            filter_out=config["filter_out"],
+            get_freq_lin=save_lin,
+        output:
+            spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
+            spikes_dic="results/SpikeGroups.pck",
+            mutations_dic="results/Mutation_Profiles.pck",
+            res="results/Daily_Lineages_Freq_%s_percent.csv" % int(config["filter_out"]),
+        shell:
+             "python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.spk_profiles} {input.spike_groups} {output.spikes_freqs} {output.spikes_dic} {output.mutations_dic} {params.filter_out} {params.get_freq_lin} {input.cases}"
+else:
+    rule get_spikegroups_frequencies:
+        input:
+            cases=config["cases"],
+            lins_freqs=lin_freq_file,
+            spk_profiles="results/mutation_data/mutationprofile_RBD_NTD_mutations.csv",
+            spike_groups="results/mutation_data/mutationprofile_RBD_NTD_pseudogroups.csv",
+        params:
+            filter_out=config["filter_out"],
+            get_freq_lin=save_lin,
+        output:
+            spikes_freqs="results/Daily_SpikeGroups_Freq.csv",
+            spikes_dic="results/SpikeGroups.pck",
+            mutations_dic="results/Mutation_Profiles.pck",
+        shell:
+             "python {workflow.basedir}/scripts/SpikeGroups_frequencies/SpikeGroups_freqs.py {input.lins_freqs} {input.spk_profiles} {input.spike_groups} {output.spikes_freqs} {output.spikes_dic} {output.mutations_dic} {params.filter_out} {params.get_freq_lin} {input.cases}"
 
 rule compute_cross_delta:
     input:
