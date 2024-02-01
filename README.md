@@ -406,6 +406,17 @@ If mpl_axes_aligner still cannot be found, please install it by:
 conda install -c d-ice mpl_axes_aligner
 ```
 
+### Issue 7
+
+```
+module 'pulp' has no attribute 'list_solvers'. Did you mean: 'listSolvers'
+```
+
+Solution
+
+```
+pip install pulp==2.7.0
+```
 
 
 
