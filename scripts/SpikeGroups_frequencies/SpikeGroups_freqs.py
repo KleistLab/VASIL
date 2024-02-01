@@ -176,23 +176,23 @@ NormProp = np.sum(variant_proportion, axis = 0)
 prop_rounded = np.round(variant_proportion,decimals = 10)
 variant_proportion = np.divide(prop_rounded, NormProp, out = np.zeros(prop_rounded.shape), where = NormProp != 0)
 
+### Re-normalize lineage frequencies
+Lin_df = pd.DataFrame(Lin_dic)
+col_sums = Lin_df.sum(axis = 1).values
+Lin_df = 100*Lin_df.divide(col_sums, axis="rows")
+Lin_df["date"] = date_list
+Lin_df = Lin_df.fillna(0)
+Lin_df.drop(index = Lin_df.index[np.array(Lin_df["date"]) == 0], inplace= True)
 try:
    save_lin = str(sys.argv[8])
    if save_lin in ("True", "TRUE", "1"):
-       Lin_df = pd.DataFrame(Lin_dic)
-       col_sums = Lin_df.sum(axis = 1).values
-       Lin_df = 100*Lin_df.divide(col_sums, axis="rows")
-       Lin_df["date"] = date_list
-       Lin_df = Lin_df.fillna(0)
-       Lin_df.drop(index = Lin_df.index[np.array(Lin_df["date"]) == 0], inplace= True)
        Lin_df.to_csv("results/Daily_Lineages_Freq_%s_percent.csv"%str(int(filt_params*100)))
-       SpikeGroups_dic["Frequencies"] = Lin_df
 except:
     if "week_num" in list(fq_cols):
         frequency_lineage_df.drop(columns = "week_num", inplace = True)
     
-    SpikeGroups_dic["Frequencies"] = frequency_lineage_df
-    
+### lineage frequency is always saved spikegroups_membership.pck  
+SpikeGroups_dic["Frequencies"] = Lin_df
 
 """ Save frequency pseudogroup data """
 freq_dic = {}
