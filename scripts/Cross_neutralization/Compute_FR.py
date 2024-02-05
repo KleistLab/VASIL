@@ -463,12 +463,12 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
         file.close()
         
         k = 5
-        if (n_groups == 1) and str(sys.argv[k][-24:] == "Vaccination_Timeline.csv") and (str(sys.argv[k])[:9] != "outbreak/"): ### Hard coded for vaccination pseudo variants
+        if (n_groups == 1) and (str(sys.argv[k][-24:]) == "Vaccination_Timeline.csv") and (str(sys.argv[k])[:9] != "outbreak/"): ### Hard coded for vaccination pseudo variants
             vacc_infos = pd.read_csv(sys.argv[k])
             Lin_list = vacc_infos.columns[(vacc_infos.columns != "date")&(vacc_infos.columns != "Unnamed: 0")].tolist()
             mut_sim = ["avail"]*len(Lin_list)
         
-        elif (n_groups == 1) and str(sys.argv[k][-24:] != "Vaccination_Timeline.csv") and (str(sys.argv[k])[:9] == "outbreak/"): ### Hard coded for oubreak.infos data
+        elif (n_groups == 1) and (str(sys.argv[k][-24:]) != "Vaccination_Timeline.csv") and (str(sys.argv[k])[:9] == "outbreak/"): ### Hard coded for oubreak.infos data
             # load special mutation data
             variant_mut_data = pd.read_csv(sys.argv[6])
             Lin_list_0 = str(sys.argv[k])[9:].split("/")

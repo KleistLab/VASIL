@@ -114,7 +114,6 @@ if config["groups_il"]:
 if config["Cross_major"]:
     rule_all_common.append("results/Cross_to_major_variants.pck"),
 
-
 rule all:
     input:
         rule_all_common,
