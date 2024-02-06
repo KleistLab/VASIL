@@ -436,7 +436,6 @@ for key in c_dframe_dic.keys():
     key_num = np.array(re.findall(r"\d+", key)).astype(int)
     PK["t_half = %.3f \nt_max = %.3f"%(thalf_vec[key_num[0]], tmax_vec[key_num[1]])] = c_dframe_dic[key]["A"]
 
-
 PK_df = pd.DataFrame(PK)
 PK_df.to_csv("results/PK_for_all_Epitopes.csv")
 
@@ -604,6 +603,8 @@ def ei_util(Lin_name, variants_in_cross, antigen_list,
         if w_save is not None:
             return "Error"
         else:
+            EI_df = pd.DataFrame(EI)
+            Susc_df = pd.DataFrame(Susc)
             return EI_df, Susc_df, "Error"
     
 w_save = 11 # index of resdir
