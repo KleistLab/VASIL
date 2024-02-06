@@ -323,7 +323,7 @@ for spklin in lineages_sim:
                     if len(pos0) == 1:
                         pos = str(pos0[0])
                         if pos not in list(aa_lin.keys()):
-                            mut_Lin.append(pos)   
+                            mut_maj.append(pos)   
                             aa_lin[pos] = [mut]
                         else:
                             aa_lin[pos].append(mut)   
