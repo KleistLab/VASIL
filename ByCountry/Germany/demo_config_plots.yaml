@@ -37,11 +37,13 @@ cross_major: False
 cross_major_file: "results/Cross_to_major_variants.pck" # can be changed to your own file
 # 11. plot relative fitness for chosen variant groups for prediction
 plot_groups: TRUE
-S_groups: "results/Immunological_Landscape_ALL"
+S_groups: "results/Immunological_Landscape_groups"
 #compare_groups: ["BA.2", "BA.4/BE.1.1/BA.5", "BQ.1.1", "EG.1/XBB.1.5", "XBB.1.9.ALL", "BF.7"]# "EG.5.1", "XBB.1.16/XBB.1.16.1", "XBB.1.9/EG.1.3/XBB.1.9.2"]#, "BA.2.86.ALL/JN.1/BA_2_86"] ### assuming that they are pre-computed and located in: S_groups/Susceptible_SpikeGroup_*_all_PK.csv *=lineage or in results/Immunological_Landscape_ALL/Susceptible_SpikeGroup_*_all_PK.csv *=spikegroup of lineage, or in results/Immunological_Landscape/Susceptible_SpikeGroup_*_all_PK.csv *=lineage name), the average relative fitness is taken for the grouped variants separated by "/"
-compare_groups: ["EG.5.1", "XBB.1.16/XBB.1.16.1", "XBB.1.9/EG.1.3/XBB.1.9.2", "BA.2.86"] ### assuming that they are pre-computed and located in: S_groups/Susceptible_SpikeGroup_*_all_PK.csv *=lineage or in results/Immunological_Landscape_ALL/Susceptible_SpikeGroup_*_all_PK.csv *=spikegroup of lineage, or in results/Immunological_Landscape/Susceptible_SpikeGroup_*_all_PK.csv *=lineage name), the average relative fitness is taken for the grouped variants separated by "/"
-color_groups: ["1.00/0.396/0.173", "1.00/0.682/0.173", "0.227/0.027/0.831", "0.078/0.422/0", "red", "pink"]
+compare_groups: ["EG.5.1", "XBB.1.16/XBB.1.16.1", "XBB.1.9/EG.1.3/XBB.1.9.2", "BA.2.86", "BA.2", "BA.4/BE.1.1/BA.5", "BQ.1.1", "EG.1/XBB.1.5", "XBB.1.9.ALL", "BF.7"] ### assuming that they are pre-computed and located in: S_groups/Susceptible_SpikeGroup_*_all_PK.csv *=lineage or in results/Immunological_Landscape_ALL/Susceptible_SpikeGroup_*_all_PK.csv *=spikegroup of lineage, or in results/Immunological_Landscape/Susceptible_SpikeGroup_*_all_PK.csv *=lineage name), the average relative fitness is taken for the grouped variants separated by "/"
+color_groups: ["1.00/0.396/0.173", "pink", "0.227/0.027/0.831", "0.078/0.422/0", "red", "pink"]
 #color_groups: ["green", "blue", "orange", "red"]
-p_neut_groups: FALSE ### plot Neut proba separately for each variants in compare groups list against specific antigen
-antigen_groups: "XBB.1.5" ### if not "Wuhan-Hu-1", it must be present in covsonar data
-p_neut_dir: "results/Immunological_Landscape_ALL" ### must be one of the antigen used in main config file for the selected groups or for all spikegroups if the lineage in group is one of the spikegroups in covsonar data
+p_neut_groups: True ### plot Neut proba separately for each variants in compare groups list against specific antigen
+compare_groups_pneut: ["Omicron_BA.1", "Delta"]
+color_groups_pneut: ["orange", "C0"]
+antigen_groups: "Wuhan-Hu-1" ### if not "Wuhan-Hu-1", it must be present in covsonar data
+p_neut_dir: "results/Immunological_Landscape_groups" ### must be one of the antigen used in main config file for the selected groups or for all spikegroups if the lineage in group is one of the spikegroups in covsonar data

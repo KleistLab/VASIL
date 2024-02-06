@@ -27,9 +27,9 @@ date_end: "2024-01-01" # must be included at least in covsonar timeframe
 focus_il: False
 cross_focus: False # if FALSE you must include file results/Cross_react_dic_spikegroups_*_pck" *=lineage_focus & results/Cross_with_delta_validation.pck (just rename previous file) or if they are present in covsonar data, it is extracted from there
 # 6.b if above is TRUE, provide name  --- please replace "." with "_" 
-lineage_focus: "not needed when focus_il is false"
+lineage_focus: "not_needed_when_focus_il_is_false"
 # 6.c and NTD-RBD mutation positions file (DEL/del are ignored)
-mutation_focus: "not needed when focus_il is false"
+mutation_focus: "not_needed_when_focus_il_is_false"
 # 6.d OPTIONAL:Compute neutralization proba for lineage_focus for a desired antigen list
 p_neut: FALSE
 antigen: ["Wuhan-Hu-1", "XBB.1.5", "Wuhan-Hu-1=0.75/EG.5.1=0.25", "Wuhan-Hu-1/EG.5.1"] ### if not "Wuhan-Hu-1", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if focus_il is TRUE.

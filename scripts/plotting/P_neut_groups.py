@@ -23,6 +23,7 @@ import numpy as np
 import pickle
 import pdb
 #### Visualisation ###  
+
 def PreFig(xsize = 12, ysize = 12):
     '''
     @brief: customize figure parameters
@@ -38,7 +39,7 @@ def Display_Envelope(t, Y, Z, is_log, labels, figsize = (7, 7), xysize = (15,15)
         fig = plt.figure(figsize = figsize)
         if ax == None:
             ax = fig.add_subplot(1, 1, 1)
-    ax.set_ylim((0, 1.1*np.max(Z)))
+    ax.set_ylim((-0.1, 1.1*np.max(Z)))
     
     if linestyle is None:
         linestyle = ["-"]*Y.shape[0]
@@ -55,7 +56,7 @@ def Display_Envelope(t, Y, Z, is_log, labels, figsize = (7, 7), xysize = (15,15)
         for i in range(Y.shape[0]):
             ax.fill_between(t, Y[i, :], Z[i, :], label = labels[i], alpha = alpha, color = col[i])
         
-    plt.xlabel(xval, fontsize = labsize)
+    plt.xlabel(xval, fontsize = labsize)    
     if labels != [""]:
        ax.legend(loc = (1.2, 0.) ,fontsize = labsize, ncols = np.ceil(len(labels)/4))
     
@@ -158,7 +159,6 @@ for i in range(num_groups):
                 except:
                     pass
                 
-                
                 t = Pneut_df["Day since infection"] ### must be the same in all the Pneut files (which is the case in our pipeline)
     
                 """Compute PNeut Envelope"""    
@@ -204,6 +204,7 @@ for i in range(num_groups):
             status.append("Not avail")
             
         Lin_status.append(Lin_i)
+
 
 PreFig(xsize = 20, ysize = 20)
 figsize = (10,7)

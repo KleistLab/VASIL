@@ -271,9 +271,10 @@ The folder `ByCountry` can be used to reproduce or find the non-conceptual manus
 ```
 snakemake --snakefile VASIL --configfile ByCountry/<Country>/demo_config.yaml -j -d ByCountry/<Country>
 ```
-Then, open for each country open the config files `ByCountry/<Country>/demo_config_plots.yaml` and choose a timeline for the figures and variants with the parameters
+`STEP 2` Then, open for each country open the config files `ByCountry/<Country>/demo_config_plots.yaml` and choose a timeline for the figures and variants with the parameters
 ```
-time_start: < Chosen start date >
+# Do not include the character "#" in any of the parameter names, it's reserved for start-comments
+time_start: < Chosen start date > 
 time_stop: < Chosen stop date >
 plot_groups: TRUE
 S_groups: "results/Immunological_Landscape_ALL"
@@ -281,7 +282,7 @@ compare_groups: < List all the variants to investigate, separate with / when gro
 color_groups: < List of colors corresponding to each variants, float separated with / for rgb color scheme >
 ```
 
-`STEP 2` Finally, to obtain the immunological landscapes of the chosen variants run the codeline 
+`STEP 3` Finally, to obtain the immunological landscapes of the chosen variants run the codeline 
 
 ```
 snakemake --snakefile VASILplots --configfile ByCountry/<Country>/demo_config_plots.yaml -j -d ByCountry/<Country>
@@ -291,7 +292,7 @@ snakemake --snakefile VASILplots --configfile ByCountry/<Country>/demo_config_pl
 In more details after proper parameterization of `demo_config_plots.yaml` our non-conceptual manuscript figures can be generated as follows
 
 ```
-|-- Figure 2: a: ByCountry/< Country >/plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf ( first set `FR_DMS_sites: TRUE` in `ByCountry/<Country>/demo_config.yml` then `STEP 1`, then set  `FR_DMS_sites: TRUE` in `ByCountry/<Country>/demo_config_plots.yml` and run `STEP 2`)
+|-- Figure 2: a: ByCountry/< Country >/plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf ( first set `FR_DMS_sites: TRUE` in `ByCountry/<Country>/demo_config.yml` then `STEP 1`, then set  `FR_DMS_sites: TRUE` in `ByCountry/<Country>/demo_config_plots.yml` and run `STEP 3`)
                     b: generate off pipeline 
              	   c: ByCountry/Germany/plots/Cross_major/major_Cross_React_AB_*.pdf,svg
                     d: ByCountry/Germany/plots/P_neut_PK_groups/P_Neut_.pdf/svg* 

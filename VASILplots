@@ -2,6 +2,8 @@
 
 
 report: "report/workflow.rst"
+
+
 import os
 
 rule_all_common = [
@@ -12,7 +14,9 @@ rule_all_common = [
 ]
 if config["FR_DMS_sites"]:
     rule_all_common.append("plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf")
-    rule_all_common.append("plots/FR_sites_weighted/foldresistance_DMS_sites_epitopes_weighted.pdf")
+    rule_all_common.append(
+        "plots/FR_sites_weighted/foldresistance_DMS_sites_epitopes_weighted.pdf"
+    )
 
 if config["cross_spk"]:
     rule_all_common.append("plots/Cross_spikegroups/Cross_React_AB_A.pdf")
@@ -32,11 +36,17 @@ if config["p_neut"]:
 if config["plot_groups"]:
     rule_all_common.append("plots/relative_groups/As_Lineages/plot_status.csv"),
     rule_all_common.append("plots/relative_groups/As_Spikegroups/plot_status.csv"),
-    if "Germany" in config["cases"] and os.path.exists("Stichprobe_RKI-Jul2021_to_9thAug2023_KW.tsv"):
-        rule_all_common.append("plots/relative_groups_Germany/As_Spikegroups/plot_status.csv")
+    if "Germany" in config["cases"] and os.path.exists(
+        "Stichprobe_RKI-Jul2021_to_9thAug2023_KW.tsv"
+    ):
+        rule_all_common.append(
+            "plots/relative_groups_Germany/As_Spikegroups/plot_status.csv"
+        )
     else:
-        print("For Germany, covsonar file named path/to/working_directory/Stichprobe_RKI-Jul2021_to_9thAug2023_KW.tsv is required to reproduce Fig 3B (or copy and rename your covsonar file)")
-                
+        print(
+            "For Germany, covsonar file named path/to/working_directory/Stichprobe_RKI-Jul2021_to_9thAug2023_KW.tsv is required to reproduce Fig 3B (or copy and rename your covsonar file)"
+        )
+
 if config["p_neut_groups"]:
     rule_all_common.append("plots/P_neut_PK_groups/plot_status.csv"),
 
@@ -54,13 +64,15 @@ rule get_spike_props_overview:
         res="plots/Spikes_Props/SpikeGroups_Props_overview.pdf",
     shell:
         "python {workflow.basedir}/scripts/plotting/Dominant_Spikes.py {input.spikes_freqs} {output.res_dir}"
-        
+
 
 import os
+
 try:
     os.remove("results/Susceptible_weighted_mean_over_spikegroups_all_PK.csv")
 except:
     pass
+
 
 rule get_susceptible_weighted_mean:
     input:
@@ -148,7 +160,7 @@ if config["plot_groups"]:
             res="plots/relative_groups/As_Lineages/plot_status.csv",
         shell:
             "python {workflow.basedir}/scripts/plotting/relative_advantage_lineages.py {input.ES_lin_dir} {input.mean_trend} {input.spikes_freqs} {params.threshold} {params.time_start} {params.time_stop} {params.len_groups} {output.res_dir} {params.lineage_focus} {params.col_groups}"
-    
+
     rule get_relative_spikegroups:
         input:
             ES_lin_dir=config["S_groups"],
@@ -166,8 +178,11 @@ if config["plot_groups"]:
             res="plots/relative_groups/As_Spikegroups/plot_status.csv",
         shell:
             "python {workflow.basedir}/scripts/plotting/relative_advantage_spikegroups.py {input.ES_lin_dir} {input.mean_trend} {input.spikes_freqs} {params.threshold} {params.time_start} {params.time_stop} {params.len_groups} {output.res_dir} {params.lineage_focus} {params.col_groups}"
-	
-    if "Germany" in config["cases"] and os.path.exists("Stichprobe_RKI-Jul2021_to_9thAug2023_KW.tsv"):
+
+    if "Germany" in config["cases"] and os.path.exists(
+        "Stichprobe_RKI-Jul2021_to_9thAug2023_KW.tsv"
+    ):
+
         rule get_relative_spikegroups_germany_special:
             input:
                 ES_lin_dir=config["S_groups"],
@@ -185,7 +200,17 @@ if config["plot_groups"]:
                 res="plots/relative_groups_Germany/As_Spikegroups/plot_status.csv",
             shell:
                 "python {workflow.basedir}/scripts/plotting/relative_advantage_spikegroups_germany_special.py {input.ES_lin_dir} {input.mean_trend} {input.spikes_freqs} {params.threshold} {params.time_start} {params.time_stop} {params.len_groups} {output.res_dir} {params.lineage_focus} {params.col_groups}"
-	    
+
+
+try:
+    pneut_groups = config["compare_groups_pneut"]
+except:
+    pneut_groups = config["compare_groups"]
+    
+try:
+    pneut_cols = config["color_groups_pneut"]
+except:
+    pneut_cols = config["color_groups"]
 
 if config["p_neut_groups"]:
 
@@ -194,9 +219,9 @@ if config["p_neut_groups"]:
             pneut_dir=config["p_neut_dir"],
             pk_file=config["pk_file"],
         params:
-            lin_name=config["compare_groups"],
-            col_pneut=config["color_groups"],
-            len_groups=len(config["compare_groups"]),
+            lin_name=pneut_groups,
+            col_pneut=pneut_cols,
+            len_groups=len(pneut_groups),
             antigen=config["antigen_groups"],
         output:
             res_dir=directory("plots/P_neut_PK_groups/"),
@@ -237,12 +262,13 @@ if config["FR_DMS_sites"]:
 
     rule plot_FR_sites_wght:
         input:
-           FR_sites="results/Fold_Resistance_DMS_Sites_Epitopes_weighted.csv",
+            FR_sites="results/Fold_Resistance_DMS_Sites_Epitopes_weighted.csv",
         output:
             res_dir=directory("plots/FR_sites_weighted"),
             res="plots/FR_sites_weighted/foldresistance_DMS_sites_epitopes_weighted.pdf",
         shell:
             "Rscript {workflow.basedir}/scripts/plotting/FR_sites_landscape_weighted.R {input.FR_sites} {output.res_dir}"
+
 
 if config["cross_spk"]:
     if config["added_cross"]:

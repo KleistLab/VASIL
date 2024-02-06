@@ -27,9 +27,9 @@ date_end: "2023-04-16" # must be included at least in covsonar timeframe
 focus_il: False
 cross_focus: False # if FALSE you must include file results/Cross_react_dic_spikegroups_*_pck" *=lineage_focus & results/Cross_with_delta_validation.pck (just rename previous file) or if they are present in covsonar data, it is extracted from there
 # 6.b if above is TRUE, provide name  --- please replace "." with "_" 
-lineage_focus: "not needed when focus_il is false"
+lineage_focus: "not_needed_when_focus_il_is_false"
 # 6.c and NTD-RBD mutation positions file (DEL/del are ignored)
-mutation_focus: "not needed when focus_il is false"
+mutation_focus: "not_needed_when_focus_il_is_false"
 # 6.d OPTIONAL:Compute neutralization proba for lineage_focus for a desired antigen list
 p_neut: False
 antigen: ["Wuhan-Hu-1", "XBB.1.5", "Wuhan-Hu-1=0.75/EG.5.1=0.25", "Wuhan-Hu-1/EG.5.1"] ### if not "Wuhan-Hu-1", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if focus_il is TRUE.
@@ -54,10 +54,10 @@ major_lineages: ["BA.2", "BA.4", "BA.5", "BQ.1.1", "BE.1.1", "CH.1.1", "EG.1", "
 mut_major: ["avail", "avail", "avail", "avail", "avail", "avail", "avail", "avail", "EG.5_WHO_mutationsprofile_outbreak.info_22-12-23.txt", "JN.1_mutationsprofile_outbreak.info_22-12-23.txt"]
 # 11.OPTIONAL:Compute Immunological landscape for chosen variant groups for prediction comparison
 groups_il: TRUE
-compare_groups: ["Omicron_BA.1", "Delta", "BA.2", "BA.4/BE.1.1/BA.5", "BQ.1.1", "EG.1/XBB.1.5", "XBB.1.9.ALL", "BF.7"] ### can only be a list of lineages list this
-cross_group: False ### in FALSE, we need the files results/Cross_react_dic_groups/Cross_*.pck" *=lineage & results/Cross_with_delta_validation_again.pck (just rename previous file) or if they are present in covsonar data, it is extracted from there
+compare_groups: ["Omicron_BA.1", "Delta"] ### can only be a list of lineages list this
+cross_group: True ### in FALSE, we need the files results/Cross_react_dic_groups/Cross_*.pck" *=lineage & results/Cross_with_delta_validation_again.pck (just rename previous file) or if they are present in covsonar data, it is extracted from there
 # if cross_group is TRUE, the mutation profiles files of any lineages that are not available in covsonar data, use a placeholder e.g.:"avail" otherwise 
 # cross is recomputed or directly extracted from results/Cross_react_dic_spikegroups_ALL.pck if it exists
-mut_groups: ["Omicron_mutationsprofile.txt", "Delta_mutationsprofile.txt", "avail", "avail", "avail", "avail", "avail","avail"]
+mut_groups: ["Omicron_mutationsprofile.txt", "Delta_mutationsprofile.txt"]
 p_neut_groups: TRUE ### Compute Neut proba for each lineages in groups
 antigen_groups: ["Wuhan-Hu-1"] ### if not "Wuhan-Hu-1", they must be present in covsonar data (Pneut of variants separated with "/" averaged following indicated %weights separated by "=", without weight, it's just their mean --- this format must be used) and list must not be empty if groups_il is TRUE.
