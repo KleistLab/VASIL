@@ -49,7 +49,7 @@ antigen_all: ["Wuhan-Hu-1", "XBB.1.5", "Wuhan-Hu-1=0.75/EG.5.1=0.25", "Wuhan-Hu-
 FR_DMS_sites: False
 # 10. OPTIONAL:Compute cross_neutralization for major lineages
 Cross_major: True
-major_lineages: ["BA.2", "BA.4", "BA.5", "BQ.1.1", "BE.1.1", "CH.1.1", "EG.1", "XBB.1.5", "EG.5", "JN.1"]
+major_lineages: ["BA.2", "BA.4", "BA.5", "BQ.1.1", "BE.1.1", "CH.1.1", "EG.1", "XBB.1.5", "EG.5_WHO", "JN.1_outbreak"]
 # you must include the mutation profiles files of any lineages that are not available in covsonar data, use a placeholder e.g.:"avail" if it is there
 mut_major: ["avail", "avail", "avail", "avail", "avail", "avail", "avail", "avail", "EG.5_WHO_mutationsprofile_outbreak.info_22-12-23.txt", "JN.1_mutationsprofile_outbreak.info_22-12-23.txt"]
 # 11.OPTIONAL:Compute Immunological landscape for chosen variant groups for prediction comparison
