@@ -292,19 +292,17 @@ snakemake --snakefile VASILplots --configfile ByCountry/<Country>/demo_config_pl
 In more details after proper parameterization of `demo_config_plots.yaml` our non-conceptual manuscript figures can be generated as follows
 
 ```
-|-- Figure 2: a: ByCountry/< Country >/plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf ( first set `FR_DMS_sites: TRUE` in `ByCountry/<Country>/demo_config.yml` then `STEP 1`, then set  `FR_DMS_sites: TRUE` in `ByCountry/<Country>/demo_config_plots.yml` and run `STEP 3`)
-                    b: generate off pipeline 
-             	   c: ByCountry/Germany/plots/Cross_major/major_Cross_React_AB_*.pdf,svg
-                    d: ByCountry/Germany/plots/P_neut_PK_groups/P_Neut_.pdf/svg* 
-
-|-- Figure 3: a: ByCountry/.../plots/relative or relative_all/../relative_fitness_*.pdf,svg           
+|-- Figure 2: A: ByCountry/< Country >/plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf ( first set `FR_DMS_sites: TRUE` in `ByCountry/<Country>/demo_config.yml` then `STEP 1`, then set  `FR_DMS_sites: TRUE` in `ByCountry/<Country>/demo_config_plots.yml` and run `STEP 3`)
+                    B: Generate off pipeline 
+             	   C: ByCountry/Germany/plots/Cross_major/major_Cross_React_AB_*.pdf,svg
+                    D: ByCountry/Germany/plots/P_neut_PK_groups/P_Neut_.pdf/svg*           
               
-|-- Figure 4: a: ByCountry/.../plots/relative or relative_all/../relative_fitness_*.pdf,svg           
-              b: 
-              c: ByCountry/...//plots/relative_groups_germany/As_Spikegroups/relative_fitness_groups.pdf,svg (special file generated from scripts/plotting/relative_advantage_spikegroups_germany_special.py)         
-|-- Figure 5: a/b: run command line: TBA                      
-              c: ByCountry/.../plots/absolute/absolute_estimate.pdf,svg
-              d: ByCountry/.../plots/absolute/derivative_trends.pdf,svg
+|-- Figure 3: A: ByCountry/Germany/plots/relative_groups/relative_fitness_*.pdf,svg  (after proper parameterization STEP1-3) or relative_all/../relative_fitness_*.pdf,svg ('STEP 2: all_il = TRUE')         
+                    B : ByCountry/Germany/plots/relative_groups_Germany/As_Spikegroups/relative_fitness_groups.pdf,svg (special file for Germany but same results as in `ByCountry/Germany/plots/relative_groups/As_Spikegroups/relative_fitness_groups.pdf,svg`)         
+
+|-- Figure 4: For each countries generated using STEP 1, STEP2, STEP 3 above
+
+|-- Figure 5: Patterns can be checked for each countries generated using STEP 1, STEP2, STEP 3 above (Figures was assembled off pipeline)
 ```
 
 ### Expected Runtime for demo
