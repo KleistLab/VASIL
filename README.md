@@ -264,25 +264,42 @@ snakemake --snakefile VASILplots --configfile demo/demo_config_plots.yaml -j -d 
 
 ```
 ### Manuscript Figures
-The folder `MS_data` can be used to reproduce or find the non-conceptual figures our manuscript figure where only plotting should be done using the config file `ms_fig.yaml`:
+The folder `ByCountry` can be used to reproduce or find the non-conceptual manuscript figures as follows
+
+`STEP 1` First generate immunological landascapes of all the variants with the codeline
 
 ```
-snakemake --snakefile VASILplots --configfile MS_data/ms_fig.yaml -j -d MS_data
+snakemake --snakefile VASIL --configfile ByCountry/<Country>/demo_config.yaml -j -d ByCountry/<Country>
+```
+Then, open for each country open the config files `ByCountry/<Country>/demo_config_plots.yaml` and choose a timeline for the figures and variants with the parameters
+```
+time_start: < Chosen start date >
+time_stop: < Chosen stop date >
+plot_groups: TRUE
+S_groups: "results/Immunological_Landscape_ALL"
+compare_groups: < List all the variants to investigate, separate with / when grouping variants >
+color_groups: < List of colors corresponding to each variants, float separated with / for rgb color scheme >
+```
+
+`STEP 2` Finally, to obtain the immunological landscapes of the chosen variants run the codeline 
 
 ```
-The figures are located as follows
+snakemake --snakefile VASILplots --configfile ByCountry/<Country>/demo_config_plots.yaml -j -d ByCountry/<Country>
 
 ```
-|-- Figure 1: c: ByCountry/.../results/mutation_data/mutationprofile_positiongroups_RBD_NTD_groups.pdf
-              b: ByCountry/.../results/relative_groups/Groups_proportions.pdf,svg
-              c: GinPipe
-|-- Figure 2: a: ByCountry/.../plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf
-              b: ByCountry/.../plots/Cross_major/major_Cross_React_AB_*.pdf,svg
-|-- Figure 3: a: ByCountry/.../plots/P_neut_*/PK_Epitopes_ranges.pdf,svg
-              b: generated off pipeline
-              c-d: ByCountry/.../plots/P_neut_*/P_Neut_.pdf,svg*
-|-- Figure 4: a: ByCountry/.../plots/P_neut_groups/P_Neut_.pdf/svg*         
-              b: ByCountry/.../plots/relative or relative_all/../relative_fitness_*.pdf,svg 
+
+In more details after proper parameterization of `demo_config_plots.yaml` our non-conceptual manuscript figures can be generated as follows
+
+```
+|-- Figure 2: a: ByCountry/< Country >/plots/FR_sites/foldresistance_DMS_sites_epitopes.pdf ( first set `FR_DMS_sites: TRUE` in `ByCountry/<Country>/demo_config.yml` then `STEP 1`, then set  `FR_DMS_sites: TRUE` in `ByCountry/<Country>/demo_config_plots.yml` and run `STEP 2`)
+                    b: generate off pipeline 
+             	   c: ByCountry/Germany/plots/Cross_major/major_Cross_React_AB_*.pdf,svg
+                    d: ByCountry/Germany/plots/P_neut_PK_groups/P_Neut_.pdf/svg* 
+
+|-- Figure 3: a: ByCountry/.../plots/relative or relative_all/../relative_fitness_*.pdf,svg           
+              
+|-- Figure 4: a: ByCountry/.../plots/relative or relative_all/../relative_fitness_*.pdf,svg           
+              b: 
               c: ByCountry/...//plots/relative_groups_germany/As_Spikegroups/relative_fitness_groups.pdf,svg (special file generated from scripts/plotting/relative_advantage_spikegroups_germany_special.py)         
 |-- Figure 5: a/b: run command line: TBA                      
               c: ByCountry/.../plots/absolute/absolute_estimate.pdf,svg
