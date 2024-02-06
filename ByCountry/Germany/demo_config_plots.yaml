@@ -33,7 +33,7 @@ p_neut_file: "results/Immunological_Landscape/P_neut_BA_2_86.csv"
 color_pneut: "orange"
 pk_file: "results/PK_for_all_Epitopes.csv"
 # 10. OPTIONAL:Plot cross_neutralization for major lineages
-cross_major: False
+cross_major: TRUE
 cross_major_file: "results/Cross_to_major_variants.pck" # can be changed to your own file
 # 11. plot relative fitness for chosen variant groups for prediction
 plot_groups: TRUE
