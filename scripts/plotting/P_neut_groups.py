@@ -166,13 +166,18 @@ for i in range(num_groups):
                 Min_list.append(EnvO_Min)
                 Max_list.append(EnvO_Max)
                 col_o = str(sys.argv[k+num_groups+i])
-                if col_o in col_list:
-                    if s<len(custom_col):
-                        col_o = custom_col[s]
+                
+                if s<len(custom_col):
+                    if "/" not in str(col_o):
+                        col_o = col_o
                     else:
-                        rand_num = np.random.choice(1, 100)
-                        col_o = sns.color_palette("rocked", rand_num)[0] 
-                    s +=1
+                        split_col = str(col_o).split("/")
+                        col_o = tuple([float(split_col[c]) for c in range(len(split_col))]) ### anything else is error)
+                else:
+                    rand_num = np.random.choice(1, 100)
+                    col_o = sns.color_palette("rocked", rand_num)[0] 
+                
+                s +=1
                     
                 
                 col_list.append(col_o)
