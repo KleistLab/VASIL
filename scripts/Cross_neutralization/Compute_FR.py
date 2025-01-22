@@ -20,16 +20,23 @@ import sys
 import pdb
 
 """Load SpikeGroups list"""
-file1 = open(sys.argv[1], "rb") 
-SpikeGroups_list = pickle.load(file1)["names"]
-file1.close()
+try:
+    file1 = open(sys.argv[1], "rb") 
+    SpikeGroups_list = pickle.load(file1)["names"]
+    file1.close()
+except:
+    SpikeGroups_list = [] ### placeholder for some runs not needing the parameter
 
 """Load Mutation profile dictionary and aa_changes"""
-file1 = open(sys.argv[2], "rb") 
-Mut_infos = pickle.load(file1)
-mut_x_sites_dic = Mut_infos["positions"]
-AA_change_dic = Mut_infos["AA_changes"]
-file1.close()
+try:
+    file1 = open(sys.argv[2], "rb") 
+    Mut_infos = pickle.load(file1)
+    mut_x_sites_dic = Mut_infos["positions"]
+    AA_change_dic = Mut_infos["AA_changes"]
+    file1.close()
+except:
+    mut_x_sites_dic = {} ### placeholder for some runs not needing the parameter
+    AA_change_dic = {} ### placeholder for some runs not needing the parameter
 
 variant_x_names_cross = SpikeGroups_list
 # include wild-type
@@ -40,6 +47,7 @@ mut_x_sites_dic["Wuhan-Hu-1"] = []
 AA_change_dic["Wuhan-Hu-1"] = {}
 
 """Load DMS Escape fraction data"""
+print(sys.argv[3])
 Escape_Fraction = pd.read_csv(sys.argv[3])
 Ab_classes = np.unique(Escape_Fraction["group"].values.astype(str))
 
@@ -458,9 +466,12 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
         file0.close()
 
     else: ### must be groups
-        file = open("Spikegroups_membership.pck", "rb")
-        Pseudogroup_dic = pickle.load(file)
-        file.close()
+        try:
+            file = open("Spikegroups_membership.pck", "rb")
+            Pseudogroup_dic = pickle.load(file)
+            file.close()
+        except:
+            Pseudogroup_dic = {} ### placeholder for when parameter for some runs not needing parameter
         
         k = 5
         if (n_groups == 1) and (str(sys.argv[k])[-24:] == "Vaccination_Timeline.csv") and (str(sys.argv[k])[:9] != "outbreak/"): ### Hard coded for vaccination pseudo variants
@@ -849,19 +860,11 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     Ab_global = Cross_global.keys()
                     file_c.close()
 
-                    if Pseudogroup_dic[Lin_list[i]] not in list(variant_x_names_cross):
-                        w_lin = len(variant_x_names_cross)
-                        Cross_i["variant_list"] = list(variant_x_names_cross) + [Lin_list[i]]
-                    else:
-                        w_lin = list(variant_x_names_cross).index(Pseudogroup_dic[Lin_list[i]])
-                        Cross_i["variant_list"] = list(variant_x_names_cross)
-                        Cross_i["variant_list"][w_lin] = Lin_list[i]
-
+                    w_lin = len(variant_x_names_cross)
+                    Cross_i["variant_list"] = list(variant_x_names_cross) + [Lin_list[i]]
+                    
                     for ab in Ab_global:  
-                        if Pseudogroup_dic[Lin_list[i]] not in list(variant_x_names_cross):
-                            FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
-                        else:
-                            FRxy_ab = np.ones((len(variant_x_names_cross), len(variant_x_names_cross)))
+                        FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
                             
                         for u1 in range(len(variant_x_names_cross)):
                             v_u1 = variant_x_names_cross[u1]
