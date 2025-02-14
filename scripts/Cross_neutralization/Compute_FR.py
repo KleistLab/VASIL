@@ -861,9 +861,15 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                     file_c.close()
 
                     w_lin = len(variant_x_names_cross)
-                    Cross_i["variant_list"] = list(variant_x_names_cross) + [Lin_list[i]]
                     
-                    for ab in Ab_global:  
+                    Cross_i["variant_list"] = list(variant_x_names_cross)
+                    ### Avoid that Lin_list[i] is sited multiple times Cross_i["variant_list"] because the other entries are not computed
+                    if Lin_list[i] in list(Pseudogroup_dic.keys()):
+                        if Lin_list[i] == Pseudogroup_dic[Lin_list[i]]:
+                        	Cross_i["variant_list"][list(Cross_i["variant_list"]).index(Lin_list[i])] = Lin_list[i]+"_ignore"
+                    
+                    Cross_i["variant_list"] = Cross_i["variant_list"] + [Lin_list[i]]
+                    for ab in Ab_global:
                         FRxy_ab = np.ones((len(variant_x_names_cross)+1, len(variant_x_names_cross)+1))
                             
                         for u1 in range(len(variant_x_names_cross)):
@@ -905,6 +911,7 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                                                     
                                     FRxy_ab[w_lin, u1] = FR_sites
                                     FRxy_ab[u1, w_lin] = FR_sites
+                                                       
                         
                         Cross_i[ab] = FRxy_ab.copy()
                         a +=1 
@@ -916,17 +923,27 @@ if Lin_name not in ("ALL", "FR_DMS_sites", "missing", "only_delta"):
                 mut_profiles = []
                 for i1 in range(n):
                     var_1 = Cross_i["variant_list"][i1]
-                    if len(list(AA_change_dic_updated[var_1].keys())) > 0:
-                        var_1_profiles = np.concatenate(tuple([AA_change_dic_updated[var_1][m1] for m1 in list(AA_change_dic_updated[var_1].keys())]))
-                        mut_profiles.append("/".join(sorted(var_1_profiles)))
+                    if var_1[-len("_ignore"):] == "_ignore":
+                        var_1a = var_1[:-len("_ignore")]
+                        if len(list(AA_change_dic_updated[var_1a].keys())) > 0:
+                            var_1_profiles = np.concatenate(tuple([AA_change_dic_updated[var_1a][m1] for m1 in list(AA_change_dic_updated[var_1a].keys())]))
+                            mut_profiles.append("/".join(sorted(var_1_profiles)))
+                        else:
+                            mut_profiles.append("")
                     else:
-                        mut_profiles.append("")
-                    
+                        if len(list(AA_change_dic_updated[var_1].keys())) > 0:
+                            var_1_profiles = np.concatenate(tuple([AA_change_dic_updated[var_1][m1] for m1 in list(AA_change_dic_updated[var_1].keys())]))
+                            mut_profiles.append("/".join(sorted(var_1_profiles)))
+                        else:
+                            mut_profiles.append("")
+                
+                          
                 Cross_i["Mutations"] = {"mut_profiles":mut_profiles, "positions":mut_x_sites_dic_updated, "AA_changes":AA_change_dic_updated}
                 file0 = open(sys.argv[len(sys.argv)-1]+"/Cross_%s.pck"%Lin_list_names[i], "wb") 
                 pickle.dump(Cross_i, file0)
                 file0.close()
             except:
+                status_sim.append("Failed")
                 print("Ignored Cross of %s: Give mutation file or chose a lineage with pseudogroup present in covsonar data"%Lin_list_names[i])
                 status_sim.append("No mutation profile for %s, give mutation file or chose a lineage present in covsonar data"%Lin_list_names[i])
             
